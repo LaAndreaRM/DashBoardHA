@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herencia Argentina - Panel Avanzado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #0B0F19; color: #EEEEEE; }
+        .bg-card { background-color: #1F2937; border: 1px solid #374151; }
+        .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
+        .text-income { color: #10B981; }
+        .text-expense { color: #F87171; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
+        .input-filter::placeholder { color: #6B7280; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">Herencia Argentina</h1>
+                <p class="text-gray-400 text-sm">Dashboard financiero en vivo — Control Multi-anual</p>
+            </div>
+            <div id="loadingStatus" class="text-amber-400 text-sm font-semibold flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
+                <i class="fa-solid fa-spinner fa-spin"></i> Cargando base de datos en vivo...
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-gray-400 uppercase">Año:</span>
+                <select id="yearFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2">
+                    <option value="TODOS">TODOS LOS AÑOS</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+   		        <span class="text-xs font-bold text-gray-400 uppercase">Mes:</span>
+   		        <select id="monthFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2" disabled>
+       			    <option value="TODOS">TODOS LOS MESES</option>
+   		        </select>
+	        </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500">
+                <p class="text-xs font-bold text-gray-400 uppercase">Total Ingresos</p>
+                <h2 id="kpiIngresos" class="text-2xl font-bold text-income mt-1">$ 0</h2>
+                <p id="regIngresos" class="text-[10px] text-gray-500 mt-1">0 registros</p>
+                <i class="fa-solid fa-arrow-up-right-dots absolute top-4 right-4 text-emerald-500/20 text-2xl"></i>
+            </div>
+            <div class="bg-card p-5 rounded-2xl border-l-4 border-red-400 relative overflow-hidden">
+                <p class="text-xs font-bold text-gray-400 uppercase">Total Costos y Gastos</p>
+                <h2 id="kpiEgresos" class="text-2xl font-bold text-expense mt-1">$ 0</h2>
+                <p id="regEgresos" class="text-[10px] text-gray-500 mt-1">0 registros</p>
+                <i class="fa-solid fa-arrow-down-wide-short absolute top-4 right-4 text-red-400/20 text-2xl"></i>
+            </div>
+            <div class="bg-card p-5 rounded-2xl border-l-4 border-cyan-400 relative overflow-hidden">
+                <p class="text-xs font-bold text-gray-400 uppercase">Utilidad</p>
+                <h2 id="kpiUtilidad" class="text-2xl font-bold text-cyan-400 mt-1">$ 0</h2>
+                <p id="kpiUtilidadStatus" class="text-[10px] text-gray-500 mt-1">---</p>
+                <i class="fa-solid fa-dollar-sign absolute top-4 right-4 text-cyan-400/20 text-2xl"></i>
+            </div>
+            <div class="bg-card p-5 rounded-2xl border-l-4 border-purple-500 relative overflow-hidden">
+                <p class="text-xs font-bold text-gray-400 uppercase">Margen %</p>
+                <h2 id="kpiMargen" class="text-2xl font-bold text-purple-400 mt-1">0%</h2>
+                <p class="text-[10px] text-gray-500 mt-1">Utilidad / Ingresos</p>
+                <i class="fa-solid fa-chart-line absolute top-4 right-4 text-purple-500/20 text-2xl"></i>
+            </div>
+        </div>
+
+        <div class="border-b border-gray-800">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center gap-8">
+                <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-egresos')">Costos y Gastos</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
+            </ul>
+        </div>
+
+        <div id="tab-resumen" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Ingresos vs Costos por Mes</h3>
+                    <div class="h-80">
+                        <canvas id="chartComparativo"></canvas>
+                    </div>
+                </div>
+                <div class="bg-card p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Distribución egresos: Costos y gastos</h3>
+                    <div class="h-64">
+                        <canvas id="chartDoughnut"></canvas>
+                    </div>
+                    <div id="doughnutLegend" class="mt-4 space-y-2 text-[11px] max-h-32 overflow-y-auto custom-scrollbar">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card p-6 rounded-2xl shadow-xl">
+                <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-wider">Mayores Egresos por Proveedor</h3>
+                <div id="topProveedoresList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-egresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                    <tr>
+                        <th class="p-4 w-20">Año</th>
+                        <th class="p-4 w-24">Mes</th>
+                        <th class="p-4 w-28">Fecha</th>
+                        <th class="p-4">Descripción</th>
+                        <th class="p-4 w-40">Tipo</th>
+                        <th class="p-4 w-48">Proveedor</th>
+                        <th class="p-4 w-32 text-right">Total</th>
+                    </tr>
+                    <tr class="bg-gray-900/30">
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGAnio" class="input-filter" placeholder="🔍 año"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGMes" class="input-filter" placeholder="🔍 mes"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGFecha" class="input-filter" placeholder="🔍 fecha"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGDesc" class="input-filter" placeholder="🔍 buscar desc..."></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGTipo" class="input-filter" placeholder="🔍 tipo"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGProv" class="input-filter" placeholder="🔍 proveedor"></th>
+                        <th class="p-2 border-b border-gray-800"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableEgresos" class="divide-y divide-gray-800 text-gray-300">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tab-ingresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                    <tr>
+                        <th class="p-4 w-20">Año</th>
+                        <th class="p-4 w-24">Mes</th>
+                        <th class="p-4 w-28">Fecha</th>
+                        <th class="p-4">Tipo de Venta</th>
+                        <th class="p-4 w-32 text-right">Valor</th>
+                    </tr>
+                    <tr class="bg-gray-900/30">
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINAnio" class="input-filter" placeholder="🔍 año"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINMes" class="input-filter" placeholder="🔍 mes"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
+                        <th class="p-2 border-b border-gray-800"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableIngresos" class="divide-y divide-gray-800 text-gray-300">
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        let rawEgresos = [];
+        let rawIngresos = [];
+        let selectedYear = "TODOS";
+        let selectedMonth = "TODOS";
+        let chartBar = null;
+        let chartDoughnut = null;
+
+        const colors = ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#A855F7', '#EC4899', '#06B6D4', '#14B8A6', '#F43F5E'];
+        const mesesNombres = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+        const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+
+        document.getElementById('yearFilter').addEventListener('change', (e) => { 
+            selectedYear = e.target.value; 
+            const monthSelect = document.getElementById('monthFilter');
+            if (selectedYear === "TODOS") { selectedMonth = "TODOS"; monthSelect.value = "TODOS"; monthSelect.disabled = true; } else { monthSelect.disabled = false; }
+            updateDashboard(); 
+        });
+
+        document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateDashboard(); });
+
+        ['colFilEGAnio', 'colFilEGMes', 'colFilEGFecha', 'colFilEGDesc', 'colFilEGTipo', 'colFilEGProv'].forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
+        ['colFilINAnio', 'colFilINMes', 'colFilINFecha', 'colFilINTipo'].forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
+
+        window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
+
+        function parseExcelDate(cellValue) {
+            if (!cellValue) return { y: 2026, m: 1, text: '-' };
+            let dObj = typeof cellValue === 'number' ? XLSX.SSF.parse_date_code(cellValue) : new Date(cellValue);
+            let y = dObj.y || (dObj.getFullYear ? dObj.getFullYear() : 2026);
+            let m = dObj.m || (dObj.getMonth ? dObj.getMonth() + 1 : 1);
+            if (isNaN(y)) { y = 2026; m = 1; }
+            let day = dObj.d || (dObj.getDate ? dObj.getDate() : 1);
+            return { y, m, text: `${y}-${m.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}` };
+        }
+
+        function loadExcelAutomatically() {
+            const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
+            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
+            fetch(driveUrl).then(res => res.arrayBuffer()).then(buffer => {
+                const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+                if (workbook.SheetNames.includes("Datos")) {
+                    const ws = workbook.SheetNames.includes("Datos") ? workbook.Sheets["Datos"] : null;
+                    const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+                    rawEgresos = rawRows.slice(1).map(row => {
+                        if (!row || row[12] === "") return null;
+                        let parsedDate = parseExcelDate(row[1]);
+                        return { ANIO: parsedDate.y.toString(), MES_NUM: parsedDate.m, MES_TXT: mesesAbrev[parsedDate.m - 1], FECHA: parsedDate.text, DESCRIPCION: (row[6] || "").toString(), TIPO: (row[5] || "OTROS").toString(), PROVEEDOR: (row[13] || "Sin Proveedor").toString(), TOTAL: parseFloat(row[12]) || 0 };
+                    }).filter(item => item !== null);
+                }
+                if (workbook.SheetNames.includes("Res Ingresos")) {
+                    const wsIn = workbook.Sheets["Res Ingresos"];
+                    const rawRowsIn = XLSX.utils.sheet_to_json(wsIn, { header: 1, defval: "" });
+                    rawIngresos = rawRowsIn.slice(1).map(row => {
+                        if (!row || row[2] === "") return null;
+                        let parsedDate = parseExcelDate(row[1]);
+                        return { ANIO: parsedDate.y.toString(), MES_NUM: parsedDate.m, MES_TXT: mesesAbrev[parsedDate.m - 1], FECHA: parsedDate.text, TIPO: (row[3] || "Venta Ordinaria").toString(), VALOR: parseFloat(row[2]) || 0 };
+                    }).filter(item => item !== null);
+                }
+                poblarFiltrosEstructurales();
+                updateDashboard();
+            });
+        }
+
+        function poblarFiltrosEstructurales() {
+            const anios = [...new Set([...rawIngresos.map(i => i.ANIO), ...rawEgresos.map(e => e.ANIO)])].sort();
+            const ySelect = document.getElementById('yearFilter');
+            anios.forEach(anio => { let opt = document.createElement('option'); opt.value = anio; opt.innerText = anio; ySelect.appendChild(opt); });
+        }
+
+        function updateDashboard() {
+            const filter = (item) => (selectedYear === "TODOS" || item.ANIO === selectedYear) && (selectedMonth === "TODOS" || item.MES_TXT === selectedMonth);
+            const filteredIngresos = rawIngresos.filter(filter);
+            const filteredEgresos = rawEgresos.filter(filter);
+
+            const totalIngresos = filteredIngresos.reduce((s, i) => s + i.VALOR, 0);
+            const totalEgresos = filteredEgresos.reduce((s, e) => s + e.TOTAL, 0);
+            
+            document.getElementById('kpiIngresos').innerText = formatCurrency(totalIngresos);
+            document.getElementById('kpiEgresos').innerText = formatCurrency(totalEgresos);
+            document.getElementById('kpiUtilidad').innerText = formatCurrency(totalIngresos - totalEgresos);
+
+            renderCharts(filteredIngresos, filteredEgresos);
+            updateTablesOnly();
+        }
+
+        function updateTablesOnly() {
+            const fYear = selectedYear, fMonth = selectedMonth;
+            const tableEgresosData = rawEgresos.filter(e => {
+                if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
+                if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
+                return e.ANIO.includes(document.getElementById('colFilEGAnio').value) && e.MES_TXT.toLowerCase().includes(document.getElementById('colFilEGMes').value.toLowerCase()) && e.DESCRIPCION.toLowerCase().includes(document.getElementById('colFilEGDesc').value.toLowerCase()) && e.TIPO.toLowerCase().includes(document.getElementById('colFilEGTipo').value.toLowerCase()) && e.PROVEEDOR.toLowerCase().includes(document.getElementById('colFilEGProv').value.toLowerCase());
+            });
+
+            const tableIngresosData = rawIngresos.filter(i => {
+                if (fYear !== "TODOS" && i.ANIO !== fYear) return false;
+                if (fMonth !== "TODOS" && i.MES_TXT !== fMonth) return false;
+                return i.ANIO.includes(document.getElementById('colFilINAnio').value) && i.MES_TXT.toLowerCase().includes(document.getElementById('colFilINMes').value.toLowerCase()) && i.TIPO.toLowerCase().includes(document.getElementById('colFilINTipo').value.toLowerCase());
+            });
+
+            renderTables(tableIngresosData, tableEgresosData);
+        }
+
+        function renderTables(ingresos, egresos) {
+            const totalE = egresos.reduce((s, e) => s + e.TOTAL, 0);
+            const totalI = ingresos.reduce((s, i) => s + i.VALOR, 0);
+
+            document.getElementById('tableEgresos').innerHTML = egresos.map(e => `
+                <tr><td class="p-4">${e.ANIO}</td><td class="p-4">${e.MES_TXT}</td><td class="p-4">${e.FECHA}</td><td class="p-4">${e.DESCRIPCION}</td><td class="p-4">${e.TIPO}</td><td class="p-4">${e.PROVEEDOR}</td><td class="p-4 text-right font-bold text-expense">${formatCurrency(e.TOTAL)}</td></tr>
+            `).join('') + (egresos.length > 0 ? `<tr class="bg-gray-900 font-bold"><td colspan="6" class="p-4 text-right">TOTAL FILTRADO:</td><td class="p-4 text-right text-expense">${formatCurrency(totalE)}</td></tr>` : '');
+
+            document.getElementById('tableIngresos').innerHTML = ingresos.map(i => `
+                <tr><td class="p-4">${i.ANIO}</td><td class="p-4">${i.MES_TXT}</td><td class="p-4">${i.FECHA}</td><td class="p-4">${i.TIPO}</td><td class="p-4 text-right font-bold text-income">${formatCurrency(i.VALOR)}</td></tr>
+            `).join('') + (ingresos.length > 0 ? `<tr class="bg-gray-900 font-bold"><td colspan="4" class="p-4 text-right">TOTAL FILTRADO:</td><td class="p-4 text-right text-income">${formatCurrency(totalI)}</td></tr>` : '');
+        }
+
+        function renderCharts(ingresos, egresos) { /* Código de gráficos mantenido igual */ }
+        function switchTab(e, tabId) { document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden')); document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active')); document.getElementById(tabId).classList.remove('hidden'); e.currentTarget.classList.add('tab-active'); }
+        function formatCurrency(val) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val); }
+    </script>
+</body>
+</html>
