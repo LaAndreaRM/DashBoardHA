@@ -11,25 +11,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #0B0F19; color: #EEEEEE; }
         .bg-card { background-color: #1F2937; border: 1px solid #374151; }
         .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
         .text-income { color: #10B981; }
         .text-expense { color: #F87171; }
-        .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
-
     <div class="max-w-7xl mx-auto space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold text-white">DashBoard HA</h1>
             <div id="loadingStatus" class="text-amber-400 text-sm font-semibold flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
-                <i class="fa-solid fa-spinner fa-spin"></i> Cargando datos...
+                <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
             </div>
         </div>
 
@@ -44,17 +42,17 @@
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-ordinario')">Costo Ordinario</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Admin</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
             </ul>
         </div>
 
-        <div id="tab-resumen" class="tab-content active space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-emerald-500"><p class="text-xs text-gray-400">INGRESOS</p><h2 id="kpiIngresos" class="text-2xl font-bold text-income">$ 0</h2></div>
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-red-400"><p class="text-xs text-gray-400">EGRESOS</p><h2 id="kpiEgresos" class="text-2xl font-bold text-expense">$ 0</h2></div>
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-cyan-400"><p class="text-xs text-gray-400">UTILIDAD</p><h2 id="kpiUtilidad" class="text-2xl font-bold text-cyan-400">$ 0</h2></div>
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-purple-500"><p class="text-xs text-gray-400">MARGEN</p><h2 id="kpiMargen" class="text-2xl font-bold text-purple-400">0%</h2></div>
+        <div id="tab-resumen" class="tab-content" style="display:block;">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-emerald-500"><h2 id="kpiIngresos" class="text-2xl font-bold text-income">$ 0</h2></div>
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-red-400"><h2 id="kpiEgresos" class="text-2xl font-bold text-expense">$ 0</h2></div>
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-cyan-400"><h2 id="kpiUtilidad" class="text-2xl font-bold text-cyan-400">$ 0</h2></div>
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-purple-500"><h2 id="kpiMargen" class="text-2xl font-bold text-purple-400">0%</h2></div>
             </div>
             <div class="h-80 bg-card p-6 rounded-2xl"><canvas id="chartComparativo"></canvas></div>
         </div>
@@ -67,85 +65,352 @@
     </div>
 
     <script>
-        let rawEgresos = [], rawIngresos = [];
-        let selectedYear = "TODOS", selectedMonth = "TODOS";
+        let rawEgresos = [];
+        let rawIngresos = [];
+        let selectedYear = "TODOS";
+        let selectedMonth = "TODOS";
         let chartBar = null;
+        let chartDoughnut = null;
+
+        const colors = ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#A855F7', '#EC4899', '#06B6D4', '#14B8A6', '#F43F5E'];
+        const mesesNombres = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
         const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
-        function switchTab(e, tabId) {
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
-            document.getElementById(tabId).classList.add('active');
-            e.currentTarget.classList.add('tab-active');
-            renderTables();
-        }
-
-        function formatCurrency(val) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val); }
-
-        function renderTables() {
-            const y = document.getElementById('yearFilter').value;
-            const m = document.getElementById('monthFilter').value;
-            const mapeo = {
-                'table-ingresos': { data: rawIngresos, cat: null },
-                'table-costo-ordinario': { data: rawEgresos, cat: 'Costo Ordinario' },
-                'table-gasto-operativo': { data: rawEgresos, cat: 'Gasto operativo' },
-                'table-gasto-administrativo': { data: rawEgresos, cat: 'Gasto administrativo' },
-                'table-gasto-personal': { data: rawEgresos, cat: 'Gasto personal' }
-            };
-
-            Object.keys(mapeo).forEach(id => {
-                const conf = mapeo[id];
-                const tabla = document.getElementById(id);
-                if (!tabla) return;
-                const filtrados = conf.data.filter(i => {
-                    const matchY = (y === "TODOS" || i.ANIO == y);
-                    const matchM = (m === "TODOS" || i.MES_TXT == m);
-                    const matchCat = !conf.cat || i.TIPO == conf.cat;
-                    return matchY && matchM && matchCat;
-                });
-                tabla.innerHTML = filtrados.map(i => `
-                    <tr class="border-b border-gray-700">
-                        <td class="p-3">${i.FECHA || ''}</td>
-                        <td class="p-3">${i.DESCRIPCION || i.TIPO}</td>
-                        <td class="p-3 text-right font-bold text-emerald-400">${formatCurrency(i.TOTAL || i.VALOR || 0)}</td>
-                    </tr>`).join('');
-            });
-        }
-
-        function loadExcelAutomatically() {
-            const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
-            fetch(`https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`)
-                .then(res => res.arrayBuffer())
-                .then(buffer => {
-                    const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
-                    // Procesar Datos
-                    const ws = workbook.Sheets["Datos"];
-                    const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-                    rawEgresos = rawRows.slice(1).map(r => ({ANIO: r[0], MES_TXT: r[1], FECHA: r[2], DESCRIPCION: r[3], TIPO: r[4], TOTAL: r[5]})).filter(i => i.TOTAL);
-                    
-                    const wsIn = workbook.Sheets["Res Ingresos"];
-                    const rawRowsIn = XLSX.utils.sheet_to_json(wsIn, { header: 1 });
-                    rawIngresos = rawRowsIn.slice(1).map(r => ({ANIO: r[0], MES_TXT: r[1], FECHA: r[2], TIPO: r[3], VALOR: r[4]})).filter(i => i.VALOR);
-                    
-                    updateDashboard();
-                });
-        }
-
-        function updateDashboard() {
-            const totalIngresos = rawIngresos.reduce((s, i) => s + i.VALOR, 0);
-            const totalEgresos = rawEgresos.reduce((s, e) => s + e.TOTAL, 0);
-            document.getElementById('kpiIngresos').innerText = formatCurrency(totalIngresos);
-            document.getElementById('kpiEgresos').innerText = formatCurrency(totalEgresos);
-            document.getElementById('kpiUtilidad').innerText = formatCurrency(totalIngresos - totalEgresos);
-            renderTables();
-        }
-
-        document.getElementById('yearFilter').addEventListener('change', () => { 
-            selectedYear = document.getElementById('yearFilter').value; 
+        document.getElementById('yearFilter').addEventListener('change', (e) => { 
+            selectedYear = e.target.value; 
+            const monthSelect = document.getElementById('monthFilter');
+            
+            if (selectedYear === "TODOS") {
+                // Si elige todos los años, el mes vuelve a TODOS y se bloquea
+                selectedMonth = "TODOS";
+                monthSelect.value = "TODOS";
+                monthSelect.disabled = true;
+            } else {
+                // Si elige un año específico, se desbloquea el selector de meses
+                monthSelect.disabled = false;
+            }
+            
             updateDashboard(); 
         });
 
+        document.getElementById('monthFilter').addEventListener('change', (e) => { 
+            selectedMonth = e.target.value; 
+            updateDashboard(); 
+        });
+
+        const inputsEgresos = ['colFilEGAnio', 'colFilEGMes', 'colFilEGFecha', 'colFilEGDesc', 'colFilEGTipo', 'colFilEGProv'];
+        inputsEgresos.forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
+
+        const inputsIngresos = ['colFilINAnio', 'colFilINMes', 'colFilINFecha', 'colFilINTipo'];
+        inputsIngresos.forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
+
         window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
+
+        function parseExcelDate(cellValue) {
+            if (!cellValue) return { y: 2026, m: 1, text: '-' };
+            let dObj = typeof cellValue === 'number' ? XLSX.SSF.parse_date_code(cellValue) : new Date(cellValue);
+            let y = dObj.y || (dObj.getFullYear ? dObj.getFullYear() : 2026);
+            let m = dObj.m || (dObj.getMonth ? dObj.getMonth() + 1 : 1);
+            if (isNaN(y)) { y = 2026; m = 1; }
+            let day = dObj.d || (dObj.getDate ? dObj.getDate() : 1);
+            return { y, m, text: `${y}-${m.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}` };
+        }
+
+        // NUEVO: Función modificada para leer en vivo el archivo de Google Drive
+        function loadExcelAutomatically() {
+            const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
+            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
+
+            fetch(driveUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error("No se pudo conectar con el archivo de Google Drive. Asegúrate de que esté configurado como Público.");
+                    return res.arrayBuffer();
+                })
+                .then(buffer => {
+                    const data = new Uint8Array(buffer);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    if (workbook.SheetNames.includes("Datos")) {
+                        const ws = workbook.Sheets["Datos"];
+                        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+                        if(rawRows.length > 1) {
+                            const headers = rawRows[0].map(h => (h || "").toString().trim().toUpperCase());
+                            let idxTotal = headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL");
+                            let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
+                            let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
+                            let idxDesc = headers.indexOf("DESCRIPCIÓN") === -1 ? headers.indexOf("DESCRIPCION") : headers.indexOf("DESCRIPCIÓN");
+                            let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
+                            if(idxDesc === -1) idxDesc = 6;
+
+                            rawEgresos = rawRows.slice(1).map(row => {
+                                if (!row || row.length === 0 || row[idxTotal] === "") return null;
+                                let parsedDate = parseExcelDate(row[idxFecha]);
+                                return {
+                                    ANIO: parsedDate.y.toString(),
+                                    MES_NUM: parsedDate.m,
+                                    MES_TXT: mesesAbrev[parsedDate.m - 1],
+                                    FECHA: parsedDate.text,
+                                    DESCRIPCION: (row[idxDesc] || "").toString(),
+                                    TIPO: (row[idxTipo] || "OTROS").toString().trim(),
+                                    PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(),
+                                    TOTAL: parseFloat(row[idxTotal]) || 0
+                                };
+                            }).filter(item => item !== null);
+                        }
+                    }
+
+                    if (workbook.SheetNames.includes("Res Ingresos")) {
+                        const ws = workbook.Sheets["Res Ingresos"];
+                        const rawRowsIn = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+                        if(rawRowsIn.length > 1) {
+                            const headersIn = rawRowsIn[0].map(h => (h || "").toString().trim().toUpperCase());
+                            let idxFecha = headersIn.indexOf("FECHA") === -1 ? 1 : headersIn.indexOf("FECHA");
+                            let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
+                            let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
+
+                            rawIngresos = rawRowsIn.slice(1).map(row => {
+                                if (!row || row.length === 0 || row[idxValor] === "") return null;
+                                let parsedDate = parseExcelDate(row[idxFecha]);
+                                return {
+                                    ANIO: parsedDate.y.toString(),
+                                    MES_NUM: parsedDate.m,
+                                    MES_TXT: mesesAbrev[parsedDate.m - 1],
+                                    FECHA: parsedDate.text,
+                                    TIPO: (row[idxTipo] || "Venta Ordinaria").toString(),
+                                    VALOR: parseFloat(row[idxValor]) || 0
+                                };
+                            }).filter(item => item !== null);
+                        }
+                    }
+
+                    poblarFiltrosEstructurales();
+                    document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> Cloud Drive Sincronizado';
+                    document.getElementById('loadingStatus').className = "text-emerald-400 text-sm font-semibold flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20";
+                    updateDashboard();
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i> Error de conexión Cloud';
+                });
+        }
+
+        function poblarFiltrosEstructurales() {
+            const aniosDetectados = [...new Set([...rawIngresos.map(i => i.ANIO), ...rawEgresos.map(e => e.ANIO)])].sort();
+            const ySelect = document.getElementById('yearFilter');
+            ySelect.innerHTML = '<option value="TODOS">TODOS LOS AÑOS</option>';
+            aniosDetectados.forEach(anio => {
+                let opt = document.createElement('option');
+                opt.value = anio; opt.innerText = anio; ySelect.appendChild(opt);
+            });
+
+            const mSelect = document.getElementById('monthFilter');
+            mSelect.innerHTML = '<option value="TODOS">TODOS LOS MESES</option>';
+            mesesAbrev.forEach((mAbrev, index) => {
+                let opt = document.createElement('option');
+                opt.value = mAbrev; opt.innerText = mesesNombres[index]; mSelect.appendChild(opt);
+            });
+        }
+
+        function updateDashboard() {
+            const filterGlobalFn = (item) => {
+                const matchAnio = selectedYear === "TODOS" || item.ANIO === selectedYear;
+                const matchMes = selectedMonth === "TODOS" || item.MES_TXT === selectedMonth;
+                return matchAnio && matchMes;
+            };
+
+            const filteredIngresos = rawIngresos.filter(filterGlobalFn);
+            const filteredEgresos = rawEgresos.filter(filterGlobalFn);
+
+            const totalIngresos = filteredIngresos.reduce((sum, i) => sum + i.VALOR, 0);
+            const totalEgresos = filteredEgresos.reduce((sum, e) => sum + e.TOTAL, 0);
+            const utilidad = totalIngresos - totalEgresos;
+            const margen = totalIngresos > 0 ? (utilidad / totalIngresos) * 100 : 0;
+
+            document.getElementById('kpiIngresos').innerText = formatCurrency(totalIngresos);
+            document.getElementById('regIngresos').innerText = `${filteredIngresos.length} registros`;
+            document.getElementById('kpiEgresos').innerText = formatCurrency(totalEgresos);
+            document.getElementById('regEgresos').innerText = `${filteredEgresos.length} registros`;
+            document.getElementById('kpiUtilidad').innerText = formatCurrency(utilidad);
+            
+            const statusKpi = document.getElementById('kpiUtilidadStatus');
+            statusKpi.innerText = utilidad >= 0 ? "Excedente Neto" : "Déficit Periodo";
+            statusKpi.className = utilidad >= 0 ? "text-[10px] text-emerald-400 mt-1" : "text-[10px] text-red-400 mt-1";
+            document.getElementById('kpiMargen').innerText = `${margen.toFixed(1)}%`;
+
+            renderCharts(filteredIngresos, filteredEgresos);
+            renderTopProveedores(filteredEgresos);
+            updateTablesOnly();
+        }
+
+        function updateTablesOnly() {
+            const fYear = selectedYear;
+            const fMonth = selectedMonth;
+
+            const fEGAnio = document.getElementById('colFilEGAnio').value.toLowerCase();
+            const fEGMes = document.getElementById('colFilEGMes').value.toLowerCase();
+            const fEGFecha = document.getElementById('colFilEGFecha').value.toLowerCase();
+            const fEGDesc = document.getElementById('colFilEGDesc').value.toLowerCase();
+            const fEGTipo = document.getElementById('colFilEGTipo').value.toLowerCase();
+            const fEGProv = document.getElementById('colFilEGProv').value.toLowerCase();
+
+            const tableEgresosData = rawEgresos.filter(e => {
+                if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
+                if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
+                
+                if (fEGAnio && !e.ANIO.toLowerCase().includes(fEGAnio)) return false;
+                if (fEGMes && !e.MES_TXT.toLowerCase().includes(fEGMes)) return false;
+                if (fEGFecha && !e.FECHA.toLowerCase().includes(fEGFecha)) return false;
+                if (fEGDesc && !e.DESCRIPCION.toLowerCase().includes(fEGDesc)) return false;
+                if (fEGTipo && !e.TIPO.toLowerCase().includes(fEGTipo)) return false;
+                if (fEGProv && !e.PROVEEDOR.toLowerCase().includes(fEGProv)) return false;
+                return true;
+            });
+
+            const fINAnio = document.getElementById('colFilINAnio').value.toLowerCase();
+            const fINMes = document.getElementById('colFilINMes').value.toLowerCase();
+            const fINFecha = document.getElementById('colFilINFecha').value.toLowerCase();
+            const fINTipo = document.getElementById('colFilINTipo').value.toLowerCase();
+
+            const tableIngresosData = rawIngresos.filter(i => {
+                if (fYear !== "TODOS" && i.ANIO !== fYear) return false;
+                if (fMonth !== "TODOS" && i.MES_TXT !== fMonth) return false;
+                
+                if (fINAnio && !i.ANIO.toLowerCase().includes(fINAnio)) return false;
+                if (fINMes && !i.MES_TXT.toLowerCase().includes(fINMes)) return false;
+                if (fINFecha && !i.FECHA.toLowerCase().includes(fINFecha)) return false;
+                if (fINTipo && !i.TIPO.toLowerCase().includes(fINTipo)) return false;
+                return true;
+            });
+
+            renderTables(tableIngresosData, tableEgresosData);
+        }
+
+        function renderCharts(ingresos, egresos) {
+            if (chartBar) chartBar.destroy();
+            if (chartDoughnut) chartDoughnut.destroy();
+
+            let listadoEjeX = [];
+            if (selectedMonth !== "TODOS") {
+                if (selectedYear !== "TODOS") {
+                    listadoEjeX = [`${selectedMonth} ${selectedYear}`];
+                } else {
+                    const aniosConDatos = [...new Set([...rawIngresos.filter(i => i.MES_TXT === selectedMonth).map(i => i.ANIO), ...rawEgresos.filter(e => e.MES_TXT === selectedMonth).map(e => e.ANIO)])].sort();
+                    listadoEjeX = aniosConDatos.map(anio => `${selectedMonth} ${anio}`);
+                }
+            } else if (selectedYear !== "TODOS") {
+                listadoEjeX = mesesAbrev.map(m => `${m} ${selectedYear}`);
+            } else {
+                listadoEjeX = [...new Set([...rawIngresos.map(i => `${i.MES_TXT} ${i.ANIO}`), ...rawEgresos.map(e => `${e.MES_TXT} ${e.ANIO}`)])].slice(-12);
+            }
+
+            const dataIngresosBar = listadoEjeX.map(label => {
+                const [m, y] = label.split(" ");
+                return rawIngresos.filter(i => i.MES_TXT === m && i.ANIO === y).reduce((s, c) => s + c.VALOR, 0);
+            });
+
+            const dataEgresosBar = listadoEjeX.map(label => {
+                const [m, y] = label.split(" ");
+                return rawEgresos.filter(e => e.MES_TXT === m && e.ANIO === y).reduce((s, c) => s + c.TOTAL, 0);
+            });
+
+            const ctxBar = document.getElementById('chartComparativo');
+            if (ctxBar) {
+                chartBar = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: listadoEjeX,
+                        datasets: [
+                            { label: 'Ingresos', data: dataIngresosBar, backgroundColor: '#10B981', borderRadius: 4 },
+                            { label: 'Costos y Gastos', data: dataEgresosBar, backgroundColor: '#F87171', borderRadius: 4 }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        scales: { 
+                            y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
+                            x: { ticks: { color: '#9CA3AF', font: { size: 10 } } }
+                        },
+                        plugins: { legend: { labels: { color: '#EEEEEE' } } }
+                    }
+                });
+            }
+
+            const tiposUnicos = [...new Set(egresos.map(e => e.TIPO))].filter(t => t);
+            const dataTipos = tiposUnicos.map(t => egresos.filter(e => e.TIPO === t).reduce((s, c) => s + c.TOTAL, 0));
+
+            const ctxDoughnut = document.getElementById('chartDoughnut');
+            if (ctxDoughnut && tiposUnicos.length > 0) {
+                chartDoughnut = new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: tiposUnicos,
+                        datasets: [{ data: dataTipos, backgroundColor: colors, borderWidth: 0, cutout: '70%' }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+
+                document.getElementById('doughnutLegend').innerHTML = tiposUnicos.map((t, idx) => `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2 w-2/3">
+                            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${colors[idx % colors.length]}"></span>
+                            <span class="text-gray-400 truncate text-[11px]">${t}</span>
+                        </div>
+                        <span class="font-bold text-gray-200 text-[11px]">${formatCurrency(dataTipos[idx])}</span>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('doughnutLegend').innerHTML = '<p class="text-gray-500 italic text-center text-xs py-4">Sin datos en el período seleccionado</p>';
+            }
+        }
+
+        function renderTopProveedores(egresos) {
+            const provMap = {};
+            egresos.forEach(e => { provMap[e.PROVEEDOR] = (provMap[e.PROVEEDOR] || 0) + e.TOTAL; });
+            const sorted = Object.entries(provMap).sort((a,b) => b[1] - a[1]).slice(0, 8);
+            
+            document.getElementById('topProveedoresList').innerHTML = sorted.map(([name, val]) => `
+                <div class="flex justify-between border-b border-gray-800 pb-2">
+                    <span class="text-xs text-gray-400 truncate w-2/3" title="${name}">${name}</span>
+                    <span class="text-xs font-bold text-white">${formatCurrency(val)}</span>
+                </div>
+            `).join('') || '<p class="text-gray-500 italic text-xs col-span-4 text-center py-4">No hay egresos registrados</p>';
+        }
+
+        function renderTables(ingresos, egresos) {
+            document.getElementById('tableEgresos').innerHTML = egresos.slice(0, 200).map(e => `
+                <tr>
+                    <td class="p-4 text-gray-400">${e.ANIO}</td>
+                    <td class="p-4 text-gray-400">${e.MES_TXT}</td>
+                    <td class="p-4">${e.FECHA}</td>
+                    <td class="p-4 font-semibold">${e.DESCRIPCION}</td>
+                    <td class="p-4"><span class="bg-gray-800 px-2 py-1 rounded text-[10px]">${e.TIPO}</span></td>
+                    <td class="p-4 text-gray-400">${e.PROVEEDOR}</td>
+                    <td class="p-4 text-right font-bold text-expense">${formatCurrency(e.TOTAL)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
+
+            document.getElementById('tableIngresos').innerHTML = ingresos.slice(0, 200).map(i => `
+                <tr>
+                    <td class="p-4 text-gray-400">${i.ANIO}</td>
+                    <td class="p-4 text-gray-400">${i.MES_TXT}</td>
+                    <td class="p-4">${i.FECHA}</td>
+                    <td class="p-4 font-semibold">${i.TIPO}</td>
+                    <td class="p-4 text-right font-bold text-income">${formatCurrency(i.VALOR)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
+        }
+        
+
+        function switchTab(e, tabId) {
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+            document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            e.currentTarget.classList.add('tab-active');
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
+        }
     </script>
 </body>
 </html>
