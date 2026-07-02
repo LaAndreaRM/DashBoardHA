@@ -87,13 +87,10 @@
         <!-- Pestañas de Navegación -->
         <div class="border-b border-gray-800">
             <ul class="flex flex-wrap -mb-px text-sm font-medium text-center gap-8">
-   				<li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
-  				<li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
-    			<li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-ordinario')">Costo Ordinario</li>
-   				<li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
-   				<li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-admin')">Gasto Admin</li>
-  			    <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
-			</ul>
+                <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-egresos')">Costos y Gastos</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
+            </ul>
         </div>
 
         <!-- Contenido Pestaña Resumen -->
@@ -173,10 +170,6 @@
                 </tbody>
             </table>
         </div>
-		<div id="tab-costo-ordinario" class="tab-content hidden overflow-x-auto bg-card rounded-xl"><table class="w-full text-left text-xs" id="table-costo-ordinario"></table></div>
-		<div id="tab-gasto-operativo" class="tab-content hidden overflow-x-auto bg-card rounded-xl"><table class="w-full text-left text-xs" id="table-gasto-operativo"></table></div>
-		<div id="tab-gasto-admin" class="tab-content hidden overflow-x-auto bg-card rounded-xl"><table class="w-full text-left text-xs" id="table-gasto-admin"></table></div>
-		<div id="tab-gasto-personal" class="tab-content hidden overflow-x-auto bg-card rounded-xl"><table class="w-full text-left text-xs" id="table-gasto-personal"></table></div>
 
     </div>
 
@@ -492,54 +485,29 @@
             `).join('') || '<p class="text-gray-500 italic text-xs col-span-4 text-center py-4">No hay egresos registrados</p>';
         }
 
-       function renderNuevaTabla(id, categoria) {
-  		  const tabla = document.getElementById(id);
-		  if (!tabla) return;
-    
-  		  // Filtramos tus datos originales (rawEgresos)
-		  const filtrados = rawEgresos.filter(e => e.TIPO === categoria);
-    
-  		  tabla.innerHTML = filtrados.map(e => `
-     		   <tr class="border-b border-gray-800">
-         	   <td class="p-2">${e.ANIO}</td>
-          	   <td class="p-2">${e.MES_TXT}</td>
-           	   <td class="p-2">${e.FECHA}</td>
-               <td class="p-2">${e.DESCRIPCION}</td>
-              <td class="p-2 text-right">$${(e.TOTAL || 0).toLocaleString()}</td>
-          </tr>
-   		 `).join('');
-		}
+        function renderTables(ingresos, egresos) {
+            document.getElementById('tableEgresos').innerHTML = egresos.slice(0, 200).map(e => `
+                <tr>
+                    <td class="p-4 text-gray-400">${e.ANIO}</td>
+                    <td class="p-4 text-gray-400">${e.MES_TXT}</td>
+                    <td class="p-4">${e.FECHA}</td>
+                    <td class="p-4 font-semibold">${e.DESCRIPCION}</td>
+                    <td class="p-4"><span class="bg-gray-800 px-2 py-1 rounded text-[10px]">${e.TIPO}</span></td>
+                    <td class="p-4 text-gray-400">${e.PROVEEDOR}</td>
+                    <td class="p-4 text-right font-bold text-expense">${formatCurrency(e.TOTAL)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
 
-// Ejecutamos para las 4 nuevas pestañas
-renderNuevaTabla('table-costo-ordinario', 'Costo Ordinario');
-renderNuevaTabla('table-gasto-operativo', 'Gasto operativo');
-renderNuevaTabla('table-gasto-admin', 'Gasto administrativo');
-renderNuevaTabla('table-gasto-personal', 'Gasto personal');
-		
-		function renderTablaCategorizada(id, categoria) {
-		    const cuerpo = document.getElementById(id);
- 		    if (!cuerpo) return;
-    
- 			// Filtramos según la categoría que le pasemos
-  			const filtrados = rawEgresos.filter(e => e.TIPO === categoria);
-    
-   			// Mantenemos TU estructura de celdas (asegúrate de que los campos coincidan con tu objeto)
-  			cuerpo.innerHTML = filtrados.map(e => `
- 		       <tr class="border-b border-gray-800 hover:bg-gray-800/50">
-        		   <td class="p-4">${e.ANIO}</td>
-          		   <td class="p-4">${e.MES_TXT}</td>
-          		   <td class="p-4">${e.FECHA}</td>
-         		   <td class="p-4">${e.DESCRIPCION}</td>
-         		   <td class="p-4 text-right">$${(e.TOTAL || 0).toLocaleString()}</td>
-      		  </tr>
-  		  `).join('');
-		
-		function llenarTabla(id, categoria) {
-    		const cuerpo = document.getElementById(id);
-  			if(!cuerpo) return;
-    		const filtrados = rawEgresos.filter(e => e.TIPO === categoria); // Ajusta según tu filtro
-  			cuerpo.innerHTML = filtrados.map(e => `<tr>... tus celdas ...</tr>`).join('');
-		}
+            document.getElementById('tableIngresos').innerHTML = ingresos.slice(0, 200).map(i => `
+                <tr>
+                    <td class="p-4 text-gray-400">${i.ANIO}</td>
+                    <td class="p-4 text-gray-400">${i.MES_TXT}</td>
+                    <td class="p-4">${i.FECHA}</td>
+                    <td class="p-4 font-semibold">${i.TIPO}</td>
+                    <td class="p-4 text-right font-bold text-income">${formatCurrency(i.VALOR)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
+        }
 
         function switchTab(e, tabId) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
