@@ -29,7 +29,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- Encabezado -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-white tracking-tight">Herencia Argentina</h1>
@@ -40,7 +39,6 @@
             </div>
         </div>
 
-        <!-- FILTROS PRINCIPALES (AÑO Y MES) -->
         <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl">
             <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-gray-400 uppercase">Año:</span>
@@ -56,7 +54,6 @@
             </div>
         </div>
 
-        <!-- KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500">
                 <p class="text-xs font-bold text-gray-400 uppercase">Total Ingresos</p>
@@ -84,21 +81,14 @@
             </div>
         </div>
 
-        <!-- Pestañas de Navegación (Removidos: Costo Extraordinario y Gasto Extraordinario) -->
-        <div class="border-b border-gray-800 overflow-x-auto whitespace-nowrap custom-scrollbar">
-            <ul class="flex text-sm font-medium text-center gap-6 pb-2">
+        <div class="border-b border-gray-800">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center gap-8">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-egresos')">Costos y Gastos</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-ordinario')">Costo Ordinario</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-ventas')">Gasto de Ventas</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-estado-resultados')">Estado de Resultados</li>
             </ul>
         </div>
 
-        <!-- Contenido Pestaña Resumen -->
         <div id="tab-resumen" class="tab-content space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl">
@@ -124,68 +114,54 @@
             </div>
         </div>
 
-        <!-- Pestaña Tabla Ingresos -->
-        <div id="tab-ingresos" class="tab-content hidden space-y-4">
-            <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex justify-between items-center">
-                <span class="text-sm font-bold uppercase tracking-wider text-emerald-400">Suma de Ingresos Filtrados:</span>
-                <span id="sumIngresosFiltrados" class="text-xl font-bold text-income">$ 0</span>
-            </div>
-            <div class="overflow-x-auto bg-card rounded-xl">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-gray-900/50 text-gray-400 uppercase">
-                        <tr>
-                            <th class="p-4 w-20">Año</th>
-                            <th class="p-4 w-24">Mes</th>
-                            <th class="p-4 w-28">Fecha</th>
-                            <th class="p-4">Tipo de Venta</th>
-                            <th class="p-4 w-32 text-right">Valor</th>
-                        </tr>
-                        <tr class="bg-gray-900/30">
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINAnio" class="input-filter" placeholder="🔍 año"></th>
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINMes" class="input-filter" placeholder="🔍 mes"></th>
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
-                            <th class="p-2 border-b border-gray-800"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableIngresos" class="divide-y divide-gray-800 text-gray-300">
-                    </tbody>
-                </table>
-            </div>
+        <div id="tab-egresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                    <tr>
+                        <th class="p-4 w-20">Año</th>
+                        <th class="p-4 w-24">Mes</th>
+                        <th class="p-4 w-28">Fecha</th>
+                        <th class="p-4">Descripción</th>
+                        <th class="p-4 w-40">Tipo</th>
+                        <th class="p-4 w-48">Proveedor</th>
+                        <th class="p-4 w-32 text-right">Total</th>
+                    </tr>
+                    <tr class="bg-gray-900/30">
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGAnio" class="input-filter" placeholder="🔍 año"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGMes" class="input-filter" placeholder="🔍 mes"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGFecha" class="input-filter" placeholder="🔍 fecha"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGDesc" class="input-filter" placeholder="🔍 buscar desc..."></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGTipo" class="input-filter" placeholder="🔍 tipo"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGProv" class="input-filter" placeholder="🔍 proveedor"></th>
+                        <th class="p-2 border-b border-gray-800"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableEgresos" class="divide-y divide-gray-800 text-gray-300">
+                </tbody>
+            </table>
         </div>
 
-        <!-- Contenedores para las pestañas de Egresos Desglosadas restantes -->
-        <div id="tab-costo-ordinario" class="tab-content hidden space-y-4 template-egreso-tab"></div>
-        <div id="tab-gasto-operativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
-        <div id="tab-gasto-administrativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
-        <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
-        <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
-
-        <!-- Pestaña Estado de Resultados -->
-        <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
-            <div class="bg-card p-6 rounded-2xl shadow-xl max-w-3xl mx-auto">
-                <div class="border-b border-gray-700 pb-4 mb-4 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-lg font-bold text-white tracking-wider uppercase">Estado de Resultados Contable</h3>
-                        <p class="text-xs text-gray-400">Estructura dinámica basada en el período seleccionado</p>
-                    </div>
-                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G</span>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-gray-400 uppercase bg-gray-900/50">
-                            <tr>
-                                <th class="p-3">Concepto Estructural</th>
-                                <th class="p-3 text-right">Monto</th>
-                                <th class="p-3 text-right">% S/ Ventas</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bodyEstadoResultados" class="divide-y divide-gray-800/60 text-gray-300">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div id="tab-ingresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                    <tr>
+                        <th class="p-4 w-20">Año</th>
+                        <th class="p-4 w-24">Mes</th>
+                        <th class="p-4 w-28">Fecha</th>
+                        <th class="p-4">Tipo de Venta</th>
+                        <th class="p-4 w-32 text-right">Valor</th>
+                    </tr>
+                    <tr class="bg-gray-900/30">
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINAnio" class="input-filter" placeholder="🔍 año"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINMes" class="input-filter" placeholder="🔍 mes"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
+                        <th class="p-2 border-b border-gray-800"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableIngresos" class="divide-y divide-gray-800 text-gray-300">
+                </tbody>
+            </table>
         </div>
 
     </div>
@@ -195,7 +171,6 @@
         let rawIngresos = [];
         let selectedYear = "TODOS";
         let selectedMonth = "TODOS";
-        let activeTabId = "tab-resumen";
         let chartBar = null;
         let chartDoughnut = null;
 
@@ -203,54 +178,10 @@
         const mesesNombres = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
         const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
-        // Mapeo sin las categorías extraordinarias de egreso
-        const mapaCategorias = {
-            'tab-costo-ordinario': 'COSTO ORDINARIO',
-            'tab-gasto-operativo': 'GASTO OPERATIVO',
-            'tab-gasto-administrativo': 'GASTO ADMINISTRATIVO',
-            'tab-gasto-ventas': 'GASTO DE VENTAS',
-            'tab-gasto-personal': 'GASTO PERSONAL'
-        };
-
-        // Construir la estructura HTML de las pestañas de egresos dinámicamente
-        Object.keys(mapaCategorias).forEach(id => {
-            const container = document.getElementById(id);
-            container.innerHTML = `
-                <div class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex justify-between items-center">
-                    <span class="text-sm font-bold uppercase tracking-wider text-red-400">Suma de ítems filtrados en esta pestaña:</span>
-                    <span id="sum-\${id}" class="text-xl font-bold text-expense">$ 0</span>
-                </div>
-                <div class="overflow-x-auto bg-card rounded-xl">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-gray-900/50 text-gray-400 uppercase">
-                            <tr>
-                                <th class="p-4 w-20">Año</th>
-                                <th class="p-4 w-24">Mes</th>
-                                <th class="p-4 w-28">Fecha</th>
-                                <th class="p-4">Descripción</th>
-                                <th class="p-4 w-48">Proveedor</th>
-                                <th class="p-4 w-32 text-right">Total</th>
-                            </tr>
-                            <tr class="bg-gray-900/30">
-                                <th class="p-2 border-b border-gray-800"><input type="text" id="fil-anio-\${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 año"></th>
-                                <th class="p-2 border-b border-gray-800"><input type="text" id="fil-mes-\${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 mes"></th>
-                                <th class="p-2 border-b border-gray-800"><input type="text" id="fil-fecha-\${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
-                                <th class="p-2 border-b border-gray-800"><input type="text" id="fil-desc-\${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
-                                <th class="p-2 border-b border-gray-800"><input type="text" id="fil-prov-\${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
-                                <th class="p-2 border-b border-gray-800"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-\${id}" class="divide-y divide-gray-800 text-gray-300">
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        });
-
-        // Eventos para filtros principales
         document.getElementById('yearFilter').addEventListener('change', (e) => { 
             selectedYear = e.target.value; 
             const monthSelect = document.getElementById('monthFilter');
+            
             if (selectedYear === "TODOS") {
                 selectedMonth = "TODOS";
                 monthSelect.value = "TODOS";
@@ -258,6 +189,7 @@
             } else {
                 monthSelect.disabled = false;
             }
+            
             updateDashboard(); 
         });
 
@@ -266,13 +198,11 @@
             updateDashboard(); 
         });
 
-        // Oyentes de entradas para filtros de tablas
+        const inputsEgresos = ['colFilEGAnio', 'colFilEGMes', 'colFilEGFecha', 'colFilEGDesc', 'colFilEGTipo', 'colFilEGProv'];
+        inputsEgresos.forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
+
         const inputsIngresos = ['colFilINAnio', 'colFilINMes', 'colFilINFecha', 'colFilINTipo'];
         inputsIngresos.forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
-
-        document.querySelectorAll('.input-dinamico-egreso').forEach(input => {
-            input.addEventListener('input', updateTablesOnly);
-        });
 
         window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
 
@@ -288,11 +218,11 @@
 
         function loadExcelAutomatically() {
             const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
-            const driveUrl = `https://docs.google.com/spreadsheets/d/\${fileId}/export?format=xlsx`;
+            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
 
             fetch(driveUrl)
                 .then(res => {
-                    if (!res.ok) throw new Error("No se pudo conectar...");
+                    if (!res.ok) throw new Error("No se pudo conectar con el archivo de Google Drive.");
                     return res.arrayBuffer();
                 })
                 .then(buffer => {
@@ -396,95 +326,62 @@
             const margen = totalIngresos > 0 ? (utilidad / totalIngresos) * 100 : 0;
 
             document.getElementById('kpiIngresos').innerText = formatCurrency(totalIngresos);
-            document.getElementById('regIngresos').innerText = `\${filteredIngresos.length} registros`;
+            document.getElementById('regIngresos').innerText = `${filteredIngresos.length} registros`;
             document.getElementById('kpiEgresos').innerText = formatCurrency(totalEgresos);
-            document.getElementById('regEgresos').innerText = `\${filteredEgresos.length} registros`;
+            document.getElementById('regEgresos').innerText = `${filteredEgresos.length} registros`;
             document.getElementById('kpiUtilidad').innerText = formatCurrency(utilidad);
             
             const statusKpi = document.getElementById('kpiUtilidadStatus');
             statusKpi.innerText = utilidad >= 0 ? "Excedente Neto" : "Déficit Periodo";
             statusKpi.className = utilidad >= 0 ? "text-[10px] text-emerald-400 mt-1" : "text-[10px] text-red-400 mt-1";
-            document.getElementById('kpiMargen').innerText = `\${margen.toFixed(1)}%`;
+            document.getElementById('kpiMargen').innerText = `${margen.toFixed(1)}%`;
 
             renderCharts(filteredIngresos, filteredEgresos);
             renderTopProveedores(filteredEgresos);
             updateTablesOnly();
-            calcularYRenderizarPG(filteredIngresos, filteredEgresos);
         }
 
         function updateTablesOnly() {
             const fYear = selectedYear;
             const fMonth = selectedMonth;
 
-            // 1. Filtrar e inyectar tabla de Ingresos
+            const fEGAnio = document.getElementById('colFilEGAnio').value.toLowerCase();
+            const fEGMes = document.getElementById('colFilEGMes').value.toLowerCase();
+            const fEGFecha = document.getElementById('colFilEGFecha').value.toLowerCase();
+            const fEGDesc = document.getElementById('colFilEGDesc').value.toLowerCase();
+            const fEGTipo = document.getElementById('colFilEGTipo').value.toLowerCase();
+            const fEGProv = document.getElementById('colFilEGProv').value.toLowerCase();
+
+            const tableEgresosData = rawEgresos.filter(e => {
+                if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
+                if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
+                
+                if (fEGAnio && !e.ANIO.toLowerCase().includes(fEGAnio)) return false;
+                if (fEGMes && !e.MES_TXT.toLowerCase().includes(fEGMes)) return false;
+                if (fEGFecha && !e.FECHA.toLowerCase().includes(fEGFecha)) return false;
+                if (fEGDesc && !e.DESCRIPCION.toLowerCase().includes(fEGDesc)) return false;
+                if (fEGTipo && !e.TIPO.toLowerCase().includes(fEGTipo)) return false;
+                if (fEGProv && !e.PROVEEDOR.toLowerCase().includes(fEGProv)) return false;
+                return true;
+            });
+
             const fINAnio = document.getElementById('colFilINAnio').value.toLowerCase();
             const fINMes = document.getElementById('colFilINMes').value.toLowerCase();
             const fINFecha = document.getElementById('colFilINFecha').value.toLowerCase();
             const fINTipo = document.getElementById('colFilINTipo').value.toLowerCase();
 
-            let sumaIN = 0;
             const tableIngresosData = rawIngresos.filter(i => {
                 if (fYear !== "TODOS" && i.ANIO !== fYear) return false;
                 if (fMonth !== "TODOS" && i.MES_TXT !== fMonth) return false;
+                
                 if (fINAnio && !i.ANIO.toLowerCase().includes(fINAnio)) return false;
                 if (fINMes && !i.MES_TXT.toLowerCase().includes(fINMes)) return false;
                 if (fINFecha && !i.FECHA.toLowerCase().includes(fINFecha)) return false;
                 if (fINTipo && !i.TIPO.toLowerCase().includes(fINTipo)) return false;
-                sumaIN += i.VALOR;
                 return true;
             });
-            document.getElementById('sumIngresosFiltrados').innerText = formatCurrency(sumaIN);
 
-            document.getElementById('tableIngresos').innerHTML = tableIngresosData.slice(0, 200).map(i => `
-                <tr>
-                    <td class="p-4 text-gray-400">\${i.ANIO}</td>
-                    <td class="p-4 text-gray-400">\${i.MES_TXT}</td>
-                    <td class="p-4">\${i.FECHA}</td>
-                    <td class="p-4 font-semibold">\${i.TIPO}</td>
-                    <td class="p-4 text-right font-bold text-income">\${formatCurrency(i.VALOR)}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="5" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
-
-            // 2. Filtrar, Sumar e Inyectar en cada pestaña de Egresos según su Categoría activa
-            Object.keys(mapaCategorias).forEach(id => {
-                const categoriaNombre = mapaCategorias[id];
-
-                const fAnio = document.getElementById(`fil-anio-\${id}`).value.toLowerCase();
-                const fMes = document.getElementById(`fil-mes-\${id}`).value.toLowerCase();
-                const fFecha = document.getElementById(`fil-fecha-\${id}`).value.toLowerCase();
-                const fDesc = document.getElementById(`fil-desc-\${id}`).value.toLowerCase();
-                const fProv = document.getElementById(`fil-prov-\${id}`).value.toLowerCase();
-
-                let sumaPestana = 0;
-
-                const egresosFiltrados = rawEgresos.filter(e => {
-                    if (e.TIPO !== categoriaNombre) return false;
-                    if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
-                    if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
-
-                    if (fAnio && !e.ANIO.toLowerCase().includes(fAnio)) return false;
-                    if (fMes && !e.MES_TXT.toLowerCase().includes(fMes)) return false;
-                    if (fFecha && !e.FECHA.toLowerCase().includes(fFecha)) return false;
-                    if (fDesc && !e.DESCRIPCION.toLowerCase().includes(fDesc)) return false;
-                    if (fProv && !e.PROVEEDOR.toLowerCase().includes(fProv)) return false;
-
-                    sumaPestana += e.TOTAL;
-                    return true;
-                });
-
-                document.getElementById(`sum-\${id}`).innerText = formatCurrency(sumaPestana);
-
-                document.getElementById(`body-\${id}`).innerHTML = egresosFiltrados.slice(0, 200).map(e => `
-                    <tr>
-                        <td class="p-4 text-gray-400">\${e.ANIO}</td>
-                        <td class="p-4 text-gray-400">\${e.MES_TXT}</td>
-                        <td class="p-4">\${e.FECHA}</td>
-                        <td class="p-4 font-semibold">\${e.DESCRIPCION}</td>
-                        <td class="p-4 text-gray-400">\${e.PROVEEDOR}</td>
-                        <td class="p-4 text-right font-bold text-expense">\${formatCurrency(e.TOTAL)}</td>
-                    </tr>
-                `).join('') || '<tr><td colspan="6" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
-            });
+            renderTables(tableIngresosData, tableEgresosData);
         }
 
         function renderCharts(ingresos, egresos) {
@@ -494,15 +391,15 @@
             let listadoEjeX = [];
             if (selectedMonth !== "TODOS") {
                 if (selectedYear !== "TODOS") {
-                    listadoEjeX = [`\${selectedMonth} \${selectedYear}`];
+                    listadoEjeX = [`${selectedMonth} ${selectedYear}`];
                 } else {
                     const aniosConDatos = [...new Set([...rawIngresos.filter(i => i.MES_TXT === selectedMonth).map(i => i.ANIO), ...rawEgresos.filter(e => e.MES_TXT === selectedMonth).map(e => e.ANIO)])].sort();
-                    listadoEjeX = aniosConDatos.map(anio => `\${selectedMonth} \${anio}`);
+                    listadoEjeX = aniosConDatos.map(anio => `${selectedMonth} ${anio}`);
                 }
             } else if (selectedYear !== "TODOS") {
-                listadoEjeX = mesesAbrev.map(m => `\${m} \${selectedYear}`);
+                listadoEjeX = mesesAbrev.map(m => `${m} ${selectedYear}`);
             } else {
-                listadoEjeX = [...new Set([...rawIngresos.map(i => `\${i.MES_TXT} \${i.ANIO}`), ...rawEgresos.map(e => `\${e.MES_TXT} \${e.ANIO}`)])].slice(-12);
+                listadoEjeX = [...new Set([...rawIngresos.map(i => `${i.MES_TXT} ${i.ANIO}`), ...rawEgresos.map(e => `${e.MES_TXT} ${e.ANIO}`)])].slice(-12);
             }
 
             const dataIngresosBar = listadoEjeX.map(label => {
@@ -554,10 +451,10 @@
                 document.getElementById('doughnutLegend').innerHTML = tiposUnicos.map((t, idx) => `
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2 w-2/3">
-                            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:\${colors[idx % colors.length]}"></span>
-                            <span class="text-gray-400 truncate text-[11px]">\${t}</span>
+                            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${colors[idx % colors.length]}"></span>
+                            <span class="text-gray-400 truncate text-[11px]">${t}</span>
                         </div>
-                        <span class="font-bold text-gray-200 text-[11px]">\${formatCurrency(dataTipos[idx])}</span>
+                        <span class="font-bold text-gray-200 text-[11px]">${formatCurrency(dataTipos[idx])}</span>
                     </div>
                 `).join('');
             } else {
@@ -572,63 +469,37 @@
             
             document.getElementById('topProveedoresList').innerHTML = sorted.map(([name, val]) => `
                 <div class="flex justify-between border-b border-gray-800 pb-2">
-                    <span class="text-xs text-gray-400 truncate w-2/3" title="\${name}">\${name}</span>
-                    <span class="text-xs font-bold text-white">\${formatCurrency(val)}</span>
+                    <span class="text-xs text-gray-400 truncate w-2/3" title="${name}">${name}</span>
+                    <span class="text-xs font-bold text-white">${formatCurrency(val)}</span>
                 </div>
             `).join('') || '<p class="text-gray-500 italic text-xs col-span-4 text-center py-4">No hay egresos registrados</p>';
         }
 
-        function calcularYRenderizarPG(ingresos, egresos) {
-            const totalVentas = ingresos.reduce((sum, i) => sum + i.VALOR, 0);
-            let costosDirectos = 0;
-            let gastosOperacionales = 0;
+        function renderTables(ingresos, egresos) {
+            document.getElementById('tableEgresos').innerHTML = egresos.slice(0, 200).map(e => `
+                <tr>
+                    <td class="p-4 text-gray-400">${e.ANIO}</td>
+                    <td class="p-4 text-gray-400">${e.MES_TXT}</td>
+                    <td class="p-4">${e.FECHA}</td>
+                    <td class="p-4 font-semibold">${e.DESCRIPCION}</td>
+                    <td class="p-4"><span class="bg-gray-800 px-2 py-1 rounded text-[10px]">${e.TIPO}</span></td>
+                    <td class="p-4 text-gray-400">${e.PROVEEDOR}</td>
+                    <td class="p-4 text-right font-bold text-expense">${formatCurrency(e.TOTAL)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
 
-            egresos.forEach(e => {
-                if (e.TIPO.includes("COSTO")) {
-                    costosDirectos += e.TOTAL;
-                } else {
-                    gastosOperacionales += e.TOTAL;
-                }
-            });
-
-            const utilidadBruta = totalVentas - costosDirectos;
-            const utilidadNeta = utilidadBruta - gastosOperacionales;
-            const getPercent = (monto) => totalVentas > 0 ? `\${((monto / totalVentas) * 100).toFixed(1)}%` : '0%';
-
-            const tbody = document.getElementById('bodyEstadoResultados');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr class="font-bold text-white bg-gray-900/20">
-                        <td class="p-3 flex items-center gap-2"><i class="fa-solid fa-plus text-emerald-500 text-xs"></i> INGRESOS OPERACIONALES (VENTAS)</td>
-                        <td class="p-3 text-right text-income">\${formatCurrency(totalVentas)}</td>
-                        <td class="p-3 text-right text-gray-400">100.0%</td>
-                    </tr>
-                    <tr class="text-gray-300">
-                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Costos Directos (Ordinarios y Extraordinarios)</td>
-                        <td class="p-3 text-right text-expense">\${formatCurrency(costosDirectos)}</td>
-                        <td class="p-3 text-right text-gray-500">\${getPercent(costosDirectos)}</td>
-                    </tr>
-                    <tr class="font-semibold bg-gray-900/40 text-cyan-400 border-t border-b border-gray-700">
-                        <td class="p-3 pl-4">(=) UTILIDAD BRUTA</td>
-                        <td class="p-3 text-right">\${formatCurrency(utilidadBruta)}</td>
-                        <td class="p-3 text-right text-gray-400">\${getPercent(utilidadBruta)}</td>
-                    </tr>
-                    <tr class="text-gray-300">
-                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Gastos Operacionales, Administrativos, Ventas, Personal y Extraordinarios</td>
-                        <td class="p-3 text-right text-expense">\${formatCurrency(gastosOperacionales)}</td>
-                        <td class="p-3 text-right text-gray-500">\${getPercent(gastosOperacionales)}</td>
-                    </tr>
-                    <tr class="font-bold text-base text-white bg-emerald-500/10 border-t-2 border-emerald-500/50">
-                        <td class="p-4 flex items-center gap-2"><i class="fa-solid fa-calculator text-emerald-400 text-sm"></i> UTILIDAD NETA DEL EJERCICIO</td>
-                        <td class="p-4 text-right text-emerald-400">\${formatCurrency(utilidadNeta)}</td>
-                        <td class="p-4 text-right text-emerald-300">\${getPercent(utilidadNeta)}</td>
-                    </tr>
-                `;
-            }
+            document.getElementById('tableIngresos').innerHTML = ingresos.slice(0, 200).map(i => `
+                <tr>
+                    <td class="p-4 text-gray-400">${i.ANIO}</td>
+                    <td class="p-4 text-gray-400">${i.MES_TXT}</td>
+                    <td class="p-4">${i.FECHA}</td>
+                    <td class="p-4 font-semibold">${i.TIPO}</td>
+                    <td class="p-4 text-right font-bold text-income">${formatCurrency(i.VALOR)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
         }
 
         function switchTab(e, tabId) {
-            activeTabId = tabId;
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
             document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
             document.getElementById(tabId).classList.remove('hidden');
