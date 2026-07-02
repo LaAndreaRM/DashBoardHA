@@ -230,78 +230,70 @@
             const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
             const driveUrl = "https://docs.google.com/spreadsheets/d/17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh/gviz/tq?tqx=out:xlsx&tq=&gid=0";
 
-            fetch(driveUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error("No se pudo conectar con el archivo de Google Drive. Asegúrate de que esté configurado como Público.");
-                    return res.arrayBuffer();
-                })
-                .then(buffer => {
-                    const data = new Uint8Array(buffer);
-                    const workbook = XLSX.read(data, { type: 'array' });
+            // La URL de tu App Script
+const scriptUrl = "https://script.google.com/macros/s/AKfycbxbQB_cm2akwcK2R6KmzFrXER6UOp4CRo4Pw_SprK0GxHqPKWeB7ZmFNT6roUfRc8OO1A/exec";
 
-                    if (workbook.SheetNames.includes("Datos")) {
-                        const ws = workbook.Sheets["Datos"];
-                        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-                        if(rawRows.length > 1) {
-                            const headers = rawRows[0].map(h => (h || "").toString().trim().toUpperCase());
-                            let idxTotal = headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL");
-                            let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
-                            let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                            let idxDesc = headers.indexOf("DESCRIPCIÓN") === -1 ? headers.indexOf("DESCRIPCION") : headers.indexOf("DESCRIPCIÓN");
-                            let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
-                            if(idxDesc === -1) idxDesc = 6;
+fetch(scriptUrl)
+  .then(res => res.json())
+  .then(json => {
+      // json.datos es tu hoja "Datos" y json.ingresos es "Res Ingresos"
+      // Convertimos los datos de Google a filas (omitiendo encabezados)
+      const rowsDatos = json.datos.slice(1);
+      const rowsIngresos = json.ingresos.slice(1);
 
-                            rawEgresos = rawRows.slice(1).map(row => {
-                                if (!row || row.length === 0 || row[idxTotal] === "") return null;
-                                let parsedDate = parseExcelDate(row[idxFecha]);
-                                return {
-                                    ANIO: parsedDate.y.toString(),
-                                    MES_NUM: parsedDate.m,
-                                    MES_TXT: mesesAbrev[parsedDate.m - 1],
-                                    FECHA: parsedDate.text,
-                                    DESCRIPCION: (row[idxDesc] || "").toString(),
-                                    TIPO: (row[idxTipo] || "OTROS").toString().trim(),
-                                    PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(),
-                                    TOTAL: parseFloat(row[idxTotal]) || 0
-                                };
-                            }).filter(item => item !== null);
-                        }
-                    }
+      // --- PROCESAMIENTO DE EGRESOS (Datos) ---
+      const headers = json.datos[0].map(h => (h || "").toString().trim().toUpperCase());
+      let idxTotal = headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL");
+      let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
+      let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
+      let idxDesc = (headers.indexOf("DESCRIPCIÓN") === -1 && headers.indexOf("DESCRIPCION") === -1) ? 6 : (headers.indexOf("DESCRIPCIÓN") !== -1 ? headers.indexOf("DESCRIPCIÓN") : headers.indexOf("DESCRIPCION"));
+      let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
 
-                    if (workbook.SheetNames.includes("Res Ingresos")) {
-                        const ws = workbook.Sheets["Res Ingresos"];
-                        const rawRowsIn = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-                        if(rawRowsIn.length > 1) {
-                            const headersIn = rawRowsIn[0].map(h => (h || "").toString().trim().toUpperCase());
-                            let idxFecha = headersIn.indexOf("FECHA") === -1 ? 1 : headersIn.indexOf("FECHA");
-                            let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
-                            let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
+      rawEgresos = rowsDatos.map(row => {
+          if (!row || row.length === 0 || row[idxTotal] === "") return null;
+          let parsedDate = parseExcelDate(row[idxFecha]);
+          return {
+              ANIO: parsedDate.y.toString(),
+              MES_NUM: parsedDate.m,
+              MES_TXT: mesesAbrev[parsedDate.m - 1],
+              FECHA: parsedDate.text,
+              DESCRIPCION: (row[idxDesc] || "").toString(),
+              TIPO: (row[idxTipo] || "OTROS").toString().trim(),
+              PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(),
+              TOTAL: parseFloat(row[idxTotal]) || 0
+          };
+      }).filter(item => item !== null);
 
-                            rawIngresos = rawRowsIn.slice(1).map(row => {
-                                if (!row || row.length === 0 || row[idxValor] === "") return null;
-                                let parsedDate = parseExcelDate(row[idxFecha]);
-                                return {
-                                    ANIO: parsedDate.y.toString(),
-                                    MES_NUM: parsedDate.m,
-                                    MES_TXT: mesesAbrev[parsedDate.m - 1],
-                                    FECHA: parsedDate.text,
-                                    TIPO: (row[idxTipo] || "Venta Ordinaria").toString(),
-                                    VALOR: parseFloat(row[idxValor]) || 0
-                                };
-                            }).filter(item => item !== null);
-                        }
-                    }
+      // --- PROCESAMIENTO DE INGRESOS (Res Ingresos) ---
+      const headersIn = json.ingresos[0].map(h => (h || "").toString().trim().toUpperCase());
+      let idxF = headersIn.indexOf("FECHA") === -1 ? 1 : headersIn.indexOf("FECHA");
+      let idxV = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
+      let idxT = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
 
-                    poblarFiltrosEstructurales();
-                    document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> Cloud Drive Sincronizado';
-                    document.getElementById('loadingStatus').className = "text-emerald-400 text-sm font-semibold flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20";
-                    updateDashboard();
-                })
-                .catch(err => {
-                    console.error(err);
-                    document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i> Error de conexión Cloud';
-                });
-        }
+      rawIngresos = rowsIngresos.map(row => {
+          if (!row || row.length === 0 || row[idxV] === "") return null;
+          let parsedDate = parseExcelDate(row[idxF]);
+          return {
+              ANIO: parsedDate.y.toString(),
+              MES_NUM: parsedDate.m,
+              MES_TXT: mesesAbrev[parsedDate.m - 1],
+              FECHA: parsedDate.text,
+              TIPO: (row[idxT] || "Venta Ordinaria").toString(),
+              VALOR: parseFloat(row[idxV]) || 0
+          };
+      }).filter(item => item !== null);
+
+      // --- FINALIZACIÓN ---
+      poblarFiltrosEstructurales();
+      const status = document.getElementById('loadingStatus');
+      status.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> Cloud Drive Sincronizado';
+      status.className = "text-emerald-400 text-sm font-semibold flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20";
+      updateDashboard();
+  })
+  .catch(err => {
+      console.error(err);
+      document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i> Error de conexión Cloud';
+  });
 
         function poblarFiltrosEstructurales() {
             const aniosDetectados = [...new Set([...rawIngresos.map(i => i.ANIO), ...rawEgresos.map(e => e.ANIO)])].sort();
