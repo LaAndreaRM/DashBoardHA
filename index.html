@@ -6,7 +6,7 @@
     <title>DashBoard HA - Panel Avanzado</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,509 +16,136 @@
         body { font-family: 'Poppins', sans-serif; background-color: #0B0F19; color: #EEEEEE; }
         .bg-card { background-color: #1F2937; border: 1px solid #374151; }
         .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         .text-income { color: #10B981; }
         .text-expense { color: #F87171; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
         .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
-        .input-filter::placeholder { color: #6B7280; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
     <div class="max-w-7xl mx-auto space-y-6">
-        
-        <!-- Encabezado -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-white tracking-tight">DashBoard HA</h1>
-                <p class="text-gray-400 text-sm">Dashboard financiero en vivo — Control Multi-anual</p>
-            </div>
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">DashBoard HA</h1>
             <div id="loadingStatus" class="text-amber-400 text-sm font-semibold flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
-                <i class="fa-solid fa-spinner fa-spin"></i> Cargando base de datos en vivo...
+                <i class="fa-solid fa-spinner fa-spin"></i> Cargando datos...
             </div>
         </div>
 
-        <!-- FILTROS PRINCIPALES (AÑO Y MES) -->
         <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl">
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-gray-400 uppercase">Año:</span>
-                <select id="yearFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2">
-                    <option value="TODOS">TODOS LOS AÑOS</option>
-                </select>
-            </div>
-            <div class="flex items-center gap-2">
-   		 <span class="text-xs font-bold text-gray-400 uppercase">Mes:</span>
-   		 <select id="monthFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2" disabled>
-       			 <option value="TODOS">TODOS LOS MESES</option>
-   		 </select>
-	     </div>
+            <select id="yearFilter" class="bg-gray-900 border border-gray-700 text-white p-2 rounded-lg text-sm"><option value="TODOS">TODOS LOS AÑOS</option></select>
+            <select id="monthFilter" class="bg-gray-900 border border-gray-700 text-white p-2 rounded-lg text-sm" disabled><option value="TODOS">TODOS LOS MESES</option></select>
         </div>
 
-        <!-- KPIs -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500">
-                <p class="text-xs font-bold text-gray-400 uppercase">Total Ingresos</p>
-                <h2 id="kpiIngresos" class="text-2xl font-bold text-income mt-1">$ 0</h2>
-                <p id="regIngresos" class="text-[10px] text-gray-500 mt-1">0 registros</p>
-                <i class="fa-solid fa-arrow-up-right-dots absolute top-4 right-4 text-emerald-500/20 text-2xl"></i>
-            </div>
-            <div class="bg-card p-5 rounded-2xl border-l-4 border-red-400 relative overflow-hidden">
-                <p class="text-xs font-bold text-gray-400 uppercase">Total Costos y Gastos</p>
-                <h2 id="kpiEgresos" class="text-2xl font-bold text-expense mt-1">$ 0</h2>
-                <p id="regEgresos" class="text-[10px] text-gray-500 mt-1">0 registros</p>
-                <i class="fa-solid fa-arrow-down-wide-short absolute top-4 right-4 text-red-400/20 text-2xl"></i>
-            </div>
-            <div class="bg-card p-5 rounded-2xl border-l-4 border-cyan-400 relative overflow-hidden">
-                <p class="text-xs font-bold text-gray-400 uppercase">Utilidad</p>
-                <h2 id="kpiUtilidad" class="text-2xl font-bold text-cyan-400 mt-1">$ 0</h2>
-                <p id="kpiUtilidadStatus" class="text-[10px] text-gray-500 mt-1">---</p>
-                <i class="fa-solid fa-dollar-sign absolute top-4 right-4 text-cyan-400/20 text-2xl"></i>
-            </div>
-            <div class="bg-card p-5 rounded-2xl border-l-4 border-purple-500 relative overflow-hidden">
-                <p class="text-xs font-bold text-gray-400 uppercase">Margen %</p>
-                <h2 id="kpiMargen" class="text-2xl font-bold text-purple-400 mt-1">0%</h2>
-                <p class="text-[10px] text-gray-500 mt-1">Utilidad / Ingresos</p>
-                <i class="fa-solid fa-chart-line absolute top-4 right-4 text-purple-500/20 text-2xl"></i>
-            </div>
-        </div>
-
-        <!-- Pestañas de Navegación -->
         <div class="border-b border-gray-800">
-            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center gap-8">
+            <ul class="flex flex-wrap text-sm font-medium text-center gap-6">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-egresos')">Costos y Gastos</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-ordinario')">Costo Ordinario</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
             </ul>
         </div>
 
-        <!-- Contenido Pestaña Resumen -->
-        <div id="tab-resumen" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl">
-                    <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Ingresos vs Costos por Mes</h3>
-                    <div class="h-80">
-                        <canvas id="chartComparativo"></canvas>
-                    </div>
-                </div>
-                <div class="bg-card p-6 rounded-2xl shadow-xl">
-                    <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Distribución egresos: Costos y gastos</h3>
-                    <div class="h-64">
-                        <canvas id="chartDoughnut"></canvas>
-                    </div>
-                    <div id="doughnutLegend" class="mt-4 space-y-2 text-[11px] max-h-32 overflow-y-auto custom-scrollbar">
-                    </div>
-                </div>
+        <div id="tab-resumen" class="tab-content active space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-emerald-500"><p class="text-xs text-gray-400">INGRESOS</p><h2 id="kpiIngresos" class="text-2xl font-bold text-income">$ 0</h2></div>
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-red-400"><p class="text-xs text-gray-400">EGRESOS</p><h2 id="kpiEgresos" class="text-2xl font-bold text-expense">$ 0</h2></div>
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-cyan-400"><p class="text-xs text-gray-400">UTILIDAD</p><h2 id="kpiUtilidad" class="text-2xl font-bold text-cyan-400">$ 0</h2></div>
+                <div class="bg-card p-5 rounded-2xl border-l-4 border-purple-500"><p class="text-xs text-gray-400">MARGEN</p><h2 id="kpiMargen" class="text-2xl font-bold text-purple-400">0%</h2></div>
             </div>
-
-            <div class="bg-card p-6 rounded-2xl shadow-xl">
-                <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-wider">Mayores Egresos por Proveedor</h3>
-                <div id="topProveedoresList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                </div>
-            </div>
+            <div class="h-80 bg-card p-6 rounded-2xl"><canvas id="chartComparativo"></canvas></div>
         </div>
 
-        <!-- Pestaña Tabla Egresos con Filtros por Columna -->
-        <div id="tab-egresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-gray-900/50 text-gray-400 uppercase">
-                    <tr>
-                        <th class="p-4 w-20">Año</th>
-                        <th class="p-4 w-24">Mes</th>
-                        <th class="p-4 w-28">Fecha</th>
-                        <th class="p-4">Descripción</th>
-                        <th class="p-4 w-40">Tipo</th>
-                        <th class="p-4 w-48">Proveedor</th>
-                        <th class="p-4 w-32 text-right">Total</th>
-                    </tr>
-                    <tr class="bg-gray-900/30">
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGAnio" class="input-filter" placeholder="🔍 año"></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGMes" class="input-filter" placeholder="🔍 mes"></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGFecha" class="input-filter" placeholder="🔍 fecha"></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGDesc" class="input-filter" placeholder="🔍 buscar desc..."></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGTipo" class="input-filter" placeholder="🔍 tipo"></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGProv" class="input-filter" placeholder="🔍 proveedor"></th>
-                        <th class="p-2 border-b border-gray-800"></th>
-                    </tr>
-                </thead>
-                <tbody id="tableEgresos" class="divide-y divide-gray-800 text-gray-300">
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pestaña Tabla Ingresos con Filtros por Columna -->
-        <div id="tab-ingresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-gray-900/50 text-gray-400 uppercase">
-                    <tr>
-                        <th class="p-4 w-20">Año</th>
-                        <th class="p-4 w-24">Mes</th>
-                        <th class="p-4 w-28">Fecha</th>
-                        <th class="p-4">Tipo de Venta</th>
-                        <th class="p-4 w-32 text-right">Valor</th>
-                    </tr>
-                    <tr class="bg-gray-900/30">
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINAnio" class="input-filter" placeholder="🔍 año"></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINMes" class="input-filter" placeholder="🔍 mes"></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
-                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
-                        <th class="p-2 border-b border-gray-800"></th>
-                    </tr>
-                </thead>
-                <tbody id="tableIngresos" class="divide-y divide-gray-800 text-gray-300">
-                </tbody>
-            </table>
-        </div>
-
+        <div id="tab-ingresos" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-ingresos"></table></div>
+        <div id="tab-costo-ordinario" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-costo-ordinario"></table></div>
+        <div id="tab-gasto-operativo" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-gasto-operativo"></table></div>
+        <div id="tab-gasto-administrativo" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-gasto-administrativo"></table></div>
+        <div id="tab-gasto-personal" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-gasto-personal"></table></div>
     </div>
 
     <script>
-        let rawEgresos = [];
-        let rawIngresos = [];
-        let selectedYear = "TODOS";
-        let selectedMonth = "TODOS";
+        let rawEgresos = [], rawIngresos = [];
+        let selectedYear = "TODOS", selectedMonth = "TODOS";
         let chartBar = null;
-        let chartDoughnut = null;
-
-        const colors = ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#A855F7', '#EC4899', '#06B6D4', '#14B8A6', '#F43F5E'];
-        const mesesNombres = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
         const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
-        document.getElementById('yearFilter').addEventListener('change', (e) => { 
-            selectedYear = e.target.value; 
-            const monthSelect = document.getElementById('monthFilter');
-            
-            if (selectedYear === "TODOS") {
-                // Si elige todos los años, el mes vuelve a TODOS y se bloquea
-                selectedMonth = "TODOS";
-                monthSelect.value = "TODOS";
-                monthSelect.disabled = true;
-            } else {
-                // Si elige un año específico, se desbloquea el selector de meses
-                monthSelect.disabled = false;
-            }
-            
-            updateDashboard(); 
-        });
-
-        document.getElementById('monthFilter').addEventListener('change', (e) => { 
-            selectedMonth = e.target.value; 
-            updateDashboard(); 
-        });
-
-        const inputsEgresos = ['colFilEGAnio', 'colFilEGMes', 'colFilEGFecha', 'colFilEGDesc', 'colFilEGTipo', 'colFilEGProv'];
-        inputsEgresos.forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
-
-        const inputsIngresos = ['colFilINAnio', 'colFilINMes', 'colFilINFecha', 'colFilINTipo'];
-        inputsIngresos.forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
-
-        window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
-
-        function parseExcelDate(cellValue) {
-            if (!cellValue) return { y: 2026, m: 1, text: '-' };
-            let dObj = typeof cellValue === 'number' ? XLSX.SSF.parse_date_code(cellValue) : new Date(cellValue);
-            let y = dObj.y || (dObj.getFullYear ? dObj.getFullYear() : 2026);
-            let m = dObj.m || (dObj.getMonth ? dObj.getMonth() + 1 : 1);
-            if (isNaN(y)) { y = 2026; m = 1; }
-            let day = dObj.d || (dObj.getDate ? dObj.getDate() : 1);
-            return { y, m, text: `${y}-${m.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}` };
+        function switchTab(e, tabId) {
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
+            document.getElementById(tabId).classList.add('active');
+            e.currentTarget.classList.add('tab-active');
+            renderTables();
         }
 
-        // NUEVO: Función modificada para leer en vivo el archivo de Google Drive
+        function formatCurrency(val) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val); }
+
+        function renderTables() {
+            const y = document.getElementById('yearFilter').value;
+            const m = document.getElementById('monthFilter').value;
+            const mapeo = {
+                'table-ingresos': { data: rawIngresos, cat: null },
+                'table-costo-ordinario': { data: rawEgresos, cat: 'Costo Ordinario' },
+                'table-gasto-operativo': { data: rawEgresos, cat: 'Gasto operativo' },
+                'table-gasto-administrativo': { data: rawEgresos, cat: 'Gasto administrativo' },
+                'table-gasto-personal': { data: rawEgresos, cat: 'Gasto personal' }
+            };
+
+            Object.keys(mapeo).forEach(id => {
+                const conf = mapeo[id];
+                const tabla = document.getElementById(id);
+                if (!tabla) return;
+                const filtrados = conf.data.filter(i => {
+                    const matchY = (y === "TODOS" || i.ANIO == y);
+                    const matchM = (m === "TODOS" || i.MES_TXT == m);
+                    const matchCat = !conf.cat || i.TIPO == conf.cat;
+                    return matchY && matchM && matchCat;
+                });
+                tabla.innerHTML = filtrados.map(i => `
+                    <tr class="border-b border-gray-700">
+                        <td class="p-3">${i.FECHA || ''}</td>
+                        <td class="p-3">${i.DESCRIPCION || i.TIPO}</td>
+                        <td class="p-3 text-right font-bold text-emerald-400">${formatCurrency(i.TOTAL || i.VALOR || 0)}</td>
+                    </tr>`).join('');
+            });
+        }
+
         function loadExcelAutomatically() {
             const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
-            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
-
-            fetch(driveUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error("No se pudo conectar con el archivo de Google Drive. Asegúrate de que esté configurado como Público.");
-                    return res.arrayBuffer();
-                })
+            fetch(`https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`)
+                .then(res => res.arrayBuffer())
                 .then(buffer => {
-                    const data = new Uint8Array(buffer);
-                    const workbook = XLSX.read(data, { type: 'array' });
-
-                    if (workbook.SheetNames.includes("Datos")) {
-                        const ws = workbook.Sheets["Datos"];
-                        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-                        if(rawRows.length > 1) {
-                            const headers = rawRows[0].map(h => (h || "").toString().trim().toUpperCase());
-                            let idxTotal = headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL");
-                            let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
-                            let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                            let idxDesc = headers.indexOf("DESCRIPCIÓN") === -1 ? headers.indexOf("DESCRIPCION") : headers.indexOf("DESCRIPCIÓN");
-                            let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
-                            if(idxDesc === -1) idxDesc = 6;
-
-                            rawEgresos = rawRows.slice(1).map(row => {
-                                if (!row || row.length === 0 || row[idxTotal] === "") return null;
-                                let parsedDate = parseExcelDate(row[idxFecha]);
-                                return {
-                                    ANIO: parsedDate.y.toString(),
-                                    MES_NUM: parsedDate.m,
-                                    MES_TXT: mesesAbrev[parsedDate.m - 1],
-                                    FECHA: parsedDate.text,
-                                    DESCRIPCION: (row[idxDesc] || "").toString(),
-                                    TIPO: (row[idxTipo] || "OTROS").toString().trim(),
-                                    PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(),
-                                    TOTAL: parseFloat(row[idxTotal]) || 0
-                                };
-                            }).filter(item => item !== null);
-                        }
-                    }
-
-                    if (workbook.SheetNames.includes("Res Ingresos")) {
-                        const ws = workbook.Sheets["Res Ingresos"];
-                        const rawRowsIn = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-                        if(rawRowsIn.length > 1) {
-                            const headersIn = rawRowsIn[0].map(h => (h || "").toString().trim().toUpperCase());
-                            let idxFecha = headersIn.indexOf("FECHA") === -1 ? 1 : headersIn.indexOf("FECHA");
-                            let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
-                            let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
-
-                            rawIngresos = rawRowsIn.slice(1).map(row => {
-                                if (!row || row.length === 0 || row[idxValor] === "") return null;
-                                let parsedDate = parseExcelDate(row[idxFecha]);
-                                return {
-                                    ANIO: parsedDate.y.toString(),
-                                    MES_NUM: parsedDate.m,
-                                    MES_TXT: mesesAbrev[parsedDate.m - 1],
-                                    FECHA: parsedDate.text,
-                                    TIPO: (row[idxTipo] || "Venta Ordinaria").toString(),
-                                    VALOR: parseFloat(row[idxValor]) || 0
-                                };
-                            }).filter(item => item !== null);
-                        }
-                    }
-
-                    poblarFiltrosEstructurales();
-                    document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> Cloud Drive Sincronizado';
-                    document.getElementById('loadingStatus').className = "text-emerald-400 text-sm font-semibold flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20";
+                    const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+                    // Procesar Datos
+                    const ws = workbook.Sheets["Datos"];
+                    const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                    rawEgresos = rawRows.slice(1).map(r => ({ANIO: r[0], MES_TXT: r[1], FECHA: r[2], DESCRIPCION: r[3], TIPO: r[4], TOTAL: r[5]})).filter(i => i.TOTAL);
+                    
+                    const wsIn = workbook.Sheets["Res Ingresos"];
+                    const rawRowsIn = XLSX.utils.sheet_to_json(wsIn, { header: 1 });
+                    rawIngresos = rawRowsIn.slice(1).map(r => ({ANIO: r[0], MES_TXT: r[1], FECHA: r[2], TIPO: r[3], VALOR: r[4]})).filter(i => i.VALOR);
+                    
                     updateDashboard();
-                })
-                .catch(err => {
-                    console.error(err);
-                    document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i> Error de conexión Cloud';
                 });
-        }
-
-        function poblarFiltrosEstructurales() {
-            const aniosDetectados = [...new Set([...rawIngresos.map(i => i.ANIO), ...rawEgresos.map(e => e.ANIO)])].sort();
-            const ySelect = document.getElementById('yearFilter');
-            ySelect.innerHTML = '<option value="TODOS">TODOS LOS AÑOS</option>';
-            aniosDetectados.forEach(anio => {
-                let opt = document.createElement('option');
-                opt.value = anio; opt.innerText = anio; ySelect.appendChild(opt);
-            });
-
-            const mSelect = document.getElementById('monthFilter');
-            mSelect.innerHTML = '<option value="TODOS">TODOS LOS MESES</option>';
-            mesesAbrev.forEach((mAbrev, index) => {
-                let opt = document.createElement('option');
-                opt.value = mAbrev; opt.innerText = mesesNombres[index]; mSelect.appendChild(opt);
-            });
         }
 
         function updateDashboard() {
-            const filterGlobalFn = (item) => {
-                const matchAnio = selectedYear === "TODOS" || item.ANIO === selectedYear;
-                const matchMes = selectedMonth === "TODOS" || item.MES_TXT === selectedMonth;
-                return matchAnio && matchMes;
-            };
-
-            const filteredIngresos = rawIngresos.filter(filterGlobalFn);
-            const filteredEgresos = rawEgresos.filter(filterGlobalFn);
-
-            const totalIngresos = filteredIngresos.reduce((sum, i) => sum + i.VALOR, 0);
-            const totalEgresos = filteredEgresos.reduce((sum, e) => sum + e.TOTAL, 0);
-            const utilidad = totalIngresos - totalEgresos;
-            const margen = totalIngresos > 0 ? (utilidad / totalIngresos) * 100 : 0;
-
+            const totalIngresos = rawIngresos.reduce((s, i) => s + i.VALOR, 0);
+            const totalEgresos = rawEgresos.reduce((s, e) => s + e.TOTAL, 0);
             document.getElementById('kpiIngresos').innerText = formatCurrency(totalIngresos);
-            document.getElementById('regIngresos').innerText = `${filteredIngresos.length} registros`;
             document.getElementById('kpiEgresos').innerText = formatCurrency(totalEgresos);
-            document.getElementById('regEgresos').innerText = `${filteredEgresos.length} registros`;
-            document.getElementById('kpiUtilidad').innerText = formatCurrency(utilidad);
-            
-            const statusKpi = document.getElementById('kpiUtilidadStatus');
-            statusKpi.innerText = utilidad >= 0 ? "Excedente Neto" : "Déficit Periodo";
-            statusKpi.className = utilidad >= 0 ? "text-[10px] text-emerald-400 mt-1" : "text-[10px] text-red-400 mt-1";
-            document.getElementById('kpiMargen').innerText = `${margen.toFixed(1)}%`;
-
-            renderCharts(filteredIngresos, filteredEgresos);
-            renderTopProveedores(filteredEgresos);
-            updateTablesOnly();
+            document.getElementById('kpiUtilidad').innerText = formatCurrency(totalIngresos - totalEgresos);
+            renderTables();
         }
 
-        function updateTablesOnly() {
-            const fYear = selectedYear;
-            const fMonth = selectedMonth;
+        document.getElementById('yearFilter').addEventListener('change', () => { 
+            selectedYear = document.getElementById('yearFilter').value; 
+            updateDashboard(); 
+        });
 
-            const fEGAnio = document.getElementById('colFilEGAnio').value.toLowerCase();
-            const fEGMes = document.getElementById('colFilEGMes').value.toLowerCase();
-            const fEGFecha = document.getElementById('colFilEGFecha').value.toLowerCase();
-            const fEGDesc = document.getElementById('colFilEGDesc').value.toLowerCase();
-            const fEGTipo = document.getElementById('colFilEGTipo').value.toLowerCase();
-            const fEGProv = document.getElementById('colFilEGProv').value.toLowerCase();
-
-            const tableEgresosData = rawEgresos.filter(e => {
-                if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
-                if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
-                
-                if (fEGAnio && !e.ANIO.toLowerCase().includes(fEGAnio)) return false;
-                if (fEGMes && !e.MES_TXT.toLowerCase().includes(fEGMes)) return false;
-                if (fEGFecha && !e.FECHA.toLowerCase().includes(fEGFecha)) return false;
-                if (fEGDesc && !e.DESCRIPCION.toLowerCase().includes(fEGDesc)) return false;
-                if (fEGTipo && !e.TIPO.toLowerCase().includes(fEGTipo)) return false;
-                if (fEGProv && !e.PROVEEDOR.toLowerCase().includes(fEGProv)) return false;
-                return true;
-            });
-
-            const fINAnio = document.getElementById('colFilINAnio').value.toLowerCase();
-            const fINMes = document.getElementById('colFilINMes').value.toLowerCase();
-            const fINFecha = document.getElementById('colFilINFecha').value.toLowerCase();
-            const fINTipo = document.getElementById('colFilINTipo').value.toLowerCase();
-
-            const tableIngresosData = rawIngresos.filter(i => {
-                if (fYear !== "TODOS" && i.ANIO !== fYear) return false;
-                if (fMonth !== "TODOS" && i.MES_TXT !== fMonth) return false;
-                
-                if (fINAnio && !i.ANIO.toLowerCase().includes(fINAnio)) return false;
-                if (fINMes && !i.MES_TXT.toLowerCase().includes(fINMes)) return false;
-                if (fINFecha && !i.FECHA.toLowerCase().includes(fINFecha)) return false;
-                if (fINTipo && !i.TIPO.toLowerCase().includes(fINTipo)) return false;
-                return true;
-            });
-
-            renderTables(tableIngresosData, tableEgresosData);
-        }
-
-        function renderCharts(ingresos, egresos) {
-            if (chartBar) chartBar.destroy();
-            if (chartDoughnut) chartDoughnut.destroy();
-
-            let listadoEjeX = [];
-            if (selectedMonth !== "TODOS") {
-                if (selectedYear !== "TODOS") {
-                    listadoEjeX = [`${selectedMonth} ${selectedYear}`];
-                } else {
-                    const aniosConDatos = [...new Set([...rawIngresos.filter(i => i.MES_TXT === selectedMonth).map(i => i.ANIO), ...rawEgresos.filter(e => e.MES_TXT === selectedMonth).map(e => e.ANIO)])].sort();
-                    listadoEjeX = aniosConDatos.map(anio => `${selectedMonth} ${anio}`);
-                }
-            } else if (selectedYear !== "TODOS") {
-                listadoEjeX = mesesAbrev.map(m => `${m} ${selectedYear}`);
-            } else {
-                listadoEjeX = [...new Set([...rawIngresos.map(i => `${i.MES_TXT} ${i.ANIO}`), ...rawEgresos.map(e => `${e.MES_TXT} ${e.ANIO}`)])].slice(-12);
-            }
-
-            const dataIngresosBar = listadoEjeX.map(label => {
-                const [m, y] = label.split(" ");
-                return rawIngresos.filter(i => i.MES_TXT === m && i.ANIO === y).reduce((s, c) => s + c.VALOR, 0);
-            });
-
-            const dataEgresosBar = listadoEjeX.map(label => {
-                const [m, y] = label.split(" ");
-                return rawEgresos.filter(e => e.MES_TXT === m && e.ANIO === y).reduce((s, c) => s + c.TOTAL, 0);
-            });
-
-            const ctxBar = document.getElementById('chartComparativo');
-            if (ctxBar) {
-                chartBar = new Chart(ctxBar, {
-                    type: 'bar',
-                    data: {
-                        labels: listadoEjeX,
-                        datasets: [
-                            { label: 'Ingresos', data: dataIngresosBar, backgroundColor: '#10B981', borderRadius: 4 },
-                            { label: 'Costos y Gastos', data: dataEgresosBar, backgroundColor: '#F87171', borderRadius: 4 }
-                        ]
-                    },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false, 
-                        scales: { 
-                            y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
-                            x: { ticks: { color: '#9CA3AF', font: { size: 10 } } }
-                        },
-                        plugins: { legend: { labels: { color: '#EEEEEE' } } }
-                    }
-                });
-            }
-
-            const tiposUnicos = [...new Set(egresos.map(e => e.TIPO))].filter(t => t);
-            const dataTipos = tiposUnicos.map(t => egresos.filter(e => e.TIPO === t).reduce((s, c) => s + c.TOTAL, 0));
-
-            const ctxDoughnut = document.getElementById('chartDoughnut');
-            if (ctxDoughnut && tiposUnicos.length > 0) {
-                chartDoughnut = new Chart(ctxDoughnut, {
-                    type: 'doughnut',
-                    data: {
-                        labels: tiposUnicos,
-                        datasets: [{ data: dataTipos, backgroundColor: colors, borderWidth: 0, cutout: '70%' }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                });
-
-                document.getElementById('doughnutLegend').innerHTML = tiposUnicos.map((t, idx) => `
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2 w-2/3">
-                            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${colors[idx % colors.length]}"></span>
-                            <span class="text-gray-400 truncate text-[11px]">${t}</span>
-                        </div>
-                        <span class="font-bold text-gray-200 text-[11px]">${formatCurrency(dataTipos[idx])}</span>
-                    </div>
-                `).join('');
-            } else {
-                document.getElementById('doughnutLegend').innerHTML = '<p class="text-gray-500 italic text-center text-xs py-4">Sin datos en el período seleccionado</p>';
-            }
-        }
-
-        function renderTopProveedores(egresos) {
-            const provMap = {};
-            egresos.forEach(e => { provMap[e.PROVEEDOR] = (provMap[e.PROVEEDOR] || 0) + e.TOTAL; });
-            const sorted = Object.entries(provMap).sort((a,b) => b[1] - a[1]).slice(0, 8);
-            
-            document.getElementById('topProveedoresList').innerHTML = sorted.map(([name, val]) => `
-                <div class="flex justify-between border-b border-gray-800 pb-2">
-                    <span class="text-xs text-gray-400 truncate w-2/3" title="${name}">${name}</span>
-                    <span class="text-xs font-bold text-white">${formatCurrency(val)}</span>
-                </div>
-            `).join('') || '<p class="text-gray-500 italic text-xs col-span-4 text-center py-4">No hay egresos registrados</p>';
-        }
-
-        function renderTables(ingresos, egresos) {
-            document.getElementById('tableEgresos').innerHTML = egresos.slice(0, 200).map(e => `
-                <tr>
-                    <td class="p-4 text-gray-400">${e.ANIO}</td>
-                    <td class="p-4 text-gray-400">${e.MES_TXT}</td>
-                    <td class="p-4">${e.FECHA}</td>
-                    <td class="p-4 font-semibold">${e.DESCRIPCION}</td>
-                    <td class="p-4"><span class="bg-gray-800 px-2 py-1 rounded text-[10px]">${e.TIPO}</span></td>
-                    <td class="p-4 text-gray-400">${e.PROVEEDOR}</td>
-                    <td class="p-4 text-right font-bold text-expense">${formatCurrency(e.TOTAL)}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="7" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
-
-            document.getElementById('tableIngresos').innerHTML = ingresos.slice(0, 200).map(i => `
-                <tr>
-                    <td class="p-4 text-gray-400">${i.ANIO}</td>
-                    <td class="p-4 text-gray-400">${i.MES_TXT}</td>
-                    <td class="p-4">${i.FECHA}</td>
-                    <td class="p-4 font-semibold">${i.TIPO}</td>
-                    <td class="p-4 text-right font-bold text-income">${formatCurrency(i.VALOR)}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="5" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
-        }
-
-        function switchTab(e, tabId) {
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
-            document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
-            document.getElementById(tabId).classList.remove('hidden');
-            e.currentTarget.classList.add('tab-active');
-        }
-
-        function formatCurrency(val) {
-            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
-        }
+        window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
     </script>
 </body>
 </html>
