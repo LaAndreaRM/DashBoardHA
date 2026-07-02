@@ -228,7 +228,7 @@
         // NUEVO: Función modificada para leer en vivo el archivo de Google Drive
         function loadExcelAutomatically() {
             const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
-            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
+            const driveUrl = "https://corsproxy.io/?https://docs.google.com/spreadsheets/d/17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh/export?format=xlsx";
 
             fetch(driveUrl)
                 .then(res => {
