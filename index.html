@@ -29,7 +29,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- Encabezado -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-white tracking-tight">Herencia Argentina</h1>
@@ -40,7 +39,6 @@
             </div>
         </div>
 
-        <!-- FILTROS PRINCIPALES (AÑO Y MES) -->
         <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl">
             <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-gray-400 uppercase">Año:</span>
@@ -56,7 +54,6 @@
             </div>
         </div>
 
-        <!-- KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500">
                 <p class="text-xs font-bold text-gray-400 uppercase">Total Ingresos</p>
@@ -84,23 +81,19 @@
             </div>
         </div>
 
-        <!-- Pestañas de Navegación Ampliadas según image_a5871d.png -->
         <div class="border-b border-gray-800 overflow-x-auto whitespace-nowrap custom-scrollbar">
             <ul class="flex text-sm font-medium text-center gap-6 pb-2">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-ordinario')">Costo Ordinario</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-extraordinario')">Costo Extraordinario</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-ventas')">Gasto de Ventas</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-extraordinario')">Gasto Extraordinario</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-estado-resultados')">Estado de Resultados</li>
             </ul>
         </div>
 
-        <!-- Contenido Pestaña Resumen -->
         <div id="tab-resumen" class="tab-content space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl">
@@ -126,7 +119,6 @@
             </div>
         </div>
 
-        <!-- Pestaña Tabla Ingresos -->
         <div id="tab-ingresos" class="tab-content hidden space-y-4">
             <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex justify-between items-center">
                 <span class="text-sm font-bold uppercase tracking-wider text-emerald-400">Suma de Ingresos Filtrados:</span>
@@ -156,18 +148,12 @@
             </div>
         </div>
 
-        <!-- Plantilla Genérica reutilizable para las pestañas de Egresos Desglosadas -->
-        <!-- Usaremos una sola lógica de visualización que inyectará las tablas y sumas en cada ID correspondiente -->
-        
         <div id="tab-costo-ordinario" class="tab-content hidden space-y-4 template-egreso-tab"></div>
-        <div id="tab-costo-extraordinario" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-operativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-administrativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
-        <div id="tab-gasto-extraordinario" class="tab-content hidden space-y-4 template-egreso-tab"></div>
 
-        <!-- Pestaña Estado de Resultados -->
         <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
             <div class="bg-card p-6 rounded-2xl shadow-xl max-w-3xl mx-auto">
                 <div class="border-b border-gray-700 pb-4 mb-4 flex justify-between items-center">
@@ -209,18 +195,16 @@
         const mesesNombres = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
         const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
-        // Mapeo exacto de pestañas a las categorías de tu Excel
+        // Mapeo exacto ajustado (eliminando categorías extraordinarias)
         const mapaCategorias = {
             'tab-costo-ordinario': 'COSTO ORDINARIO',
-            'tab-costo-extraordinario': 'COSTO EXTRAORDINARIO',
             'tab-gasto-operativo': 'GASTO OPERATIVO',
             'tab-gasto-administrativo': 'GASTO ADMINISTRATIVO',
             'tab-gasto-ventas': 'GASTO DE VENTAS',
-            'tab-gasto-personal': 'GASTO PERSONAL',
-            'tab-gasto-extraordinario': 'GASTO EXTRAORDINARIO'
+            'tab-gasto-personal': 'GASTO PERSONAL'
         };
 
-        // Construir la estructura HTML de las pestañas de egresos dinámicamente para ahorrar código repetitivo
+        // Construir la estructura HTML de las pestañas de egresos dinámicamente
         Object.keys(mapaCategorias).forEach(id => {
             const container = document.getElementById(id);
             container.innerHTML = `
@@ -467,14 +451,11 @@
                 let sumaPestana = 0;
 
                 const egresosFiltrados = rawEgresos.filter(e => {
-                    // Validar primero si pertenece al Tipo de la pestaña actual
                     if (e.TIPO !== categoriaNombre) return false;
                     
-                    // Filtros de los selectores generales superiores
                     if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
                     if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
 
-                    // Filtros por columnas específicos de la pestaña
                     if (fAnio && !e.ANIO.toLowerCase().includes(fAnio)) return false;
                     if (fMes && !e.MES_TXT.toLowerCase().includes(fMes)) return false;
                     if (fFecha && !e.FECHA.toLowerCase().includes(fFecha)) return false;
@@ -485,10 +466,8 @@
                     return true;
                 });
 
-                // Actualizar la etiqueta de suma total de esta pestaña en tiempo real
                 document.getElementById(`sum-${id}`).innerText = formatCurrency(sumaPestana);
 
-                // Renderizar renglones de la tabla
                 document.getElementById(`body-${id}`).innerHTML = egresosFiltrados.slice(0, 200).map(e => `
                     <tr>
                         <td class="p-4 text-gray-400">${e.ANIO}</td>
@@ -619,7 +598,7 @@
                         <td class="p-3 text-right text-gray-400">100.0%</td>
                     </tr>
                     <tr class="text-gray-300">
-                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Costos Directos (Ordinarios y Extraordinarios)</td>
+                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Costos Directos (Ordinarios)</td>
                         <td class="p-3 text-right text-expense">${formatCurrency(costosDirectos)}</td>
                         <td class="p-3 text-right text-gray-500">${getPercent(costosDirectos)}</td>
                     </tr>
@@ -629,7 +608,7 @@
                         <td class="p-3 text-right text-gray-400">${getPercent(utilidadBruta)}</td>
                     </tr>
                     <tr class="text-gray-300">
-                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Gastos Operacionales, Administrativos, Ventas, Personal y Extraordinarios</td>
+                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Gastos Operacionales, Administrativos, Ventas y Personal</td>
                         <td class="p-3 text-right text-expense">${formatCurrency(gastosOperacionales)}</td>
                         <td class="p-3 text-right text-gray-500">${getPercent(gastosOperacionales)}</td>
                     </tr>
