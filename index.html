@@ -18,7 +18,7 @@
         .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
         .text-income { color: #10B981; }
         .text-expense { color: #F87171; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
         .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
@@ -84,13 +84,13 @@
         <div class="border-b border-gray-800 overflow-x-auto whitespace-nowrap custom-scrollbar">
             <ul class="flex text-sm font-medium text-center gap-6 pb-2">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-estado-resultados')">Estado de Resultados</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-ordinario')">Costo Ordinario</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-ventas')">Gasto de Ventas</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-estado-resultados')">Estado de Resultados</li>
             </ul>
         </div>
 
@@ -115,6 +115,27 @@
             <div class="bg-card p-6 rounded-2xl shadow-xl">
                 <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-wider">Mayores Egresos por Proveedor</h3>
                 <div id="topProveedoresList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
+            <div class="bg-card p-6 rounded-2xl shadow-xl w-full overflow-hidden">
+                <div class="border-b border-gray-700 pb-4 mb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-white tracking-wider uppercase">Estado de Resultados Contable</h3>
+                        <p class="text-xs text-gray-400">Estructura dinámica expandible mensualmente</p>
+                    </div>
+                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G Dinámico</span>
+                </div>
+                
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-xs text-left min-w-[800px]">
+                        <thead id="headEstadoResultados" class="text-[11px] text-gray-400 uppercase bg-gray-900/50">
+                        </thead>
+                        <tbody id="bodyEstadoResultados" class="divide-y divide-gray-800/60 text-gray-300 font-medium">
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -154,32 +175,6 @@
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
 
-        <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
-            <div class="bg-card p-6 rounded-2xl shadow-xl max-w-3xl mx-auto">
-                <div class="border-b border-gray-700 pb-4 mb-4 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-lg font-bold text-white tracking-wider uppercase">Estado de Resultados Contable</h3>
-                        <p class="text-xs text-gray-400">Estructura dinámica basada en el período seleccionado</p>
-                    </div>
-                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G</span>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-gray-400 uppercase bg-gray-900/50">
-                            <tr>
-                                <th class="p-3">Concepto Estructural</th>
-                                <th class="p-3 text-right">Monto</th>
-                                <th class="p-3 text-right">% S/ Ventas</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bodyEstadoResultados" class="divide-y divide-gray-800/60 text-gray-300">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <script>
@@ -195,7 +190,6 @@
         const mesesNombres = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
         const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
-        // Mapeo exacto ajustado (eliminando categorías extraordinarias)
         const mapaCategorias = {
             'tab-costo-ordinario': 'COSTO ORDINARIO',
             'tab-gasto-operativo': 'GASTO OPERATIVO',
@@ -204,7 +198,6 @@
             'tab-gasto-personal': 'GASTO PERSONAL'
         };
 
-        // Construir la estructura HTML de las pestañas de egresos dinámicamente
         Object.keys(mapaCategorias).forEach(id => {
             const container = document.getElementById(id);
             container.innerHTML = `
@@ -239,7 +232,6 @@
             `;
         });
 
-        // Eventos para filtros principales
         document.getElementById('yearFilter').addEventListener('change', (e) => { 
             selectedYear = e.target.value; 
             const monthSelect = document.getElementById('monthFilter');
@@ -258,7 +250,6 @@
             updateDashboard(); 
         });
 
-        // Oyentes de entradas para filtros de tablas
         const inputsIngresos = ['colFilINAnio', 'colFilINMes', 'colFilINFecha', 'colFilINTipo'];
         inputsIngresos.forEach(id => document.getElementById(id).addEventListener('input', updateTablesOnly));
 
@@ -401,14 +392,13 @@
             renderCharts(filteredIngresos, filteredEgresos);
             renderTopProveedores(filteredEgresos);
             updateTablesOnly();
-            calcularYRenderizarPG(filteredIngresos, filteredEgresos);
+            calcularYRenderizarPGMatriz();
         }
 
         function updateTablesOnly() {
             const fYear = selectedYear;
             const fMonth = selectedMonth;
 
-            // 1. Filtrar e inyectar tabla de Ingresos
             const fINAnio = document.getElementById('colFilINAnio').value.toLowerCase();
             const fINMes = document.getElementById('colFilINMes').value.toLowerCase();
             const fINFecha = document.getElementById('colFilINFecha').value.toLowerCase();
@@ -437,11 +427,8 @@
                 </tr>
             `).join('') || '<tr><td colspan="5" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
 
-
-            // 2. Filtrar, Sumar e Inyectar en cada pestaña de Egresos según su Categoría
             Object.keys(mapaCategorias).forEach(id => {
                 const categoriaNombre = mapaCategorias[id];
-
                 const fAnio = document.getElementById(`fil-anio-${id}`).value.toLowerCase();
                 const fMes = document.getElementById(`fil-mes-${id}`).value.toLowerCase();
                 const fFecha = document.getElementById(`fil-fecha-${id}`).value.toLowerCase();
@@ -449,10 +436,8 @@
                 const fProv = document.getElementById(`fil-prov-${id}`).value.toLowerCase();
 
                 let sumaPestana = 0;
-
                 const egresosFiltrados = rawEgresos.filter(e => {
                     if (e.TIPO !== categoriaNombre) return false;
-                    
                     if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
                     if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
 
@@ -467,7 +452,6 @@
                 });
 
                 document.getElementById(`sum-${id}`).innerText = formatCurrency(sumaPestana);
-
                 document.getElementById(`body-${id}`).innerHTML = egresosFiltrados.slice(0, 200).map(e => `
                     <tr>
                         <td class="p-4 text-gray-400">${e.ANIO}</td>
@@ -572,53 +556,149 @@
             `).join('') || '<p class="text-gray-500 italic text-xs col-span-4 text-center py-4">No hay egresos registrados</p>';
         }
 
-        function calcularYRenderizarPG(ingresos, egresos) {
-            const totalVentas = ingresos.reduce((sum, i) => sum + i.VALOR, 0);
-            let costosDirectos = 0;
-            let gastosOperacionales = 0;
+        function calcularYRenderizarPGMatriz() {
+            const thead = document.getElementById('headEstadoResultados');
+            const tbody = document.getElementById('bodyEstadoResultados');
+            if (!thead || !tbody) return;
 
-            egresos.forEach(e => {
-                if (e.TIPO.includes("COSTO")) {
-                    costosDirectos += e.TOTAL;
-                } else {
-                    gastosOperacionales += e.TOTAL;
+            // Determinar qué meses se van a pintar como columnas
+            let columnasMeses = [];
+            if (selectedMonth !== "TODOS") {
+                columnasMeses = [selectedMonth];
+            } else {
+                // Encontrar meses del año seleccionado (o de todos) que tengan datos reales
+                const filterYearFn = (x) => selectedYear === "TODOS" || x.ANIO === selectedYear;
+                const mesesConDatos = new Set([
+                    ...rawIngresos.filter(filterYearFn).map(i => i.MES_TXT),
+                    ...rawEgresos.filter(filterYearFn).map(e => e.MES_TXT)
+                ]);
+                columnasMeses = mesesAbrev.filter(m => mesesConDatos.has(m));
+                if (columnasMeses.length === 0) columnasMeses = ['ENE'];
+            }
+
+            // Armar cabeceras HTML
+            let totalColumnsCount = columnasMeses.length + (selectedMonth === "TODOS" ? 2 : 1); 
+            let headHtml = `<tr><th class="p-3 min-w-[240px]">Concepto Estructural</th>`;
+            columnasMeses.forEach(m => {
+                headHtml += `<th class="p-3 text-right">${m}</th>`;
+            });
+            if (selectedMonth === "TODOS") {
+                headHtml += `<th class="p-3 text-right text-emerald-400 bg-gray-900/40">TOTAL</th>`;
+            }
+            headHtml += `</tr>`;
+            thead.innerHTML = headHtml;
+
+            // Inicializar las estructuras de acumulación por columna
+            // Cada objeto contendrá las sumas correspondientes a esa columna específica
+            let matriz = {};
+            columnasMeses.forEach(m => { matriz[m] = inicializarEstructuraMontos(); });
+            matriz['TOTAL'] = inicializarEstructuraMontos();
+
+            function inicializarEstructuraMontos() {
+                return { ventas: 0, costoOrdinario: 0, gastoOperativo: 0, gastoAdministrativo: 0, gastoVentas: 0, gastoPersonal: 0 };
+            }
+
+            // Alimentar matriz con Ingresos
+            rawIngresos.forEach(i => {
+                if (selectedYear !== "TODOS" && i.ANIO !== selectedYear) return;
+                if (selectedMonth !== "TODOS" && i.MES_TXT !== selectedMonth) return;
+                
+                if (matriz[i.MES_TXT]) {
+                    matriz[i.MES_TXT].ventas += i.VALOR;
                 }
+                matriz['TOTAL'].ventas += i.VALOR;
             });
 
-            const utilidadBruta = totalVentas - costosDirectos;
-            const utilidadNeta = utilidadBruta - gastosOperacionales;
-            const getPercent = (monto) => totalVentas > 0 ? `${((monto / totalVentas) * 100).toFixed(1)}%` : '0%';
+            // Alimentar matriz con Egresos según categoría
+            rawEgresos.forEach(e => {
+                if (selectedYear !== "TODOS" && e.ANIO !== selectedYear) return;
+                if (selectedMonth !== "TODOS" && e.MES_TXT !== selectedMonth) return;
 
-            const tbody = document.getElementById('bodyEstadoResultados');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr class="font-bold text-white bg-gray-900/20">
-                        <td class="p-3 flex items-center gap-2"><i class="fa-solid fa-plus text-emerald-500 text-xs"></i> INGRESOS OPERACIONALES (VENTAS)</td>
-                        <td class="p-3 text-right text-income">${formatCurrency(totalVentas)}</td>
-                        <td class="p-3 text-right text-gray-400">100.0%</td>
-                    </tr>
-                    <tr class="text-gray-300">
-                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Costos Directos (Ordinarios)</td>
-                        <td class="p-3 text-right text-expense">${formatCurrency(costosDirectos)}</td>
-                        <td class="p-3 text-right text-gray-500">${getPercent(costosDirectos)}</td>
-                    </tr>
-                    <tr class="font-semibold bg-gray-900/40 text-cyan-400 border-t border-b border-gray-700">
-                        <td class="p-3 pl-4">(=) UTILIDAD BRUTA</td>
-                        <td class="p-3 text-right">${formatCurrency(utilidadBruta)}</td>
-                        <td class="p-3 text-right text-gray-400">${getPercent(utilidadBruta)}</td>
-                    </tr>
-                    <tr class="text-gray-300">
-                        <td class="p-3 pl-8 text-xs text-gray-400">(-) Gastos Operacionales, Administrativos, Ventas y Personal</td>
-                        <td class="p-3 text-right text-expense">${formatCurrency(gastosOperacionales)}</td>
-                        <td class="p-3 text-right text-gray-500">${getPercent(gastosOperacionales)}</td>
-                    </tr>
-                    <tr class="font-bold text-base text-white bg-emerald-500/10 border-t-2 border-emerald-500/50">
-                        <td class="p-4 flex items-center gap-2"><i class="fa-solid fa-calculator text-emerald-400 text-sm"></i> UTILIDAD NETA DEL EJERCICIO</td>
-                        <td class="p-4 text-right text-emerald-400">${formatCurrency(utilidadNeta)}</td>
-                        <td class="p-4 text-right text-emerald-300">${getPercent(utilidadNeta)}</td>
-                    </tr>
-                `;
+                let mKey = e.MES_TXT;
+                if (!matriz[mKey]) return;
+
+                if (e.TIPO === 'COSTO ORDINARIO') { matriz[mKey].costoOrdinario += e.TOTAL; matriz['TOTAL'].costoOrdinario += e.TOTAL; }
+                else if (e.TIPO === 'GASTO OPERATIVO') { matriz[mKey].gastoOperativo += e.TOTAL; matriz['TOTAL'].gastoOperativo += e.TOTAL; }
+                else if (e.TIPO === 'GASTO ADMINISTRATIVO') { matriz[mKey].gastoAdministrativo += e.TOTAL; matriz['TOTAL'].gastoAdministrativo += e.TOTAL; }
+                else if (e.TIPO === 'GASTO DE VENTAS') { matriz[mKey].gastoVentas += e.TOTAL; matriz['TOTAL'].gastoVentas += e.TOTAL; }
+                else if (e.TIPO === 'GASTO PERSONAL') { matriz[mKey].gastoPersonal += e.TOTAL; matriz['TOTAL'].gastoPersonal += e.TOTAL; }
+            });
+
+            // Listado ordenado de las columnas a renderizar numéricamente
+            let colsAInterar = [...columnasMeses];
+            if (selectedMonth === "TODOS") {
+                colsAInterar.push('TOTAL');
             }
+
+            // Renderizar Filas de la Tabla aplicando las fórmulas lógicas requeridas
+            let htmlBody = "";
+
+            // Fila 1: INGRESOS OPERACIONALES
+            htmlBody += `<tr class="font-bold text-white bg-gray-900/20"><td class="p-3 flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-plus text-[10px]"></i> VENTAS (INGRESOS)</td>`;
+            colsAInterar.forEach(c => {
+                htmlBody += `<td class="p-3 text-right text-income">${formatCurrency(matriz[c].ventas)}</td>`;
+            });
+            htmlBody += `</tr>`;
+
+            // Fila 2: COSTOS DIRECTOS
+            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30"><td class="p-2.5 pl-6 text-[11px]">(-) Costo Ordinario Directo</td>`;
+            colsAInterar.forEach(c => {
+                htmlBody += `<td class="p-2.5 text-right text-red-400/80">${formatCurrency(matriz[c].costoOrdinario)}</td>`;
+            });
+            htmlBody += `</tr>`;
+
+            // Fila 3: UTILIDAD BRUTA
+            htmlBody += `<tr class="font-semibold bg-gray-900/30 text-cyan-400"><td class="p-3 pl-4">(=) UTILIDAD BRUTA</td>`;
+            colsAInterar.forEach(c => {
+                let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
+                htmlBody += `<td class="p-3 text-right">${formatCurrency(uBruta)}</td>`;
+            });
+            htmlBody += `</tr>`;
+
+            // Fila 4, 5, 6: Desglose de Gastos Operacionales (EXCLUYENDO GASTO PERSONAL)
+            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-6 text-[11px]">(-) Gasto Operativo</td>`;
+            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoOperativo)}</td>`; });
+            htmlBody += `</tr>`;
+
+            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-6 text-[11px]">(-) Gasto Administrativo</td>`;
+            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoAdministrativo)}</td>`; });
+            htmlBody += `</tr>`;
+
+            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30"><td class="p-2 pl-6 text-[11px]">(-) Gasto de Ventas</td>`;
+            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoVentas)}</td>`; });
+            htmlBody += `</tr>`;
+
+            // Fila 7: UTILIDAD NETA DEL EJERCICIO (Ventas - Costos - GastosOperativosSinPersonal)
+            htmlBody += `<tr class="font-bold bg-gray-900/40 border-t border-gray-700 text-white"><td class="p-3 pl-4 flex items-center gap-1.5 text-cyan-400"><i class="fa-solid fa-calculator text-[10px]"></i> (=) UTILIDAD NETA DEL EJERCICIO</td>`;
+            colsAInterar.forEach(c => {
+                let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
+                let sumGastosOp = matriz[c].gastoOperativo + matriz[c].gastoAdministrativo + matriz[c].gastoVentas;
+                let uNetaEj = uBruta - sumGastosOp;
+                htmlBody += `<td class="p-3 text-right">${formatCurrency(uNetaEj)}</td>`;
+            });
+            htmlBody += `</tr>`;
+
+            // Fila 8: GASTO PERSONAL (Restado de forma independiente posterior)
+            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/40"><td class="p-2.5 pl-6 text-[11px] text-amber-400/80">(-) Gasto Personal</td>`;
+            colsAInterar.forEach(c => {
+                htmlBody += `<td class="p-2.5 text-right text-red-400/80">${formatCurrency(matriz[c].gastoPersonal)}</td>`;
+            });
+            htmlBody += `</tr>`;
+
+            // Fila 9: UTILIDAD DISPONIBLE FINAL (Utilidad Neta del Ejercicio - Gasto Personal)
+            htmlBody += `<tr class="font-bold text-sm text-white bg-emerald-500/10 border-t-2 border-emerald-500/50"><td class="p-3.5 pl-4 flex items-center gap-1.5"><i class="fa-solid fa-wallet text-emerald-400"></i> (=) UTILIDAD DISPONIBLE FINAL</td>`;
+            colsAInterar.forEach(c => {
+                let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
+                let sumGastosOp = matriz[c].gastoOperativo + matriz[c].gastoAdministrativo + matriz[c].gastoVentas;
+                let uNetaEj = uBruta - sumGastosOp;
+                let uFinal = uNetaEj - matriz[c].gastoPersonal;
+                
+                let textClass = uFinal >= 0 ? "text-emerald-400" : "text-red-400";
+                htmlBody += `<td class="p-3.5 text-right ${textClass}">${formatCurrency(uFinal)}</td>`;
+            });
+            htmlBody += `</tr>`;
+
+            tbody.innerHTML = htmlBody;
         }
 
         function switchTab(e, tabId) {
