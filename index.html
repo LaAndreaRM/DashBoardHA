@@ -235,6 +235,7 @@
             `;
         });
 
+        // LÓGICA DE CONTROL DE FILTROS: Bloquear mes si no hay un año seleccionado
         document.getElementById('yearFilter').addEventListener('change', (e) => { 
             selectedYear = e.target.value; 
             const monthSelect = document.getElementById('monthFilter');
@@ -355,7 +356,7 @@
             ySelect.innerHTML = '<option value="TODOS">TODOS LOS AÑOS</option>';
             aniosDetectados.forEach(anio => {
                 let opt = document.createElement('option');
-                opt.value = anio; opt.innerText = anio; ySelect.appendChild(opt);
+                opt.value = r = anio; opt.innerText = anio; ySelect.appendChild(opt);
             });
 
             const mSelect = document.getElementById('monthFilter');
@@ -393,9 +394,9 @@
             document.getElementById('kpiMargen').innerText = `${margen.toFixed(1)}%`;
 
             renderCharts(filteredIngresos, filteredEgresos);
-            renderTopProveedores(filteredEgresos);
+            if (typeof renderTopProveedores === "function") renderTopProveedores(filteredEgresos);
             updateTablesOnly();
-            calcularYRenderizarPGMatriz();
+            if (typeof calcularYRenderizarPGMatriz === "function") calcularYRenderizarPGMatriz();
         }
 
         function updateTablesOnly() {
@@ -511,16 +512,16 @@
                         responsive: true, maintainAspectRatio: false, 
                         scales: { 
                             y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
-                            x: { ticks: { color: '#9CA3AF', font: { size: 10 } } }
+                            x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } }
                         },
                         plugins: { legend: { labels: { color: '#EEEEEE' } } }
                     }
                 });
             }
 
-            // Gráfico Doughnut
+            // Gráfico Doughnut completado de forma correcta
             const categoriasFinitas = Object.values(mapaCategorias);
-            const dataDoughnut = categoriasFinitas.map(cat => {
+            const dataEgresosDoughnut = categoriasFinitas.map(cat => {
                 return egresos.filter(e => e.TIPO === cat).reduce((sum, e) => sum + e.TOTAL, 0);
             });
 
@@ -530,204 +531,47 @@
                     type: 'doughnut',
                     data: {
                         labels: categoriasFinitas,
-                        datasets: [{ data: dataDoughnut, backgroundColor: colors, borderWidth: 1, borderColor: '#1F2937' }]
+                        datasets: [{
+                            data: dataEgresosDoughnut,
+                            backgroundColor: colors.slice(0, categoriasFinitas.length),
+                            borderWidth: 0
+                        }]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
                         plugins: { legend: { display: false } }
                     }
                 });
 
-                const totalInDoughnut = dataDoughnut.reduce((a, b) => a + b, 0);
-                let legendHtml = "";
-                categoriasFinitas.forEach((cat, index) => {
-                    const val = dataDoughnut[index];
-                    const pct = totalInDoughnut > 0 ? ((val / totalInDoughnut) * 100).toFixed(1) : 0;
-                    legendHtml += `
-                        <div class="flex justify-between items-center bg-gray-900/40 p-1.5 rounded border border-gray-800">
+                // Leyenda dinámica adjunta
+                const totalEgresos = dataEgresosDoughnut.reduce((a, b) => a + b, 0);
+                document.getElementById('doughnutLegend').innerHTML = categoriasFinitas.map((cat, idx) => {
+                    const valor = dataEgresosDoughnut[idx];
+                    const porcentaje = totalEgresos > 0 ? ((valor / totalEgresos) * 100).toFixed(1) : 0;
+                    return `
+                        <div class="flex justify-between items-center py-1 border-b border-gray-800/60">
                             <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[index % colors.length]}"></span>
-                                <span class="text-gray-300 font-medium truncate max-w-[120px] md:max-w-none">${cat}</span>
+                                <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[idx]}"></span>
+                                <span class="text-gray-300 font-medium">${cat}</span>
                             </div>
-                            <span class="text-gray-400 font-bold">${formatCurrency(val)} <span class="text-gray-500 font-normal text-[10px]">(${pct}%)</span></span>
+                            <span class="text-gray-400">${formatCurrency(valor)} (${porcentaje}%)</span>
                         </div>
                     `;
-                });
-                document.getElementById('doughnutLegend').innerHTML = legendHtml;
+                }).join('');
             }
-        }
-
-        function renderTopProveedores(egresos) {
-            const agrupar = {};
-            egresos.forEach(e => {
-                agrupar[e.PROVEEDOR] = (agrupar[e.PROVEEDOR] || 0) + e.TOTAL;
-            });
-            const listaOrdenada = Object.entries(agrupar).sort((a,b) => b[1] - a[1]).slice(0, 4);
-            
-            let html = "";
-            listaOrdenada.forEach(([prov, total], i) => {
-                html += `
-                    <div class="bg-gray-900/40 p-4 rounded-xl border border-gray-800 relative">
-                        <span class="absolute top-2 right-3 text-xs font-bold text-gray-600">#${i+1}</span>
-                        <p class="text-xs text-gray-400 truncate pr-6 uppercase font-semibold">${prov}</p>
-                        <h4 class="text-lg font-bold text-white mt-1">${formatCurrency(total)}</h4>
-                    </div>
-                `;
-            });
-            document.getElementById('topProveedoresList').innerHTML = html || '<p class="text-xs text-gray-500 italic">No hay información de egresos</p>';
-        }
-
-        function calcularYRenderizarPGMatriz() {
-            let columnas = [];
-            
-            // Determinar qué columnas existen bajo los filtros activos
-            if (selectedYear !== "TODOS") {
-                if (selectedMonth !== "TODOS") {
-                    columnas.push({ key: `${selectedMonth}-${selectedYear}`, m: selectedMonth, y: selectedYear, label: `${selectedMonth} ${selectedYear}` });
-                } else {
-                    mesesAbrev.forEach(m => {
-                        columnas.push({ key: `${m}-${selectedYear}`, m, y: selectedYear, label: `${m} ${selectedYear}` });
-                    });
-                }
-            } else {
-                // Multi-anual
-                const periodosUnicos = [...new Set([
-                    ...rawIngresos.map(i => `${i.MES_TXT}-${i.ANIO}`),
-                    ...rawEgresos.map(e => `${e.MES_TXT}-${e.ANIO}`)
-                ])];
-                
-                // Ordenar correctamente por año y luego por número de mes
-                columnas = periodosUnicos.map(p => {
-                    const [m, y] = p.split('-');
-                    return { key: p, m, y, label: `${m} ${y}` };
-                }).sort((a, b) => {
-                    if (a.y !== b.y) return a.y - b.y;
-                    return mesesAbrev.indexOf(a.m) - mesesAbrev.indexOf(b.m);
-                });
-
-                // Si no hay filtros y es muy grande, dejar los últimos 12 periodos
-                if (columnas.length > 12 && selectedMonth === "TODOS" && selectedYear === "TODOS") {
-                    columnas = columnas.slice(-12);
-                }
-            }
-
-            // CORRECCIÓN REQUERIMIENTO 2: Si es 1 sola columna, limitar ancho para que no se vea separado
-            const wrapper = document.getElementById('wrapperTablaPG');
-            if (columnas.length === 1) {
-                wrapper.className = "max-w-2xl"; // Contrae la estructura para vistas de un solo mes
-            } else {
-                wrapper.className = "w-full min-w-[800px]"; // Mantiene el tamaño para múltiples meses
-            }
-
-            // Construir encabezados
-            let headerHtml = `<tr><th class="p-3 text-left w-64 text-gray-400 font-bold">Línea de Resultado (P&G)</th>`;
-            columnas.forEach(col => {
-                headerHtml += `<th class="p-3 text-right text-white font-bold">${col.label}</th>`;
-            });
-            // Añadir columna consolidada si hay más de un periodo
-            if (columnas.length > 1) {
-                headerHtml += `<th class="p-3 text-right text-emerald-400 font-bold bg-gray-900/80 w-44">TOTAL PERIODO</th>`;
-            }
-            headerHtml += `</tr>`;
-            document.getElementById('headEstadoResultados').innerHTML = headerHtml;
-
-            // Procesar los datos financieros de la matriz
-            const matriz = {
-                INGRESOS: {},
-                COSTO_ORDINARIO: {},
-                GASTO_OPERATIVO: {},
-                GASTO_ADMINISTRATIVO: {},
-                GASTO_VENTAS: {},
-                GASTO_PERSONAL: {}
-            };
-
-            columnas.forEach(col => {
-                matriz.INGRESOS[col.key] = rawIngresos.filter(i => i.MES_TXT === col.m && i.ANIO === col.y).reduce((sum, i) => sum + i.VALOR, 0);
-                matriz.COSTO_ORDINARIO[col.key] = rawEgresos.filter(e => e.TIPO === 'COSTO ORDINARIO' && e.MES_TXT === col.m && e.ANIO === col.y).reduce((sum, e) => sum + e.TOTAL, 0);
-                matriz.GASTO_OPERATIVO[col.key] = rawEgresos.filter(e => e.TIPO === 'GASTO OPERATIVO' && e.MES_TXT === col.m && e.ANIO === col.y).reduce((sum, e) => sum + e.TOTAL, 0);
-                matriz.GASTO_ADMINISTRATIVO[col.key] = rawEgresos.filter(e => e.TIPO === 'GASTO ADMINISTRATIVO' && e.MES_TXT === col.m && e.ANIO === col.y).reduce((sum, e) => sum + e.TOTAL, 0);
-                matriz.GASTO_VENTAS[col.key] = rawEgresos.filter(e => e.TIPO === 'GASTO DE VENTAS' && e.MES_TXT === col.m && e.ANIO === col.y).reduce((sum, e) => sum + e.TOTAL, 0);
-                matriz.GASTO_PERSONAL[col.key] = rawEgresos.filter(e => e.TIPO === 'GASTO PERSONAL' && e.MES_TXT === col.m && e.ANIO === col.y).reduce((sum, e) => sum + e.TOTAL, 0);
-            });
-
-            // Función auxiliar para renderizar filas calculando porcentajes (REQUERIMIENTO 1)
-            function construirFilaHTML(label, filaData, clasesFila = "", esGasto = false, esCalculado = false) {
-                let html = `<tr class="${clasesFila}">`;
-                html += `<td class="p-3 font-semibold flex items-center gap-2">${label}</td>`;
-                
-                let sumaTotalFila = 0;
-                let sumaTotalIngresos = 0;
-
-                // Celdas por periodo
-                columnas.forEach(col => {
-                    const valor = filaData[col.key] || 0;
-                    const ingresosPeriodo = matriz.INGRESOS[col.key] || 0;
-                    sumaTotalFila += valor;
-                    sumaTotalIngresos += ingresosPeriodo;
-
-                    let pct = ingresosPeriodo > 0 ? (valor / ingresosPeriodo) * 100 : 0;
-                    if (label.includes("INGRESOS")) pct = 100; // El ingreso base siempre es el 100%
-
-                    html += `
-                        <td class="p-3 text-right">
-                            <span class="block text-[13px] font-bold">${formatCurrency(valor)}</span>
-                            <span class="block text-[10px] text-gray-500 font-normal">${pct.toFixed(1)}%</span>
-                        </td>`;
-                });
-
-                // Celda consolidada total
-                if (columnas.length > 1) {
-                    let pctTotal = sumaTotalIngresos > 0 ? (sumaTotalFila / sumaTotalIngresos) * 100 : 0;
-                    if (label.includes("INGRESOS")) pctTotal = 100;
-                    
-                    html += `
-                        <td class="p-3 text-right bg-gray-900/40 font-bold">
-                            <span class="block text-[13px]">${formatCurrency(sumaTotalFila)}</span>
-                            <span class="block text-[10px] text-gray-400">${pctTotal.toFixed(1)}%</span>
-                        </td>`;
-                }
-
-                html += `</tr>`;
-                return html;
-            }
-
-            // Calcular filas compuestas intermedias (Utilidades)
-            const utilidadBrutaMatriz = {};
-            const utilidadNetaMatriz = {};
-
-            columnas.forEach(col => {
-                const k = col.key;
-                utilidadBrutaMatriz[k] = matriz.INGRESOS[k] - matriz.COSTO_ORDINARIO[k];
-                utilidadNetaMatriz[k] = utilidadBrutaMatriz[k] - (matriz.GASTO_OPERATIVO[k] + matriz.GASTO_ADMINISTRATIVO[k] + matriz.GASTO_VENTAS[k] + matriz.GASTO_PERSONAL[k]);
-            });
-
-            // Ensamblar cuerpo del P&G
-            let bodyHtml = "";
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-money-bill-trend-up text-emerald-400"></i> (+) INGRESOS DE OPERACIÓN', matriz.INGRESOS, "text-white bg-emerald-500/5");
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-boxes-stacked text-orange-400"></i> (-) COSTO ORDINARIO', matriz.COSTO_ORDINARIO, "text-gray-300", true);
-            
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-chart-pie text-cyan-400"></i> (=) UTILIDAD BRUTA', utilidadBrutaMatriz, "bg-gray-800/40 text-cyan-400 border-t border-b border-gray-700/60", false, true);
-            
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-wallet text-red-400"></i> (-) GASTO OPERATIVO', matriz.GASTO_OPERATIVO, "text-gray-300", true);
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-building text-red-400"></i> (-) GASTO ADMINISTRATIVO', matriz.GASTO_ADMINISTRATIVO, "text-gray-300", true);
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-shop text-red-400"></i> (-) GASTO DE VENTAS', matriz.GASTO_VENTAS, "text-gray-300", true);
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-user-tie text-red-400"></i> (-) GASTO PERSONAL', matriz.GASTO_PERSONAL, "text-gray-300", true);
-            
-            bodyHtml += construirFilaHTML('<i class="fa-solid fa-calculator text-emerald-400"></i> (=) UTILIDAD NETA DEL EJERCICIO', utilidadNetaMatriz, "font-bold text-base text-white bg-emerald-500/10 border-t-2 border-emerald-500/50", false, true);
-
-            document.getElementById('bodyEstadoResultados').innerHTML = bodyHtml;
-        }
-
-        function switchTab(e, tabId) {
-            activeTabId = tabId;
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
-            document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
-            document.getElementById(tabId).classList.remove('hidden');
-            e.currentTarget.classList.add('tab-active');
         }
 
         function formatCurrency(val) {
-            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
+            return '$ ' + Number(val).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function switchTab(evt, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('tab-active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            evt.currentTarget.classList.add('tab-active');
+            activeTabId = tabId;
         }
     </script>
 </body>
