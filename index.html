@@ -6,62 +6,171 @@
     <title>DashBoard HA - Panel Avanzado</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #0B0F19; color: #EEEEEE; }
         .bg-card { background-color: #1F2937; border: 1px solid #374151; }
         .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
-        .tab-content { display: none; }
         .text-income { color: #10B981; }
         .text-expense { color: #F87171; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
+        .input-filter::placeholder { color: #6B7280; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
+
     <div class="max-w-7xl mx-auto space-y-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-white">DashBoard HA</h1>
+        
+        <!-- Encabezado -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">DashBoard HA</h1>
+                <p class="text-gray-400 text-sm">Dashboard financiero en vivo — Control Multi-anual</p>
+            </div>
             <div id="loadingStatus" class="text-amber-400 text-sm font-semibold flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
-                <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
+                <i class="fa-solid fa-spinner fa-spin"></i> Cargando base de datos en vivo...
             </div>
         </div>
 
+        <!-- FILTROS PRINCIPALES (AÑO Y MES) -->
         <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl">
-            <select id="yearFilter" class="bg-gray-900 border border-gray-700 text-white p-2 rounded-lg text-sm"><option value="TODOS">TODOS LOS AÑOS</option></select>
-            <select id="monthFilter" class="bg-gray-900 border border-gray-700 text-white p-2 rounded-lg text-sm" disabled><option value="TODOS">TODOS LOS MESES</option></select>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-gray-400 uppercase">Año:</span>
+                <select id="yearFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2">
+                    <option value="TODOS">TODOS LOS AÑOS</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+   		 <span class="text-xs font-bold text-gray-400 uppercase">Mes:</span>
+   		 <select id="monthFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2" disabled>
+       			 <option value="TODOS">TODOS LOS MESES</option>
+   		 </select>
+	     </div>
         </div>
 
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500">
+                <p class="text-xs font-bold text-gray-400 uppercase">Total Ingresos</p>
+                <h2 id="kpiIngresos" class="text-2xl font-bold text-income mt-1">$ 0</h2>
+                <p id="regIngresos" class="text-[10px] text-gray-500 mt-1">0 registros</p>
+                <i class="fa-solid fa-arrow-up-right-dots absolute top-4 right-4 text-emerald-500/20 text-2xl"></i>
+            </div>
+            <div class="bg-card p-5 rounded-2xl border-l-4 border-red-400 relative overflow-hidden">
+                <p class="text-xs font-bold text-gray-400 uppercase">Total Costos y Gastos</p>
+                <h2 id="kpiEgresos" class="text-2xl font-bold text-expense mt-1">$ 0</h2>
+                <p id="regEgresos" class="text-[10px] text-gray-500 mt-1">0 registros</p>
+                <i class="fa-solid fa-arrow-down-wide-short absolute top-4 right-4 text-red-400/20 text-2xl"></i>
+            </div>
+            <div class="bg-card p-5 rounded-2xl border-l-4 border-cyan-400 relative overflow-hidden">
+                <p class="text-xs font-bold text-gray-400 uppercase">Utilidad</p>
+                <h2 id="kpiUtilidad" class="text-2xl font-bold text-cyan-400 mt-1">$ 0</h2>
+                <p id="kpiUtilidadStatus" class="text-[10px] text-gray-500 mt-1">---</p>
+                <i class="fa-solid fa-dollar-sign absolute top-4 right-4 text-cyan-400/20 text-2xl"></i>
+            </div>
+            <div class="bg-card p-5 rounded-2xl border-l-4 border-purple-500 relative overflow-hidden">
+                <p class="text-xs font-bold text-gray-400 uppercase">Margen %</p>
+                <h2 id="kpiMargen" class="text-2xl font-bold text-purple-400 mt-1">0%</h2>
+                <p class="text-[10px] text-gray-500 mt-1">Utilidad / Ingresos</p>
+                <i class="fa-solid fa-chart-line absolute top-4 right-4 text-purple-500/20 text-2xl"></i>
+            </div>
+        </div>
+
+        <!-- Pestañas de Navegación -->
         <div class="border-b border-gray-800">
-            <ul class="flex flex-wrap text-sm font-medium text-center gap-6">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center gap-8">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-egresos')">Costos y Gastos</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-ingresos')">Ingresos</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-costo-ordinario')">Costo Ordinario</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Admin</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
             </ul>
         </div>
 
-        <div id="tab-resumen" class="tab-content" style="display:block;">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-emerald-500"><h2 id="kpiIngresos" class="text-2xl font-bold text-income">$ 0</h2></div>
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-red-400"><h2 id="kpiEgresos" class="text-2xl font-bold text-expense">$ 0</h2></div>
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-cyan-400"><h2 id="kpiUtilidad" class="text-2xl font-bold text-cyan-400">$ 0</h2></div>
-                <div class="bg-card p-5 rounded-2xl border-l-4 border-purple-500"><h2 id="kpiMargen" class="text-2xl font-bold text-purple-400">0%</h2></div>
+        <!-- Contenido Pestaña Resumen -->
+        <div id="tab-resumen" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Ingresos vs Costos por Mes</h3>
+                    <div class="h-80">
+                        <canvas id="chartComparativo"></canvas>
+                    </div>
+                </div>
+                <div class="bg-card p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Distribución egresos: Costos y gastos</h3>
+                    <div class="h-64">
+                        <canvas id="chartDoughnut"></canvas>
+                    </div>
+                    <div id="doughnutLegend" class="mt-4 space-y-2 text-[11px] max-h-32 overflow-y-auto custom-scrollbar">
+                    </div>
+                </div>
             </div>
-            <div class="h-80 bg-card p-6 rounded-2xl"><canvas id="chartComparativo"></canvas></div>
+
+            <div class="bg-card p-6 rounded-2xl shadow-xl">
+                <h3 class="text-sm font-bold text-gray-300 mb-6 uppercase tracking-wider">Mayores Egresos por Proveedor</h3>
+                <div id="topProveedoresList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                </div>
+            </div>
         </div>
 
-        <div id="tab-ingresos" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-ingresos"></table></div>
-        <div id="tab-costo-ordinario" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-costo-ordinario"></table></div>
-        <div id="tab-gasto-operativo" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-gasto-operativo"></table></div>
-        <div id="tab-gasto-administrativo" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-gasto-administrativo"></table></div>
-        <div id="tab-gasto-personal" class="tab-content bg-card p-4 rounded-xl"><table class="w-full text-left" id="table-gasto-personal"></table></div>
+        <!-- Pestaña Tabla Egresos con Filtros por Columna -->
+        <div id="tab-egresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                    <tr>
+                        <th class="p-4 w-20">Año</th>
+                        <th class="p-4 w-24">Mes</th>
+                        <th class="p-4 w-28">Fecha</th>
+                        <th class="p-4">Descripción</th>
+                        <th class="p-4 w-40">Tipo</th>
+                        <th class="p-4 w-48">Proveedor</th>
+                        <th class="p-4 w-32 text-right">Total</th>
+                    </tr>
+                    <tr class="bg-gray-900/30">
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGAnio" class="input-filter" placeholder="🔍 año"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGMes" class="input-filter" placeholder="🔍 mes"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGFecha" class="input-filter" placeholder="🔍 fecha"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGDesc" class="input-filter" placeholder="🔍 buscar desc..."></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGTipo" class="input-filter" placeholder="🔍 tipo"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilEGProv" class="input-filter" placeholder="🔍 proveedor"></th>
+                        <th class="p-2 border-b border-gray-800"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableEgresos" class="divide-y divide-gray-800 text-gray-300">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pestaña Tabla Ingresos con Filtros por Columna -->
+        <div id="tab-ingresos" class="tab-content hidden overflow-x-auto bg-card rounded-xl">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                    <tr>
+                        <th class="p-4 w-20">Año</th>
+                        <th class="p-4 w-24">Mes</th>
+                        <th class="p-4 w-28">Fecha</th>
+                        <th class="p-4">Tipo de Venta</th>
+                        <th class="p-4 w-32 text-right">Valor</th>
+                    </tr>
+                    <tr class="bg-gray-900/30">
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINAnio" class="input-filter" placeholder="🔍 año"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINMes" class="input-filter" placeholder="🔍 mes"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
+                        <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
+                        <th class="p-2 border-b border-gray-800"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableIngresos" class="divide-y divide-gray-800 text-gray-300">
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
     <script>
@@ -399,7 +508,6 @@
                 </tr>
             `).join('') || '<tr><td colspan="5" class="p-10 text-center text-gray-500 italic">No coincide ningún registro</td></tr>';
         }
-        
 
         function switchTab(e, tabId) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
