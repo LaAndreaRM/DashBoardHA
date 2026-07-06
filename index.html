@@ -524,193 +524,192 @@
                     type: 'doughnut',
                     data: {
                         labels: tiposUnicos,
-                        datasets: [{ data: dataTipos, backgroundColor: colors, borderWidth: 0, cutout: '70%' }]
+                        datasets: [{ data: dataTipos, backgroundColor: colors, borderWidth: 0 }]
                     },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                 });
 
-                document.getElementById('doughnutLegend').innerHTML = tiposUnicos.map((t, idx) => `
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2 w-2/3">
-                            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${colors[idx % colors.length]}"></span>
-                            <span class="text-gray-400 truncate text-[11px]">${t}</span>
+                let legendHtml = '';
+                let totalE = dataTipos.reduce((a,b)=>a+b,0);
+                tiposUnicos.forEach((t, i) => {
+                    let val = dataTipos[i];
+                    let pct = totalE > 0 ? ((val/totalE)*100).toFixed(1) : 0;
+                    legendHtml += `
+                        <div class="flex justify-between items-center bg-gray-900/40 p-1.5 rounded border border-gray-800/50">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${colors[i % colors.length]}"></span>
+                                <span class="text-gray-300 font-medium truncate uppercase">${t}</span>
+                            </div>
+                            <span class="text-gray-400 font-bold ml-2">${formatCurrency(val)} (${pct}%)</span>
                         </div>
-                        <span class="font-bold text-gray-200 text-[11px]">${formatCurrency(dataTipos[idx])}</span>
-                    </div>
-                `).join('');
-            } else {
-                document.getElementById('doughnutLegend').innerHTML = '<p class="text-gray-500 italic text-center text-xs py-4">Sin datos en el período seleccionado</p>';
+                    `;
+                });
+                document.getElementById('doughnutLegend').innerHTML = legendHtml;
             }
         }
 
         function renderTopProveedores(egresos) {
-            const provMap = {};
-            egresos.forEach(e => { provMap[e.PROVEEDOR] = (provMap[e.PROVEEDOR] || 0) + e.TOTAL; });
-            const sorted = Object.entries(provMap).sort((a,b) => b[1] - a[1]).slice(0, 8);
-            
-            document.getElementById('topProveedoresList').innerHTML = sorted.map(([name, val]) => `
-                <div class="flex justify-between border-b border-gray-800 pb-2">
-                    <span class="text-xs text-gray-400 truncate w-2/3" title="${name}">${name}</span>
-                    <span class="text-xs font-bold text-white">${formatCurrency(val)}</span>
-                </div>
-            `).join('') || '<p class="text-gray-500 italic text-xs col-span-4 text-center py-4">No hay egresos registrados</p>';
+            const agrupado = {};
+            egresos.forEach(e => {
+                agrupado[e.PROVEEDOR] = (agrupado[e.PROVEEDOR] || 0) + e.TOTAL;
+            });
+            const listaOrdenada = Object.keys(agrupado).map(p => ({ prov: p, total: agrupado[p] })).sort((a,b) => b.total - a.total).slice(0, 4);
+
+            let html = '';
+            listaOrdenada.forEach((p, index) => {
+                html += `
+                    <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800/80 relative overflow-hidden flex flex-col justify-between">
+                        <div class="absolute top-0 right-0 bg-gray-800 px-2 py-0.5 text-[10px] text-gray-500 font-bold rounded-bl-lg">#${index+1}</div>
+                        <p class="text-[11px] font-bold text-gray-400 truncate uppercase tracking-wide pr-6">${p.prov}</p>
+                        <p class="text-lg font-bold text-red-400 mt-2">${formatCurrency(p.total)}</p>
+                    </div>
+                `;
+            });
+            document.getElementById('topProveedoresList').innerHTML = html || '<p class="text-gray-500 italic text-xs p-2">No hay registros de egresos</p>';
         }
 
-        function calcularYRenderizarPGMatriz() {
-            const thead = document.getElementById('headEstadoResultados');
-            const tbody = document.getElementById('bodyEstadoResultados');
-            if (!thead || !tbody) return;
-
-            // Determinar qué meses se van a pintar como columnas
-            let columnasMeses = [];
-            if (selectedMonth !== "TODOS") {
-                columnasMeses = [selectedMonth];
-            } else {
-                // Encontrar meses del año seleccionado (o de todos) que tengan datos reales
-                const filterYearFn = (x) => selectedYear === "TODOS" || x.ANIO === selectedYear;
-                const mesesConDatos = new Set([
-                    ...rawIngresos.filter(filterYearFn).map(i => i.MES_TXT),
-                    ...rawEgresos.filter(filterYearFn).map(e => e.MES_TXT)
-                ]);
-                columnasMeses = mesesAbrev.filter(m => mesesConDatos.has(m));
-                if (columnasMeses.length === 0) columnasMeses = ['ENE'];
-            }
-
-            // Armar cabeceras HTML
-            let totalColumnsCount = columnasMeses.length + (selectedMonth === "TODOS" ? 2 : 1); 
-            let headHtml = `<tr><th class="p-3 min-w-[240px]">Concepto Estructural</th>`;
-            columnasMeses.forEach(m => {
-                headHtml += `<th class="p-3 text-right">${m}</th>`;
-            });
-            if (selectedMonth === "TODOS") {
-                headHtml += `<th class="p-3 text-right text-emerald-400 bg-gray-900/40">TOTAL</th>`;
-            }
-            headHtml += `</tr>`;
-            thead.innerHTML = headHtml;
-
-            // Inicializar las estructuras de acumulación por columna
-            // Cada objeto contendrá las sumas correspondientes a esa columna específica
-            let matriz = {};
-            columnasMeses.forEach(m => { matriz[m] = inicializarEstructuraMontos(); });
-            matriz['TOTAL'] = inicializarEstructuraMontos();
-
-            function inicializarEstructuraMontos() {
-                return { ventas: 0, costoOrdinario: 0, gastoOperativo: 0, gastoAdministrativo: 0, gastoVentas: 0, gastoPersonal: 0 };
-            }
-
-            // Alimentar matriz con Ingresos
-            rawIngresos.forEach(i => {
-                if (selectedYear !== "TODOS" && i.ANIO !== selectedYear) return;
-                if (selectedMonth !== "TODOS" && i.MES_TXT !== selectedMonth) return;
-                
-                if (matriz[i.MES_TXT]) {
-                    matriz[i.MES_TXT].ventas += i.VALOR;
-                }
-                matriz['TOTAL'].ventas += i.VALOR;
-            });
-
-            // Alimentar matriz con Egresos según categoría
-            rawEgresos.forEach(e => {
-                if (selectedYear !== "TODOS" && e.ANIO !== selectedYear) return;
-                if (selectedMonth !== "TODOS" && e.MES_TXT !== selectedMonth) return;
-
-                let mKey = e.MES_TXT;
-                if (!matriz[mKey]) return;
-
-                if (e.TIPO === 'COSTO ORDINARIO') { matriz[mKey].costoOrdinario += e.TOTAL; matriz['TOTAL'].costoOrdinario += e.TOTAL; }
-                else if (e.TIPO === 'GASTO OPERATIVO') { matriz[mKey].gastoOperativo += e.TOTAL; matriz['TOTAL'].gastoOperativo += e.TOTAL; }
-                else if (e.TIPO === 'GASTO ADMINISTRATIVO') { matriz[mKey].gastoAdministrativo += e.TOTAL; matriz['TOTAL'].gastoAdministrativo += e.TOTAL; }
-                else if (e.TIPO === 'GASTO DE VENTAS') { matriz[mKey].gastoVentas += e.TOTAL; matriz['TOTAL'].gastoVentas += e.TOTAL; }
-                else if (e.TIPO === 'GASTO PERSONAL') { matriz[mKey].gastoPersonal += e.TOTAL; matriz['TOTAL'].gastoPersonal += e.TOTAL; }
-            });
-
-            // Listado ordenado de las columnas a renderizar numéricamente
-            let colsAInterar = [...columnasMeses];
-            if (selectedMonth === "TODOS") {
-                colsAInterar.push('TOTAL');
-            }
-
-            // Renderizar Filas de la Tabla aplicando las fórmulas lógicas requeridas
-            let htmlBody = "";
-
-            // Fila 1: INGRESOS OPERACIONALES
-            htmlBody += `<tr class="font-bold text-white bg-gray-900/20"><td class="p-3 flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-plus text-[10px]"></i> VENTAS (INGRESOS)</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += `<td class="p-3 text-right text-income">${formatCurrency(matriz[c].ventas)}</td>`;
-            });
-            htmlBody += `</tr>`;
-
-            // Fila 2: COSTOS DIRECTOS
-            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30"><td class="p-2.5 pl-6 text-[11px]">(-) Costo Ordinario Directo</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += `<td class="p-2.5 text-right text-red-400/80">${formatCurrency(matriz[c].costoOrdinario)}</td>`;
-            });
-            htmlBody += `</tr>`;
-
-            // Fila 3: UTILIDAD BRUTA
-            htmlBody += `<tr class="font-semibold bg-gray-900/30 text-cyan-400"><td class="p-3 pl-4">(=) UTILIDAD BRUTA</td>`;
-            colsAInterar.forEach(c => {
-                let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
-                htmlBody += `<td class="p-3 text-right">${formatCurrency(uBruta)}</td>`;
-            });
-            htmlBody += `</tr>`;
-
-            // Fila 4, 5, 6: Desglose de Gastos Operacionales (EXCLUYENDO GASTO PERSONAL)
-            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-6 text-[11px]">(-) Gasto Operativo</td>`;
-            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoOperativo)}</td>`; });
-            htmlBody += `</tr>`;
-
-            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-6 text-[11px]">(-) Gasto Administrativo</td>`;
-            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoAdministrativo)}</td>`; });
-            htmlBody += `</tr>`;
-
-            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30"><td class="p-2 pl-6 text-[11px]">(-) Gasto de Ventas</td>`;
-            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoVentas)}</td>`; });
-            htmlBody += `</tr>`;
-
-            // Fila 7: UTILIDAD NETA DEL EJERCICIO (Ventas - Costos - GastosOperativosSinPersonal)
-            htmlBody += `<tr class="font-bold bg-gray-900/40 border-t border-gray-700 text-white"><td class="p-3 pl-4 flex items-center gap-1.5 text-cyan-400"><i class="fa-solid fa-calculator text-[10px]"></i> (=) UTILIDAD NETA DEL EJERCICIO</td>`;
-            colsAInterar.forEach(c => {
-                let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
-                let sumGastosOp = matriz[c].gastoOperativo + matriz[c].gastoAdministrativo + matriz[c].gastoVentas;
-                let uNetaEj = uBruta - sumGastosOp;
-                htmlBody += `<td class="p-3 text-right">${formatCurrency(uNetaEj)}</td>`;
-            });
-            htmlBody += `</tr>`;
-
-            // Fila 8: GASTO PERSONAL (Restado de forma independiente posterior)
-            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/40"><td class="p-2.5 pl-6 text-[11px] text-amber-400/80">(-) Gasto Personal</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += `<td class="p-2.5 text-right text-red-400/80">${formatCurrency(matriz[c].gastoPersonal)}</td>`;
-            });
-            htmlBody += `</tr>`;
-
-            // Fila 9: UTILIDAD DISPONIBLE FINAL (Utilidad Neta del Ejercicio - Gasto Personal)
-            htmlBody += `<tr class="font-bold text-sm text-white bg-emerald-500/10 border-t-2 border-emerald-500/50"><td class="p-3.5 pl-4 flex items-center gap-1.5"><i class="fa-solid fa-wallet text-emerald-400"></i> (=) UTILIDAD DISPONIBLE FINAL</td>`;
-            colsAInterar.forEach(c => {
-                let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
-                let sumGastosOp = matriz[c].gastoOperativo + matriz[c].gastoAdministrativo + matriz[c].gastoVentas;
-                let uNetaEj = uBruta - sumGastosOp;
-                let uFinal = uNetaEj - matriz[c].gastoPersonal;
-                
-                let textClass = uFinal >= 0 ? "text-emerald-400" : "text-red-400";
-                htmlBody += `<td class="p-3.5 text-right ${textClass}">${formatCurrency(uFinal)}</td>`;
-            });
-            htmlBody += `</tr>`;
-
-            tbody.innerHTML = htmlBody;
-        }
-
-        function switchTab(e, tabId) {
-            activeTabId = tabId;
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
-            document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
+        function switchTab(event, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('tab-active'));
             document.getElementById(tabId).classList.remove('hidden');
-            e.currentTarget.classList.add('tab-active');
+            event.currentTarget.classList.add('tab-active');
+            activeTabId = tabId;
         }
 
         function formatCurrency(val) {
-            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
+            if (val === undefined || val === null || isNaN(val)) return "$ 0";
+            let parts = Math.abs(val).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return (val < 0 ? "- " : "") + "$ " + parts;
+        }
+
+        function formatPercent(val) {
+            if (val === undefined || val === null || isNaN(val)) return "0.0%";
+            return val.toFixed(1) + "%";
+        }
+
+        function calcularYRenderizarPGMatriz() {
+            let columnas = [];
+            if (selectedYear !== "TODOS" && selectedMonth === "TODOS") {
+                columnas = mesesAbrev.map(m => ({ label: `${m} ${selectedYear}`, queryMes: m, queryAnio: selectedYear }));
+                columnas.push({ label: `TOTAL ${selectedYear}`, queryMes: "TODOS", queryAnio: selectedYear });
+            } else if (selectedYear !== "TODOS" && selectedMonth !== "TODOS") {
+                columnas = [{ label: `${selectedMonth} ${selectedYear}`, queryMes: selectedMonth, queryAnio: selectedYear }];
+            } else {
+                let aniosConDatos = [...new Set([...rawIngresos.map(i => i.ANIO), ...rawEgresos.map(e => e.ANIO)])].sort();
+                if (aniosConDatos.length === 0) aniosConDatos = [new Date().getFullYear().toString()];
+                aniosConDatos.forEach(y => {
+                    columnas.push({ label: `TOTAL ${y}`, queryMes: "TODOS", queryAnio: y });
+                });
+                columnas.push({ label: "TOTAL HISTÓRICO", queryMes: "TODOS", queryAnio: "TODOS" });
+            }
+
+            let htmlHead = `<tr><th class="p-3 bg-gray-900/80 font-bold border-b border-gray-800 text-gray-400 uppercase tracking-wider w-72">Concepto Financiero / P&G</th>`;
+            columnas.forEach(col => {
+                htmlHead += `<th class="p-3 bg-gray-900/80 font-bold border-b border-gray-800 text-right text-gray-300 uppercase tracking-wider min-w-[140px]">${col.label}</th>`;
+            });
+            htmlHead += `</tr>`;
+            document.getElementById('headEstadoResultados').innerHTML = htmlHead;
+
+            let matricesValores = columnas.map(col => {
+                const fIn = rawIngresos.filter(i => {
+                    if (col.queryAnio !== "TODOS" && i.ANIO !== col.queryAnio) return false;
+                    if (col.queryMes !== "TODOS" && i.MES_TXT !== col.queryMes) return false;
+                    return true;
+                });
+                const fEg = rawEgresos.filter(e => {
+                    if (col.queryAnio !== "TODOS" && e.ANIO !== col.queryAnio) return false;
+                    if (col.queryMes !== "TODOS" && e.MES_TXT !== col.queryMes) return false;
+                    return true;
+                });
+
+                // Separación y cálculo detallado de ingresos por Local y Producción
+                let vLocal = fIn.filter(i => (i.TIPO || "").toUpperCase().includes("LOCAL")).reduce((s,c) => s + c.VALOR, 0);
+                let vProduccion = fIn.filter(i => (i.TIPO || "").toUpperCase().includes("PRODUCCION")).reduce((s,c) => s + c.VALOR, 0);
+                let totalIngresos = fIn.reduce((s, c) => s + c.VALOR, 0);
+                let vOtrosIngresos = totalIngresos - (vLocal + vProduccion);
+
+                let cOrdinario = fEg.filter(e => e.TIPO === 'COSTO ORDINARIO').reduce((s, c) => s + c.TOTAL, 0);
+                let gOperativo = fEg.filter(e => e.TIPO === 'GASTO OPERATIVO').reduce((s, c) => s + c.TOTAL, 0);
+                let gAdministrativo = fEg.filter(e => e.TIPO === 'GASTO ADMINISTRATIVO').reduce((s, c) => s + c.TOTAL, 0);
+                let gVentas = fEg.filter(e => e.TIPO === 'GASTO DE VENTAS').reduce((s, c) => s + c.TOTAL, 0);
+                let gPersonal = fEg.filter(e => e.TIPO === 'GASTO PERSONAL').reduce((s, c) => s + c.TOTAL, 0);
+
+                let utilidadBruta = totalIngresos - cOrdinario;
+                let totalGastosOp = gOperativo + gAdministrativo + gVentas;
+                let utilidadNetaEjercicio = utilidadBruta - totalGastosOp;
+                let utilidadDisponibleFinal = utilidadNetaEjercicio - gPersonal;
+
+                return {
+                    ingLocal: vLocal,
+                    ingProduccion: vProduccion,
+                    ingOtros: vOtrosIngresos,
+                    ingresos: totalIngresos,
+                    costoOrdinario: cOrdinario,
+                    utilidadBruta: utilidadBruta,
+                    gastoOperativo: gOperativo,
+                    gastoAdministrativo: gAdministrativo,
+                    gastoVentas: gVentas,
+                    totalGastosOp: totalGastosOp,
+                    utilidadNetaEjercicio: utilidadNetaEjercicio,
+                    gastoPersonal: gPersonal,
+                    utilidadDisponibleFinal: utilidadDisponibleFinal
+                };
+            });
+
+            function buildFilaHTML(titulo, propiedad, claseCss = "", esDeduccion = false, forcePct = null) {
+                let r = `<tr class="${claseCss}"><td class="p-3 font-semibold tracking-wide flex items-center gap-2">${titulo}</td>`;
+                matricesValores.forEach(mv => {
+                    let val = mv[propiedad];
+                    let displayVal = esDeduccion && val > 0 ? -val : val;
+                    let pct = 0;
+                    if (forcePct !== null) {
+                        pct = forcePct;
+                    } else {
+                        pct = mv.ingresos > 0 ? (val / mv.ingresos) * 100 : 0;
+                    }
+
+                    r += `<td class="p-3 text-right">
+                            <div class="font-bold">${formatCurrency(displayVal)}</div>
+                            <div class="text-[10px] text-gray-500 font-normal">${formatPercent(pct)}</div>
+                          </td>`;
+                });
+                r += `</tr>`;
+                return r;
+            }
+
+            let bodyHtml = "";
+
+            // SECCIÓN DE INGRESOS CON DESGLOSE SOLICITADO
+            bodyHtml += `<tr class="bg-gray-900/10 text-gray-400 font-bold"><td colspan="${columnas.length + 1}" class="p-2 pl-3 text-[10px] uppercase tracking-wider">Ingresos Operacionales</td></tr>`;
+            bodyHtml += buildFilaHTML("&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-store text-emerald-500/60 w-4'></i> Ventas por Local", "ingLocal", "hover:bg-gray-800/40");
+            bodyHtml += buildFilaHTML("&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-industry text-emerald-500/60 w-4'></i> Ventas por Producción", "ingProduccion", "hover:bg-gray-800/40");
+            
+            // Fila de control en caso de que existan otros tipos de venta huérfanos
+            if (matricesValores.some(mv => Math.abs(mv.ingOtros) > 1)) {
+                bodyHtml += buildFilaHTML("&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-tags text-emerald-500/60 w-4'></i> Otros Ingresos de Ventas", "ingOtros", "hover:bg-gray-800/40");
+            }
+
+            bodyHtml += buildFilaHTML("<i class='fa-solid fa-money-bill-trend-up text-income w-4'></i> Total Ingresos (Ventas Netas)", "ingresos", "bg-emerald-500/5 text-income font-bold border-y border-emerald-500/10", false, 100);
+
+            // COSTO ORDINARIO Y UTILIDAD BRUTA
+            bodyHtml += `<tr class="bg-gray-900/10 text-gray-400 font-bold"><td colspan="${columnas.length + 1}" class="p-2 pl-3 text-[10px] uppercase tracking-wider">Costos de Operación</td></tr>`;
+            bodyHtml += buildFilaHTML("(-) Costo Ordinario", "costoOrdinario", "text-expense hover:bg-gray-800/40", true);
+            bodyHtml += buildFilaHTML("(=) UTILIDAD BRUTA", "utilidadBruta", "bg-cyan-500/5 text-cyan-400 font-bold border-y border-cyan-500/10");
+
+            // DESGLOSE DE GASTOS OPERATIVOS
+            bodyHtml += `<tr class="bg-gray-900/10 text-gray-400 font-bold"><td colspan="${columnas.length + 1}" class="p-2 pl-3 text-[10px] uppercase tracking-wider">Gastos Operativos</td></tr>`;
+            bodyHtml += buildFilaHTML("&nbsp;&nbsp;&nbsp;&nbsp;(-) Gasto Operativo", "gastoOperativo", "hover:bg-gray-800/40 text-orange-300/90", true);
+            bodyHtml += buildFilaHTML("&nbsp;&nbsp;&nbsp;&nbsp;(-) Gasto Administrativo", "gastoAdministrativo", "hover:bg-gray-800/40 text-orange-300/90", true);
+            bodyHtml += buildFilaHTML("&nbsp;&nbsp;&nbsp;&nbsp;(-) Gasto de Ventas", "gastoVentas", "hover:bg-gray-800/40 text-orange-300/90", true);
+            bodyHtml += buildFilaHTML("(-) Total Gastos Operativos", "totalGastosOp", "text-expense font-bold hover:bg-gray-800/40", true);
+
+            // ESTRUCTURA FINAL SOLICITADA (Utilidad Neta -> Gasto Personal -> Utilidad Disponible)
+            bodyHtml += `<tr class="bg-gray-900/10 text-gray-400 font-bold"><td colspan="${columnas.length + 1}" class="p-2 pl-3 text-[10px] uppercase tracking-wider">Resultados Finales del Ejercicio</td></tr>`;
+            bodyHtml += buildFilaHTML("(=) UTILIDAD NETA DEL EJERCICIO", "utilidadNetaEjercicio", "bg-purple-500/5 text-purple-400 font-bold border-y border-purple-500/10");
+            bodyHtml += buildFilaHTML("(-) Gasto Personal", "gastoPersonal", "hover:bg-gray-800/40 text-red-300/90", true);
+            bodyHtml += buildFilaHTML("(=) UTILIDAD DISPONIBLE FINAL", "utilidadDisponibleFinal", "bg-amber-500/10 text-amber-400 font-bold text-sm border-y-2 border-amber-500/20");
+
+            document.getElementById('bodyEstadoResultados').innerHTML = bodyHtml;
         }
     </script>
 </body>
