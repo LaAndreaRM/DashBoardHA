@@ -287,25 +287,37 @@
                         const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
                         if(rawRows.length > 1) {
                             const headers = rawRows[0].map(h => (h || "").toString().trim().toUpperCase());
-                            let idxTotal = headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL");
+                            
+                            // Mapeo dinámico e inteligente de las columnas del archivo Excel
                             let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                             let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
                             let idxDesc = headers.indexOf("DESCRIPCIÓN") === -1 ? headers.indexOf("DESCRIPCION") : headers.indexOf("DESCRIPCIÓN");
                             let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                             if(idxDesc === -1) idxDesc = 6;
 
+                            // Corrección crucial: Buscar de forma robusta la columna de montos según el mes de la fila
                             rawEgresos = rawRows.slice(1).map(row => {
-                                if (!row || row.length === 0 || row[idxTotal] === "") return null;
+                                if (!row || row.length === 0) return null;
                                 let parsedDate = parseExcelDate(row[idxFecha]);
+                                let mesAbrevFila = mesesAbrev[parsedDate.m - 1];
+
+                                // Intentar mapear el valor real correspondiente al mes o al Total General
+                                let idxMontoReal = headers.indexOf(mesAbrevFila);
+                                if (idxMontoReal === -1) {
+                                    idxMontoReal = headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL");
+                                }
+
+                                if (row[idxMontoReal] === "" || row[idxMontoReal] === undefined) return null;
+
                                 return {
                                     ANIO: parsedDate.y.toString(),
                                     MES_NUM: parsedDate.m,
-                                    MES_TXT: mesesAbrev[parsedDate.m - 1],
+                                    MES_TXT: mesAbrevFila,
                                     FECHA: parsedDate.text,
                                     DESCRIPCION: (row[idxDesc] || "").toString(),
                                     TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(),
                                     PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(),
-                                    TOTAL: parseFloat(row[idxTotal]) || 0
+                                    TOTAL: parseFloat(row[idxMontoReal]) || 0
                                 };
                             }).filter(item => item !== null);
                         }
@@ -603,7 +615,7 @@
                 };
             }
 
-            // CORRECCIÓN CRÍTICA DE ACUMULACIÓN MULTI-AÑO / MULTI-MES
+            // ACUMULACIÓN MULTI-AÑO / MULTI-MES DE INGRESOS
             rawIngresos.forEach(i => {
                 if (selectedYear !== "TODOS" && i.ANIO !== selectedYear) return;
                 if (selectedMonth !== "TODOS" && i.MES_TXT !== selectedMonth) return;
@@ -626,6 +638,7 @@
                 else matriz['TOTAL'].ventasOtros += i.VALOR;
             });
 
+            // ACUMULACIÓN MULTI-AÑO / MULTI-MES DE EGRESOS
             rawEgresos.forEach(e => {
                 if (selectedYear !== "TODOS" && e.ANIO !== selectedYear) return;
                 if (selectedMonth !== "TODOS" && e.MES_TXT !== selectedMonth) return;
