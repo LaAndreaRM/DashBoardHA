@@ -130,7 +130,7 @@
                 </div>
                 
                 <div class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-xs text-left min-w-[800px]">
+                    <table id="tablePG" class="w-full text-xs text-left transition-all duration-300">
                         <thead id="headEstadoResultados" class="text-[11px] text-gray-400 uppercase bg-gray-900/50">
                         </thead>
                         <tbody id="bodyEstadoResultados" class="divide-y divide-gray-800/60 text-gray-300 font-medium">
@@ -559,7 +559,15 @@
         function calcularYRenderizarPGMatriz() {
             const thead = document.getElementById('headEstadoResultados');
             const tbody = document.getElementById('bodyEstadoResultados');
-            if (!thead || !tbody) return;
+            const tablePG = document.getElementById('tablePG');
+            if (!thead || !tbody || !tablePG) return;
+
+            // COMPACTAR Y CENTRAR SI ES UN SOLO MES
+            if (selectedMonth !== "TODOS") {
+                tablePG.className = "w-full text-xs text-left max-w-2xl mx-auto transition-all duration-300";
+            } else {
+                tablePG.className = "w-full text-xs text-left min-w-[800px] transition-all duration-300";
+            }
 
             let columnasMeses = [];
             if (selectedMonth !== "TODOS") {
@@ -602,7 +610,6 @@
                 };
             }
 
-            // Alimentar matriz con Ingresos y desglosar por Local y Producción
             rawIngresos.forEach(i => {
                 if (selectedYear !== "TODOS" && i.ANIO !== selectedYear) return;
                 if (selectedMonth !== "TODOS" && i.MES_TXT !== selectedMonth) return;
@@ -624,7 +631,6 @@
                 else matriz['TOTAL'].ventasOtros += i.VALOR;
             });
 
-            // Alimentar matriz con Egresos según categoría
             rawEgresos.forEach(e => {
                 if (selectedYear !== "TODOS" && e.ANIO !== selectedYear) return;
                 if (selectedMonth !== "TODOS" && e.MES_TXT !== selectedMonth) return;
@@ -655,28 +661,24 @@
                 </td>`;
             }
 
-            // Fila Principal: VENTAS (INGRESOS)
             htmlBody += `<tr class="font-bold text-white bg-gray-900/20"><td class="p-3 flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-plus text-[10px]"></i> VENTAS (INGRESOS)</td>`;
             colsAInterar.forEach(c => {
                 htmlBody += renderCeldaConPorcentaje(matriz[c].ventas, matriz[c].ventas, false, "text-income");
             });
             htmlBody += `</tr>`;
 
-            // Subfila Desglose: Ventas por Local
             htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Local</td>`;
             colsAInterar.forEach(c => {
                 htmlBody += renderCeldaConPorcentaje(matriz[c].ventasLocal, matriz[c].ventas, false, "text-gray-300 font-semibold");
             });
             htmlBody += `</tr>`;
 
-            // Subfila Desglose: Ventas por Production
             htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Producción</td>`;
             colsAInterar.forEach(c => {
                 htmlBody += renderCeldaConPorcentaje(matriz[c].ventasProduccion, matriz[c].ventas, false, "text-gray-300 font-semibold");
             });
             htmlBody += `</tr>`;
 
-            // Subfila Desglose Opcional: Otras Ventas
             if (colsAInterar.some(c => matriz[c].ventasOtros > 0)) {
                 htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Otros Ingresos de Ventas</td>`;
                 colsAInterar.forEach(c => {
@@ -685,14 +687,12 @@
                 htmlBody += `</tr>`;
             }
 
-            // COSTOS DIRECTOS
             htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Costo Ordinario Directo</td>`;
             colsAInterar.forEach(c => {
                 htmlBody += renderCeldaConPorcentaje(matriz[c].costoOrdinario, matriz[c].ventas, true, "text-red-400/80");
             });
             htmlBody += `</tr>`;
 
-            // UTILIDAD BRUTA
             htmlBody += `<tr class="font-semibold bg-gray-900/30 text-cyan-400"><td class="p-3 pl-4">(=) UTILIDAD BRUTA</td>`;
             colsAInterar.forEach(c => {
                 let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
@@ -700,7 +700,6 @@
             });
             htmlBody += `</tr>`;
 
-            // DESGLOSE GASTOS OPERATIVOS
             htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Gasto Operativo</td>`;
             colsAInterar.forEach(c => { 
                 htmlBody += renderCeldaConPorcentaje(matriz[c].gastoOperativo, matriz[c].ventas, true, "text-gray-300"); 
@@ -719,7 +718,6 @@
             });
             htmlBody += `</tr>`;
 
-            // UTILIDAD NETA DEL EJERCICIO
             htmlBody += `<tr class="font-bold bg-gray-900/40 border-t border-gray-700 text-white"><td class="p-3 pl-4 flex items-center gap-1.5 text-cyan-400"><i class="fa-solid fa-calculator text-[10px]"></i> (=) UTILIDAD NETA DEL EJERCICIO</td>`;
             colsAInterar.forEach(c => {
                 let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
@@ -729,14 +727,12 @@
             });
             htmlBody += `</tr>`;
 
-            // GASTO PERSONAL
             htmlBody += `<tr class="text-gray-400 border-b border-gray-800/40 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px] text-amber-400/80">(-) Gasto Personal</td>`;
             colsAInterar.forEach(c => {
                 htmlBody += renderCeldaConPorcentaje(matriz[c].gastoPersonal, matriz[c].ventas, true, "text-red-400/80");
             });
             htmlBody += `</tr>`;
 
-            // UTILIDAD DISPONIBLE FINAL
             htmlBody += `<tr class="font-bold text-sm text-white bg-emerald-500/10 border-t-2 border-emerald-500/50"><td class="p-3.5 pl-4 flex items-center gap-1.5"><i class="fa-solid fa-wallet text-emerald-400"></i> (=) UTILIDAD DISPONIBLE FINAL</td>`;
             colsAInterar.forEach(c => {
                 let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
