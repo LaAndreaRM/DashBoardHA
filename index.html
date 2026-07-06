@@ -48,7 +48,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-gray-400 uppercase">Mes:</span>
-                <select id="monthFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2" disabled>
+                <select id="monthFilter" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2">
                     <option value="TODOS">TODOS LOS MESES</option>
                 </select>
             </div>
@@ -90,7 +90,7 @@
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-ventas')">Gasto de Ventas</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="workspace_dummy_tab_click(event, 'tab-gasto-personal')">Gasto Personal</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
             </ul>
         </div>
 
@@ -234,14 +234,6 @@
 
         document.getElementById('yearFilter').addEventListener('change', (e) => { 
             selectedYear = e.target.value; 
-            const monthSelect = document.getElementById('monthFilter');
-            if (selectedYear === "TODOS") {
-                selectedMonth = "TODOS";
-                monthSelect.value = "TODOS";
-                monthSelect.disabled = true;
-            } else {
-                monthSelect.disabled = false;
-            }
             updateDashboard(); 
         });
 
@@ -288,20 +280,17 @@
                         if(rawRows.length > 1) {
                             const headers = rawRows[0].map(h => (h || "").toString().trim().toUpperCase());
                             
-                            // Mapeo dinámico e inteligente de las columnas del archivo Excel
                             let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                             let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
                             let idxDesc = headers.indexOf("DESCRIPCIÓN") === -1 ? headers.indexOf("DESCRIPCION") : headers.indexOf("DESCRIPCIÓN");
                             let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                             if(idxDesc === -1) idxDesc = 6;
 
-                            // Corrección crucial: Buscar de forma robusta la columna de montos según el mes de la fila
                             rawEgresos = rawRows.slice(1).map(row => {
                                 if (!row || row.length === 0) return null;
                                 let parsedDate = parseExcelDate(row[idxFecha]);
                                 let mesAbrevFila = mesesAbrev[parsedDate.m - 1];
 
-                                // Intentar mapear el valor real correspondiente al mes o al Total General
                                 let idxMontoReal = headers.indexOf(mesAbrevFila);
                                 if (idxMontoReal === -1) {
                                     idxMontoReal = headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL");
@@ -420,16 +409,18 @@
             const tableIngresosData = rawIngresos.filter(i => {
                 if (fYear !== "TODOS" && i.ANIO !== fYear) return false;
                 if (fMonth !== "TODOS" && i.MES_TXT !== fMonth) return false;
+                
                 if (fINAnio && !i.ANIO.toLowerCase().includes(fINAnio)) return false;
                 if (fINMes && !i.MES_TXT.toLowerCase().includes(fINMes)) return false;
                 if (fINFecha && !i.FECHA.toLowerCase().includes(fINFecha)) return false;
                 if (fINTipo && !i.TIPO.toLowerCase().includes(fINTipo)) return false;
+                
                 sumaIN += i.VALOR;
                 return true;
             });
             document.getElementById('sumIngresosFiltrados').innerText = formatCurrency(sumaIN);
 
-            document.getElementById('tableIngresos').innerHTML = tableIngresosData.slice(0, 200).map(i => `
+            document.getElementById('tableIngresos').innerHTML = tableIngresosData.map(i => `
                 <tr>
                     <td class="p-4 text-gray-400">${i.ANIO}</td>
                     <td class="p-4 text-gray-400">${i.MES_TXT}</td>
@@ -464,7 +455,7 @@
                 });
 
                 document.getElementById(`sum-${id}`).innerText = formatCurrency(sumaPestana);
-                document.getElementById(`body-${id}`).innerHTML = egresosFiltrados.slice(0, 200).map(e => `
+                document.getElementById(`body-${id}`).innerHTML = egresosFiltrados.map(e => `
                     <tr>
                         <td class="p-4 text-gray-400">${e.ANIO}</td>
                         <td class="p-4 text-gray-400">${e.MES_TXT}</td>
@@ -615,7 +606,6 @@
                 };
             }
 
-            // ACUMULACIÓN MULTI-AÑO / MULTI-MES DE INGRESOS
             rawIngresos.forEach(i => {
                 if (selectedYear !== "TODOS" && i.ANIO !== selectedYear) return;
                 if (selectedMonth !== "TODOS" && i.MES_TXT !== selectedMonth) return;
@@ -638,7 +628,6 @@
                 else matriz['TOTAL'].ventasOtros += i.VALOR;
             });
 
-            // ACUMULACIÓN MULTI-AÑO / MULTI-MES DE EGRESOS
             rawEgresos.forEach(e => {
                 if (selectedYear !== "TODOS" && e.ANIO !== selectedYear) return;
                 if (selectedMonth !== "TODOS" && e.MES_TXT !== selectedMonth) return;
