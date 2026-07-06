@@ -23,6 +23,11 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
         .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
         .input-filter::placeholder { color: #6B7280; }
+        th.sortable { cursor: pointer; position: relative; user-select: none; }
+        th.sortable:hover { background-color: rgba(55, 65, 81, 0.4); color: #FFF; }
+        th.sortable::after { content: ' ↕'; font-size: 10px; color: #6B7280; margin-left: 4px; }
+        th.sort-asc::after { content: ' ↑'; color: #10B981; }
+        th.sort-desc::after { content: ' ↓'; color: #10B981; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -149,11 +154,11 @@
                 <table class="w-full text-left text-xs">
                     <thead class="bg-gray-900/50 text-gray-400 uppercase">
                         <tr>
-                            <th class="p-4 w-20">Año</th>
-                            <th class="p-4 w-24">Mes</th>
-                            <th class="p-4 w-28">Fecha</th>
-                            <th class="p-4">Tipo de Venta</th>
-                            <th class="p-4 w-32 text-right">Valor</th>
+                            <th class="p-4 w-20 sortable" data-col="ANIO" data-tab="tab-ingresos">Año</th>
+                            <th class="p-4 w-24 sortable" data-col="MES_NUM" data-tab="tab-ingresos">Mes</th>
+                            <th class="p-4 w-28 sortable" data-col="FECHA" data-tab="tab-ingresos">Fecha</th>
+                            <th class="p-4 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
+                            <th class="p-4 w-32 text-right sortable" data-col="VALOR" data-tab="tab-ingresos">Valor</th>
                         </tr>
                         <tr class="bg-gray-900/30">
                             <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINAnio" class="input-filter" placeholder="🔍 año"></th>
@@ -186,6 +191,16 @@
         let chartBar = null;
         let chartDoughnut = null;
 
+        // Estructura para manejar el ordenamiento por pestaña
+        let currentSort = {
+            'tab-ingresos': { col: 'FECHA', dir: 'desc' },
+            'tab-costo-ordinario': { col: 'FECHA', dir: 'desc' },
+            'tab-gasto-operativo': { col: 'FECHA', dir: 'desc' },
+            'tab-gasto-administrativo': { col: 'FECHA', dir: 'desc' },
+            'tab-gasto-ventas': { col: 'FECHA', dir: 'desc' },
+            'tab-gasto-personal': { col: 'FECHA', dir: 'desc' }
+        };
+
         const colors = ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#A855F7', '#EC4899', '#06B6D4', '#14B8A6', '#F43F5E'];
         const mesesNombres = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
         const mesesAbrev = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
@@ -209,12 +224,12 @@
                     <table class="w-full text-left text-xs">
                         <thead class="bg-gray-900/50 text-gray-400 uppercase">
                             <tr>
-                                <th class="p-4 w-20">Año</th>
-                                <th class="p-4 w-24">Mes</th>
-                                <th class="p-4 w-28">Fecha</th>
-                                <th class="p-4">Descripción</th>
-                                <th class="p-4 w-48">Proveedor</th>
-                                <th class="p-4 w-32 text-right">Total</th>
+                                <th class="p-4 w-20 sortable" data-col="ANIO" data-tab="${id}">Año</th>
+                                <th class="p-4 w-24 sortable" data-col="MES_NUM" data-tab="${id}">Mes</th>
+                                <th class="p-4 w-28 sortable" data-col="FECHA" data-tab="${id}">Fecha</th>
+                                <th class="p-4 sortable" data-col="DESCRIPCION" data-tab="${id}">Descripción</th>
+                                <th class="p-4 w-48 sortable" data-col="PROVEEDOR" data-tab="${id}">Proveedor</th>
+                                <th class="p-4 w-32 text-right sortable" data-col="TOTAL" data-tab="${id}">Total</th>
                             </tr>
                             <tr class="bg-gray-900/30">
                                 <th class="p-2 border-b border-gray-800"><input type="text" id="fil-anio-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 año"></th>
@@ -247,6 +262,29 @@
 
         document.querySelectorAll('.input-dinamico-egreso').forEach(input => {
             input.addEventListener('input', updateTablesOnly);
+        });
+
+        // Configurar los clicks en los encabezados de columnas ordenables
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('sortable')) {
+                const col = e.target.getAttribute('data-col');
+                const tab = e.target.getAttribute('data-tab');
+                
+                if (currentSort[tab].col === col) {
+                    currentSort[tab].dir = currentSort[tab].dir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort[tab].col = col;
+                    currentSort[tab].dir = 'asc';
+                }
+                
+                // Actualizar clases visuales de ordenación
+                e.target.parentElement.querySelectorAll('.sortable').forEach(th => {
+                    th.classList.remove('sort-asc', 'sort-desc');
+                });
+                e.target.classList.add(currentSort[tab].dir === 'asc' ? 'sort-asc' : 'sort-desc');
+                
+                updateTablesOnly();
+            }
         });
 
         window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
@@ -339,6 +377,12 @@
                     poblarFiltrosEstructurales();
                     document.getElementById('loadingStatus').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> Cloud Drive Sincronizado';
                     document.getElementById('loadingStatus').className = "text-emerald-400 text-sm font-semibold flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20";
+                    
+                    // Colocar indicador visual por defecto (Fecha descendente)
+                    document.querySelectorAll('.sortable[data-col="FECHA"]').forEach(th => {
+                        th.classList.add('sort-desc');
+                    });
+                    
                     updateDashboard();
                 })
                 .catch(err => {
@@ -361,6 +405,24 @@
             mesesAbrev.forEach((mAbrev, index) => {
                 let opt = document.createElement('option');
                 opt.value = mAbrev; opt.innerText = mesesNombres[index]; mSelect.appendChild(opt);
+            });
+        }
+
+        function aplicarOrdenamiento(arr, sortConfig) {
+            if (!sortConfig || !sortConfig.col) return arr;
+            return arr.sort((a, b) => {
+                let valA = a[sortConfig.col];
+                let valB = b[sortConfig.col];
+                
+                if (typeof valA === 'string') {
+                    return sortConfig.dir === 'asc' 
+                        ? valA.localeCompare(valB) 
+                        : valB.localeCompare(valA);
+                } else {
+                    return sortConfig.dir === 'asc' 
+                        ? valA - valB 
+                        : valB - valA;
+                }
             });
         }
 
@@ -406,7 +468,7 @@
             const fINTipo = document.getElementById('colFilINTipo').value.toLowerCase();
 
             let sumaIN = 0;
-            const tableIngresosData = rawIngresos.filter(i => {
+            let tableIngresosData = rawIngresos.filter(i => {
                 if (fYear !== "TODOS" && i.ANIO !== fYear) return false;
                 if (fMonth !== "TODOS" && i.MES_TXT !== fMonth) return false;
                 
@@ -418,6 +480,10 @@
                 sumaIN += i.VALOR;
                 return true;
             });
+            
+            // Aplicar ordenamiento dinámico a Ingresos
+            tableIngresosData = aplicarOrdenamiento(tableIngresosData, currentSort['tab-ingresos']);
+            
             document.getElementById('sumIngresosFiltrados').innerText = formatCurrency(sumaIN);
 
             document.getElementById('tableIngresos').innerHTML = tableIngresosData.map(i => `
@@ -439,7 +505,7 @@
                 const fProv = document.getElementById(`fil-prov-${id}`).value.toLowerCase();
 
                 let sumaPestana = 0;
-                const egresosFiltrados = rawEgresos.filter(e => {
+                let egresosFiltrados = rawEgresos.filter(e => {
                     if (e.TIPO !== categoriaNombre) return false;
                     if (fYear !== "TODOS" && e.ANIO !== fYear) return false;
                     if (fMonth !== "TODOS" && e.MES_TXT !== fMonth) return false;
@@ -453,6 +519,9 @@
                     sumaPestana += e.TOTAL;
                     return true;
                 });
+
+                // Aplicar ordenamiento dinámico a cada pestaña de Egresos
+                egresosFiltrados = aplicarOrdenamiento(egresosFiltrados, currentSort[id]);
 
                 document.getElementById(`sum-${id}`).innerText = formatCurrency(sumaPestana);
                 document.getElementById(`body-${id}`).innerHTML = egresosFiltrados.map(e => `
@@ -666,7 +735,7 @@
             colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].ventasLocal, matriz[c].ventas, false, "text-gray-300 font-semibold"); });
             htmlBody += `</tr>`;
 
-            htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Producción</td>`;
+            htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Production</td>`;
             colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].ventasProduccion, matriz[c].ventas, false, "text-gray-300 font-semibold"); });
             htmlBody += `</tr>`;
 
@@ -734,11 +803,7 @@
             document.getElementById(tabId).classList.remove('hidden');
             e.currentTarget.classList.add('tab-active');
         }
-
-        function workspace_dummy_tab_click(e, id) {
-            switchTab(e, id);
-        }
-
+        
         function formatCurrency(val) {
             return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
         }
