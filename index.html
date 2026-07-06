@@ -90,7 +90,7 @@
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-ventas')">Gasto de Ventas</li>
-                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="workspace_dummy_tab_click(event, 'tab-gasto-personal')">Gasto Personal</li>
             </ul>
         </div>
 
@@ -562,7 +562,6 @@
             const tablePG = document.getElementById('tablePG');
             if (!thead || !tbody || !tablePG) return;
 
-            // COMPACTAR Y CENTRAR SI ES UN SOLO MES
             if (selectedMonth !== "TODOS") {
                 tablePG.className = "w-full text-xs text-left max-w-2xl mx-auto transition-all duration-300";
             } else {
@@ -598,32 +597,28 @@
 
             function inicializarEstructuraMontos() {
                 return { 
-                    ventas: 0, 
-                    ventasLocal: 0, 
-                    ventasProduccion: 0, 
-                    ventasOtros: 0, 
-                    costoOrdinario: 0, 
-                    gastoOperativo: 0, 
-                    gastoAdministrativo: 0, 
-                    gastoVentas: 0, 
-                    gastoPersonal: 0 
+                    ventas: 0, ventasLocal: 0, ventasProduccion: 0, ventasOtros: 0, 
+                    costoOrdinario: 0, GastoOperativo: 0, GastoAdministrativo: 0, 
+                    GastoVentas: 0, GastoPersonal: 0 
                 };
             }
 
+            // CORRECCIÓN CRÍTICA DE ACUMULACIÓN MULTI-AÑO / MULTI-MES
             rawIngresos.forEach(i => {
                 if (selectedYear !== "TODOS" && i.ANIO !== selectedYear) return;
                 if (selectedMonth !== "TODOS" && i.MES_TXT !== selectedMonth) return;
                 
+                let mKey = i.MES_TXT;
+                if (!matriz[mKey]) return; 
+
                 let tipoStr = (i.TIPO || "").toUpperCase();
                 let esLocal = tipoStr.includes("LOCAL");
                 let esProduccion = tipoStr.includes("PRODUCCION") || tipoStr.includes("PRODUCCIÓN");
 
-                if (matriz[i.MES_TXT]) {
-                    matriz[i.MES_TXT].ventas += i.VALOR;
-                    if (esLocal) matriz[i.MES_TXT].ventasLocal += i.VALOR;
-                    else if (esProduccion) matriz[i.MES_TXT].ventasProduccion += i.VALOR;
-                    else matriz[i.MES_TXT].ventasOtros += i.VALOR;
-                }
+                matriz[mKey].ventas += i.VALOR;
+                if (esLocal) matriz[mKey].ventasLocal += i.VALOR;
+                else if (esProduccion) matriz[mKey].ventasProduccion += i.VALOR;
+                else matriz[mKey].ventasOtros += i.VALOR;
                 
                 matriz['TOTAL'].ventas += i.VALOR;
                 if (esLocal) matriz['TOTAL'].ventasLocal += i.VALOR;
@@ -639,10 +634,10 @@
                 if (!matriz[mKey]) return;
 
                 if (e.TIPO === 'COSTO ORDINARIO') { matriz[mKey].costoOrdinario += e.TOTAL; matriz['TOTAL'].costoOrdinario += e.TOTAL; }
-                else if (e.TIPO === 'GASTO OPERATIVO') { matriz[mKey].gastoOperativo += e.TOTAL; matriz['TOTAL'].gastoOperativo += e.TOTAL; }
-                else if (e.TIPO === 'GASTO ADMINISTRATIVO') { matriz[mKey].gastoAdministrativo += e.TOTAL; matriz['TOTAL'].gastoAdministrativo += e.TOTAL; }
-                else if (e.TIPO === 'GASTO DE VENTAS') { matriz[mKey].gastoVentas += e.TOTAL; matriz['TOTAL'].gastoVentas += e.TOTAL; }
-                else if (e.TIPO === 'GASTO PERSONAL') { matriz[mKey].gastoPersonal += e.TOTAL; matriz['TOTAL'].gastoPersonal += e.TOTAL; }
+                else if (e.TIPO === 'GASTO OPERATIVO') { matriz[mKey].GastoOperativo += e.TOTAL; matriz['TOTAL'].GastoOperativo += e.TOTAL; }
+                else if (e.TIPO === 'GASTO ADMINISTRATIVO') { matriz[mKey].GastoAdministrativo += e.TOTAL; matriz['TOTAL'].GastoAdministrativo += e.TOTAL; }
+                else if (e.TIPO === 'GASTO DE VENTAS') { matriz[mKey].GastoVentas += e.TOTAL; matriz['TOTAL'].GastoVentas += e.TOTAL; }
+                else if (e.TIPO === 'GASTO PERSONAL') { matriz[mKey].GastoPersonal += e.TOTAL; matriz['TOTAL'].GastoPersonal += e.TOTAL; }
             });
 
             let colsAInterar = [...columnasMeses];
@@ -662,35 +657,25 @@
             }
 
             htmlBody += `<tr class="font-bold text-white bg-gray-900/20"><td class="p-3 flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-plus text-[10px]"></i> VENTAS (INGRESOS)</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += renderCeldaConPorcentaje(matriz[c].ventas, matriz[c].ventas, false, "text-income");
-            });
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].ventas, matriz[c].ventas, false, "text-income"); });
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Local</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += renderCeldaConPorcentaje(matriz[c].ventasLocal, matriz[c].ventas, false, "text-gray-300 font-semibold");
-            });
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].ventasLocal, matriz[c].ventas, false, "text-gray-300 font-semibold"); });
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Producción</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += renderCeldaConPorcentaje(matriz[c].ventasProduccion, matriz[c].ventas, false, "text-gray-300 font-semibold");
-            });
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].ventasProduccion, matriz[c].ventas, false, "text-gray-300 font-semibold"); });
             htmlBody += `</tr>`;
 
             if (colsAInterar.some(c => matriz[c].ventasOtros > 0)) {
                 htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Otros Ingresos de Ventas</td>`;
-                colsAInterar.forEach(c => {
-                    htmlBody += renderCeldaConPorcentaje(matriz[c].ventasOtros, matriz[c].ventas, false, "text-gray-400");
-                });
+                colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].ventasOtros, matriz[c].ventas, false, "text-gray-400"); });
                 htmlBody += `</tr>`;
             }
 
             htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Costo Ordinario Directo</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += renderCeldaConPorcentaje(matriz[c].costoOrdinario, matriz[c].ventas, true, "text-red-400/80");
-            });
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].costoOrdinario, matriz[c].ventas, true, "text-red-400/80"); });
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="font-semibold bg-gray-900/30 text-cyan-400"><td class="p-3 pl-4">(=) UTILIDAD BRUTA</td>`;
@@ -701,44 +686,36 @@
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Gasto Operativo</td>`;
-            colsAInterar.forEach(c => { 
-                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoOperativo, matriz[c].ventas, true, "text-gray-300"); 
-            });
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].GastoOperativo, matriz[c].ventas, true, "text-gray-300"); });
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Gasto Administrativo</td>`;
-            colsAInterar.forEach(c => { 
-                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoAdministrativo, matriz[c].ventas, true, "text-gray-300"); 
-            });
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].GastoAdministrativo, matriz[c].ventas, true, "text-gray-300"); });
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Gasto de Ventas</td>`;
-            colsAInterar.forEach(c => { 
-                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoVentas, matriz[c].ventas, true, "text-gray-300"); 
-            });
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].GastoVentas, matriz[c].ventas, true, "text-gray-300"); });
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="font-bold bg-gray-900/40 border-t border-gray-700 text-white"><td class="p-3 pl-4 flex items-center gap-1.5 text-cyan-400"><i class="fa-solid fa-calculator text-[10px]"></i> (=) UTILIDAD NETA DEL EJERCICIO</td>`;
             colsAInterar.forEach(c => {
                 let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
-                let sumGastosOp = matriz[c].gastoOperativo + matriz[c].gastoAdministrativo + matriz[c].gastoVentas;
+                let sumGastosOp = matriz[c].GastoOperativo + matriz[c].GastoAdministrativo + matriz[c].GastoVentas;
                 let uNetaEj = uBruta - sumGastosOp;
                 htmlBody += renderCeldaConPorcentaje(uNetaEj, matriz[c].ventas, false, "text-cyan-400");
             });
             htmlBody += `</tr>`;
 
-            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/40 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px] text-amber-400/80">(-) Gasto Personal</td>`;
-            colsAInterar.forEach(c => {
-                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoPersonal, matriz[c].ventas, true, "text-red-400/80");
-            });
+            htmlBody += `<tr class="text-gray-400 border-b border-gray-400/40 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px] text-amber-400/80">(-) Gasto Personal</td>`;
+            colsAInterar.forEach(c => { htmlBody += renderCeldaConPorcentaje(matriz[c].GastoPersonal, matriz[c].ventas, true, "text-red-400/80"); });
             htmlBody += `</tr>`;
 
             htmlBody += `<tr class="font-bold text-sm text-white bg-emerald-500/10 border-t-2 border-emerald-500/50"><td class="p-3.5 pl-4 flex items-center gap-1.5"><i class="fa-solid fa-wallet text-emerald-400"></i> (=) UTILIDAD DISPONIBLE FINAL</td>`;
             colsAInterar.forEach(c => {
                 let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
-                let sumGastosOp = matriz[c].gastoOperativo + matriz[c].gastoAdministrativo + matriz[c].gastoVentas;
+                let sumGastosOp = matriz[c].GastoOperativo + matriz[c].GastoAdministrativo + matriz[c].GastoVentas;
                 let uNetaEj = uBruta - sumGastosOp;
-                let uFinal = uNetaEj - matriz[c].gastoPersonal;
+                let uFinal = uNetaEj - matriz[c].GastoPersonal;
                 
                 let textClass = uFinal >= 0 ? "text-emerald-400" : "text-red-400";
                 htmlBody += renderCeldaConPorcentaje(uFinal, matriz[c].ventas, false, textClass);
@@ -754,6 +731,10 @@
             document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
             document.getElementById(tabId).classList.remove('hidden');
             e.currentTarget.classList.add('tab-active');
+        }
+
+        function workspace_dummy_tab_click(e, id) {
+            switchTab(e, id);
         }
 
         function formatCurrency(val) {
