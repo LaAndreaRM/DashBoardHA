@@ -226,7 +226,7 @@
                             </tr>
                         </thead>
                         <tbody id="body-${id}" class="divide-y divide-gray-800 text-gray-300">
-                    </tbody>
+                        </tbody>
                     </table>
                 </div>
             `;
@@ -646,46 +646,49 @@
 
             let htmlBody = "";
 
+            function renderCeldaConPorcentaje(monto, totalVentas, esDeduccion = false, forceTextClass = "") {
+                let displayedMonto = esDeduccion && monto > 0 ? -monto : monto;
+                let pct = totalVentas > 0 ? ((monto / totalVentas) * 100).toFixed(1) : "0.0";
+                return `<td class="p-3 text-right">
+                    <div class="font-bold ${forceTextClass}">${formatCurrency(displayedMonto)}</div>
+                    <div class="text-[10px] text-gray-500 font-normal">(${pct}%)</div>
+                </td>`;
+            }
+
             // Fila Principal: VENTAS (INGRESOS)
             htmlBody += `<tr class="font-bold text-white bg-gray-900/20"><td class="p-3 flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-plus text-[10px]"></i> VENTAS (INGRESOS)</td>`;
             colsAInterar.forEach(c => {
-                htmlBody += `<td class="p-3 text-right text-income">${formatCurrency(matriz[c].ventas)}</td>`;
+                htmlBody += renderCeldaConPorcentaje(matriz[c].ventas, matriz[c].ventas, false, "text-income");
             });
             htmlBody += `</tr>`;
 
             // Subfila Desglose: Ventas por Local
-            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-8 text-[11px] italic">└─ Ventas por Local</td>`;
+            htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Local</td>`;
             colsAInterar.forEach(c => {
-                let totalVentas = matriz[c].ventas;
-                let pct = totalVentas > 0 ? ((matriz[c].ventasLocal / totalVentas) * 100).toFixed(1) : "0.0";
-                htmlBody += `<td class="p-2 text-right text-gray-300">${formatCurrency(matriz[c].ventasLocal)} <span class="text-[10px] text-gray-500 ml-1">(${pct}%)</span></td>`;
+                htmlBody += renderCeldaConPorcentaje(matriz[c].ventasLocal, matriz[c].ventas, false, "text-gray-300 font-semibold");
             });
             htmlBody += `</tr>`;
 
-            // Subfila Desglose: Ventas por Producción
-            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-8 text-[11px] italic">└─ Ventas por Producción</td>`;
+            // Subfila Desglose: Ventas por Production
+            htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Ventas por Producción</td>`;
             colsAInterar.forEach(c => {
-                let totalVentas = matriz[c].ventas;
-                let pct = totalVentas > 0 ? ((matriz[c].ventasProduccion / totalVentas) * 100).toFixed(1) : "0.0";
-                htmlBody += `<td class="p-2 text-right text-gray-300">${formatCurrency(matriz[c].ventasProduccion)} <span class="text-[10px] text-gray-500 ml-1">(${pct}%)</span></td>`;
+                htmlBody += renderCeldaConPorcentaje(matriz[c].ventasProduccion, matriz[c].ventas, false, "text-gray-300 font-semibold");
             });
             htmlBody += `</tr>`;
 
-            // Subfila Desglose Opcional: Otras Ventas (en caso de que queden huérfanos sin clasificar)
+            // Subfila Desglose Opcional: Otras Ventas
             if (colsAInterar.some(c => matriz[c].ventasOtros > 0)) {
-                htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-8 text-[11px] italic">└─ Otros Ingresos de Ventas</td>`;
+                htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-8 text-[11px] italic">└─ Otros Ingresos de Ventas</td>`;
                 colsAInterar.forEach(c => {
-                    let totalVentas = matriz[c].ventas;
-                    let pct = totalVentas > 0 ? ((matriz[c].ventasOtros / totalVentas) * 100).toFixed(1) : "0.0";
-                    htmlBody += `<td class="p-2 text-right text-gray-400">${formatCurrency(matriz[c].ventasOtros)} <span class="text-[10px] text-gray-500 ml-1">(${pct}%)</span></td>`;
+                    htmlBody += renderCeldaConPorcentaje(matriz[c].ventasOtros, matriz[c].ventas, false, "text-gray-400");
                 });
                 htmlBody += `</tr>`;
             }
 
             // COSTOS DIRECTOS
-            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30"><td class="p-2.5 pl-6 text-[11px]">(-) Costo Ordinario Directo</td>`;
+            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Costo Ordinario Directo</td>`;
             colsAInterar.forEach(c => {
-                htmlBody += `<td class="p-2.5 text-right text-red-400/80">${formatCurrency(matriz[c].costoOrdinario)}</td>`;
+                htmlBody += renderCeldaConPorcentaje(matriz[c].costoOrdinario, matriz[c].ventas, true, "text-red-400/80");
             });
             htmlBody += `</tr>`;
 
@@ -693,21 +696,27 @@
             htmlBody += `<tr class="font-semibold bg-gray-900/30 text-cyan-400"><td class="p-3 pl-4">(=) UTILIDAD BRUTA</td>`;
             colsAInterar.forEach(c => {
                 let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
-                htmlBody += `<td class="p-3 text-right">${formatCurrency(uBruta)}</td>`;
+                htmlBody += renderCeldaConPorcentaje(uBruta, matriz[c].ventas, false, "text-cyan-400");
             });
             htmlBody += `</tr>`;
 
             // DESGLOSE GASTOS OPERATIVOS
-            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-6 text-[11px]">(-) Gasto Operativo</td>`;
-            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoOperativo)}</td>`; });
+            htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Gasto Operativo</td>`;
+            colsAInterar.forEach(c => { 
+                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoOperativo, matriz[c].ventas, true, "text-gray-300"); 
+            });
             htmlBody += `</tr>`;
 
-            htmlBody += `<tr class="text-gray-400"><td class="p-2 pl-6 text-[11px]">(-) Gasto Administrativo</td>`;
-            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoAdministrativo)}</td>`; });
+            htmlBody += `<tr class="text-gray-400 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Gasto Administrativo</td>`;
+            colsAInterar.forEach(c => { 
+                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoAdministrativo, matriz[c].ventas, true, "text-gray-300"); 
+            });
             htmlBody += `</tr>`;
 
-            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30"><td class="p-2 pl-6 text-[11px]">(-) Gasto de Ventas</td>`;
-            colsAInterar.forEach(c => { htmlBody += `<td class="p-2 text-right">${formatCurrency(matriz[c].gastoVentas)}</td>`; });
+            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/30 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px]">(-) Gasto de Ventas</td>`;
+            colsAInterar.forEach(c => { 
+                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoVentas, matriz[c].ventas, true, "text-gray-300"); 
+            });
             htmlBody += `</tr>`;
 
             // UTILIDAD NETA DEL EJERCICIO
@@ -716,14 +725,14 @@
                 let uBruta = matriz[c].ventas - matriz[c].costoOrdinario;
                 let sumGastosOp = matriz[c].gastoOperativo + matriz[c].gastoAdministrativo + matriz[c].gastoVentas;
                 let uNetaEj = uBruta - sumGastosOp;
-                htmlBody += `<td class="p-3 text-right">${formatCurrency(uNetaEj)}</td>`;
+                htmlBody += renderCeldaConPorcentaje(uNetaEj, matriz[c].ventas, false, "text-cyan-400");
             });
             htmlBody += `</tr>`;
 
             // GASTO PERSONAL
-            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/40"><td class="p-2.5 pl-6 text-[11px] text-amber-400/80">(-) Gasto Personal</td>`;
+            htmlBody += `<tr class="text-gray-400 border-b border-gray-800/40 hover:bg-gray-800/20"><td class="p-3 pl-6 text-[11px] text-amber-400/80">(-) Gasto Personal</td>`;
             colsAInterar.forEach(c => {
-                htmlBody += `<td class="p-2.5 text-right text-red-400/80">${formatCurrency(matriz[c].gastoPersonal)}</td>`;
+                htmlBody += renderCeldaConPorcentaje(matriz[c].gastoPersonal, matriz[c].ventas, true, "text-red-400/80");
             });
             htmlBody += `</tr>`;
 
@@ -736,7 +745,7 @@
                 let uFinal = uNetaEj - matriz[c].gastoPersonal;
                 
                 let textClass = uFinal >= 0 ? "text-emerald-400" : "text-red-400";
-                htmlBody += `<td class="p-3.5 text-right ${textClass}">${formatCurrency(uFinal)}</td>`;
+                htmlBody += renderCeldaConPorcentaje(uFinal, matriz[c].ventas, false, textClass);
             });
             htmlBody += `</tr>`;
 
