@@ -181,19 +181,34 @@
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
-        <!-- PESTAÑA CANTIDADES RESTRINGIDA A COSTO ORDINARIO -->
+        <!-- PESTAÑA CANTIDADES CON FILTROS AVANZADOS -->
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center">
                 <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Análisis de Frecuencia y Costos Promedio — Costo Ordinario</span>
+                <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="overflow-x-auto bg-card rounded-xl">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-gray-900/50 text-gray-400 uppercase">
                         <tr>
-                            <th class="p-4">Producto / Descripción</th>
-                            <th class="p-4 text-center">Veces Comprado</th>
-                            <th class="p-4 text-right">Costo Promedio</th>
-                            <th class="p-4 text-right">Total Acumulado</th>
+                            <th class="p-4 w-20 sortable" data-col="ANIO" data-tab="tab-cantidades">Año</th>
+                            <th class="p-4 w-24 sortable" data-col="MES_NUM" data-tab="tab-cantidades">Mes</th>
+                            <th class="p-4 w-28 sortable" data-col="FECHA" data-tab="tab-cantidades">Fecha</th>
+                            <th class="p-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">Producto / Descripción</th>
+                            <th class="p-4 w-48 sortable" data-col="PROVEEDOR" data-tab="tab-cantidades">Proveedor</th>
+                            <th class="p-4 text-center sortable" data-col="veces" data-tab="tab-cantidades">Veces Comprado</th>
+                            <th class="p-4 text-right sortable" data-col="promedio" data-tab="tab-cantidades">Costo Promedio</th>
+                            <th class="p-4 text-right sortable" data-col="TOTAL" data-tab="tab-cantidades">Total Acumulado</th>
+                        </tr>
+                        <tr class="bg-gray-900/30">
+                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-anio-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 año"></th>
+                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-mes-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 mes"></th>
+                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-fecha-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
+                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-desc-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
+                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-prov-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
+                            <th class="p-2 border-b border-gray-800"></th>
+                            <th class="p-2 border-b border-gray-800"></th>
+                            <th class="p-2 border-b border-gray-800"></th>
                         </tr>
                     </thead>
                     <tbody id="body-tab-cantidades" class="divide-y divide-gray-800 text-gray-300">
@@ -219,7 +234,8 @@
             'tab-gasto-operativo': { col: 'FECHA', dir: 'desc' },
             'tab-gasto-administrativo': { col: 'FECHA', dir: 'desc' },
             'tab-gasto-ventas': { col: 'FECHA', dir: 'desc' },
-            'tab-gasto-personal': { col: 'FECHA', dir: 'desc' }
+            'tab-gasto-personal': { col: 'FECHA', dir: 'desc' },
+            'tab-cantidades': { col: 'DESCRIPCION', dir: 'asc' }
         };
 
         const colors = ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#A855F7', '#EC4899', '#06B6D4', '#14B8A6', '#F43F5E'];
@@ -401,6 +417,8 @@
         }
 
         function updateDashboard() {
+            updateTablesOnly();
+            
             const filterFn = (i) => (selectedYear === "TODOS" || i.ANIO === selectedYear) && (selectedMonth === "TODOS" || i.MES_TXT === selectedMonth);
             const filteredIngresos = rawIngresos.filter(filterFn);
             const filteredEgresos = rawEgresos.filter(filterFn);
@@ -416,35 +434,8 @@
             document.getElementById('kpiUtilidad').innerText = formatCurrency(utilidad);
             document.getElementById('kpiMargen').innerText = (totalIng > 0 ? (utilidad / totalIng * 100).toFixed(1) : 0) + "%";
 
-            updateTablesOnly();
             actualizarGraficosYCategorias(filteredIngresos, filteredEgresos);
             actualizarEstadoResultados(filteredIngresos, filteredEgresos);
-            
-            // FILTRADO EXCLUSIVO PARA "COSTO ORDINARIO" EN LA PESTAÑA CANTIDADES
-            const egresosCostoOrdinario = filteredEgresos.filter(e => e.TIPO === "COSTO ORDINARIO");
-            calcularCantidades(egresosCostoOrdinario);
-        }
-
-        function calcularCantidades(egresosOrdinarios) {
-            const agrupado = {};
-            egresosOrdinarios.forEach(e => {
-                const desc = (e.DESCRIPCION || "SIN DESCRIPCION").toUpperCase().trim();
-                if (!agrupado[desc]) agrupado[desc] = { veces: 0, total: 0 };
-                agrupado[desc].veces += 1;
-                agrupado[desc].total += e.TOTAL;
-            });
-
-            const tbody = document.getElementById('body-tab-cantidades');
-            if (tbody) {
-                tbody.innerHTML = Object.entries(agrupado).map(([desc, data]) => `
-                    <tr class="hover:bg-gray-800/40">
-                        <td class="p-4 font-semibold">${desc}</td>
-                        <td class="p-4 text-center">${data.veces}</td>
-                        <td class="p-4 text-right">${formatCurrency(data.total / data.veces)}</td>
-                        <td class="p-4 text-right font-bold text-expense">${formatCurrency(data.total)}</td>
-                    </tr>
-                `).join('') || `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay datos de Costo Ordinario para mostrar</td></tr>`;
-            }
         }
 
         function updateTablesOnly() {
@@ -478,7 +469,64 @@
                 </tr>
             `).join('') || `<tr><td colspan="5" class="p-4 text-center text-gray-500">No se encontraron registros</td></tr>`;
 
-            // Tablas de Egresos por Categoría
+            // Pestaña Cantidades con Filtros y Agrupación
+            let fCant = rawEgresos.filter(filterFn).filter(e => e.TIPO === "COSTO ORDINARIO");
+            let cAnio = document.getElementById('fil-anio-tab-cantidades')?.value.toLowerCase() || '';
+            let cMes = document.getElementById('fil-mes-tab-cantidades')?.value.toLowerCase() || '';
+            let cFecha = document.getElementById('fil-fecha-tab-cantidades')?.value.toLowerCase() || '';
+            let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
+            let cProv = document.getElementById('fil-prov-tab-cantidades')?.value.toLowerCase() || '';
+
+            fCant = fCant.filter(e => 
+                e.ANIO.toLowerCase().includes(cAnio) &&
+                e.MES_NUM.toString().toLowerCase().includes(cMes) &&
+                e.FECHA.toLowerCase().includes(cFecha) &&
+                e.DESCRIPCION.toLowerCase().includes(cDesc) &&
+                e.PROVEEDOR.toLowerCase().includes(cProv)
+            );
+
+            const agrupado = {};
+            fCant.forEach(e => {
+                const key = `${(e.DESCRIPCION || "SIN DESCRIPCION").toUpperCase().trim()}_${e.PROVEEDOR.toUpperCase().trim()}_${e.ANIO}_${e.MES_NUM}_${e.FECHA}`;
+                if (!agrupado[key]) {
+                    agrupado[key] = { 
+                        ANIO: e.ANIO, 
+                        MES_NUM: e.MES_NUM, 
+                        FECHA: e.FECHA, 
+                        DESCRIPCION: e.DESCRIPCION.toUpperCase().trim(), 
+                        PROVEEDOR: e.PROVEEDOR, 
+                        veces: 0, 
+                        total: 0 
+                    };
+                }
+                agrupado[key].veces += 1;
+                agrupado[key].total += e.TOTAL;
+            });
+
+            let itemsCantidades = Object.values(agrupado).map(item => ({
+                ...item,
+                promedio: item.total / item.veces,
+                TOTAL: item.total
+            }));
+
+            let sumCantFil = itemsCantidades.reduce((s, i) => s + i.TOTAL, 0);
+            document.getElementById('sum-tab-cantidades').innerText = formatCurrency(sumCantFil);
+            itemsCantidades = aplicarOrdenamiento(itemsCantidades, currentSort['tab-cantidades']);
+
+            document.getElementById('body-tab-cantidades').innerHTML = itemsCantidades.map(item => `
+                <tr class="hover:bg-gray-800/40">
+                    <td class="p-4">${item.ANIO}</td>
+                    <td class="p-4">${item.MES_NUM}</td>
+                    <td class="p-4">${item.FECHA}</td>
+                    <td class="p-4 font-semibold">${item.DESCRIPCION}</td>
+                    <td class="p-4">${item.PROVEEDOR}</td>
+                    <td class="p-4 text-center">${item.veces}</td>
+                    <td class="p-4 text-right">${formatCurrency(item.promedio)}</td>
+                    <td class="p-4 text-right font-bold text-expense">${formatCurrency(item.TOTAL)}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="8" class="p-4 text-center text-gray-500">No se encontraron registros de Costo Ordinario</td></tr>`;
+
+            // Tablas de Egresos por Categoría Regular
             Object.keys(mapaCategorias).forEach(tabId => {
                 let catName = mapaCategorias[tabId];
                 let fEgr = rawEgresos.filter(filterFn).filter(e => e.TIPO === catName);
