@@ -668,23 +668,37 @@
                 }).join('') + 
                 `<th class="p-3 text-right font-bold text-income">${formatCurrency(totalIng)} <span class="text-[10px] text-gray-500">(100.0%)</span></th></tr>`;
 
-            let costosTotales = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO');
+            let costosTotales = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO' || e.TIPO === 'COSTO EXTRAORDINARIO');
+            let costosOrdinarios = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO');
+            let costosExtraordinarios = fEgr.filter(e => e.TIPO === 'COSTO EXTRAORDINARIO');
             let sumaCostos = costosTotales.reduce((s,e)=>s+e.TOTAL,0);
             
-            html += `<tr><td class="p-3 font-bold text-white">Costos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
+            html += `<tr><td class="p-3 font-bold text-white">Costo</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
             
             // Costo Ordinario
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Costo Ordinario (Todos los costos)</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Costo ordinario</td>` + 
                 indicesActivos.map(idx => {
-                    let mCost = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mCost = costosOrdinarios.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
                     return `<td class="p-3 text-right text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-expense">${formatCurrency(sumaCostos)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaCostos/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-expense">${formatCurrency(costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            // Costo Extraordinario (solo si existe)
+            if (costosExtraordinarios.length > 0) {
+                html += `<tr><td class="p-3 pl-6 text-gray-400">Costo extraordinario</td>` + 
+                    indicesActivos.map(idx => {
+                        let mCost = costosExtraordinarios.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                        let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                        let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
+                        return `<td class="p-3 text-right text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    }).join('') + 
+                    `<th class="p-3 text-right text-expense">${formatCurrency(costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+            }
 
             // Total Costos
-            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Costos</td>` + 
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Costo</td>` + 
                 indicesActivos.map(idx => {
                     let mCost = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
@@ -694,7 +708,7 @@
                 `<th class="p-3 text-right font-bold text-expense">${formatCurrency(sumaCostos)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaCostos/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             let utilidad1 = totalIng - sumaCostos;
-            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad después de Costos</td>` + 
+            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad bruta</td>` + 
                 indicesActivos.map(idx => {
                     let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
@@ -713,7 +727,7 @@
             html += `<tr><td class="p-3 font-bold text-white">Gastos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
             
             // Gastos Operativos
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos Operativos</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto Operativo</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosOperativos.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
@@ -723,7 +737,7 @@
                 `<th class="p-3 text-right text-expense">${formatCurrency(gastosOperativos.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosOperativos.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             // Gastos Administrativos
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos Administrativos</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto Administrativo</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosAdm.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
@@ -733,7 +747,7 @@
                 `<th class="p-3 text-right text-expense">${formatCurrency(gastosAdm.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosAdm.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             // Gastos de Ventas
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos de Ventas</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto de venta</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosVentas.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
@@ -743,7 +757,7 @@
                 `<th class="p-3 text-right text-expense">${formatCurrency(gastosVentas.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosVentas.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             // Total Gastos Operativos, Adm y Ventas
-            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Gastos Operativos, Adm y Ventas</td>` + 
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Gastos</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = sumaGastosAdmVen.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
@@ -753,7 +767,7 @@
                 `<th class="p-3 text-right font-bold text-expense">${formatCurrency(totalGastosAdmVenVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((totalGastosAdmVenVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             let utilidad2 = utilidad1 - totalGastosAdmVenVal;
-            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad después de Gastos Adm y Ventas</td>` + 
+            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad Operativa</td>` + 
                 indicesActivos.map(idx => {
                     let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
@@ -768,7 +782,7 @@
             let sumaGastosPersVal = gastosPers.reduce((s,e)=>s+e.TOTAL,0);
             
             // Gastos Personales
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos Personales</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos personales</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosPers.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
@@ -777,18 +791,8 @@
                 }).join('') + 
                 `<th class="p-3 text-right text-expense">${formatCurrency(sumaGastosPersVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaGastosPersVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
-            // Total Gastos Personales
-            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Gastos Personales</td>` + 
-                indicesActivos.map(idx => {
-                    let mGast = gastosPers.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
-                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
-                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right font-bold text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
-                }).join('') + 
-                `<th class="p-3 text-right font-bold text-expense">${formatCurrency(sumaGastosPersVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaGastosPersVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
-
             let utilidadFinal = utilidad2 - sumaGastosPersVal;
-            html += `<tr class="bg-emerald-900/30"><td class="p-3 font-bold text-emerald-400">Utilidad Final (Neta)</td>` + 
+            html += `<tr class="bg-emerald-900/30"><td class="p-3 font-bold text-emerald-400">Utilidad Final</td>` + 
                 indicesActivos.map(idx => {
                     let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
