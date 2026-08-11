@@ -28,6 +28,7 @@
         th.sortable::after { content: ' ↕'; font-size: 10px; color: #6B7280; margin-left: 4px; }
         th.sort-asc::after { content: ' ↑'; color: #10B981; }
         th.sort-desc::after { content: ' ↓'; color: #10B981; }
+        .estado-mes-unico { font-size: 14px; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -541,7 +542,7 @@
 
             const barContainer = document.getElementById('chartBarContainer');
             if (selectedMonth !== "TODOS") {
-                barContainer.style.maxWidth = "280px";
+                barContainer.style.maxWidth = "520px";
                 barContainer.style.margin = "0 auto";
             } else {
                 barContainer.style.maxWidth = "none";
@@ -625,6 +626,7 @@
             }
 
             head.innerHTML = `<tr><th class="p-3 w-2/5">Concepto Contable</th>${mesesActivos.map(m => `<th class="p-3 text-right">${m}</th>`).join('')}<th class="p-3 text-right">Total</th></tr>`;
+            document.getElementById('tablePG').classList.toggle('estado-mes-unico', selectedMonth !== "TODOS");
             
             const totalIng = fIng.reduce((s, i) => s + i.VALOR, 0);
             
@@ -702,13 +704,24 @@
                 }).join('') + 
                 `<th class="p-3 text-right font-bold text-cyan-400">${formatCurrency(utilidad1)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidad1/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
+            let gastosOperativos = fEgr.filter(e => e.TIPO === 'GASTO OPERATIVO');
             let gastosAdm = fEgr.filter(e => e.TIPO === 'GASTO ADMINISTRATIVO');
             let gastosVentas = fEgr.filter(e => e.TIPO === 'GASTO DE VENTAS');
-            let sumaGastosAdmVen = [...gastosAdm, ...gastosVentas];
+            let sumaGastosAdmVen = [...gastosOperativos, ...gastosAdm, ...gastosVentas];
             let totalGastosAdmVenVal = sumaGastosAdmVen.reduce((s,e)=>s+e.TOTAL,0);
 
             html += `<tr><td class="p-3 font-bold text-white">Gastos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
             
+            // Gastos Operativos
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos Operativos</td>` + 
+                indicesActivos.map(idx => {
+                    let mGast = gastosOperativos.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-expense">${formatCurrency(gastosOperativos.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosOperativos.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
             // Gastos Administrativos
             html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos Administrativos</td>` + 
                 indicesActivos.map(idx => {
@@ -729,8 +742,8 @@
                 }).join('') + 
                 `<th class="p-3 text-right text-expense">${formatCurrency(gastosVentas.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosVentas.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
-            // Total Gastos Adm y Ventas
-            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Gastos Adm y Ventas</td>` + 
+            // Total Gastos Operativos, Adm y Ventas
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Gastos Operativos, Adm y Ventas</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = sumaGastosAdmVen.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
