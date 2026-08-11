@@ -155,15 +155,11 @@
                 <table class="w-full text-left text-xs">
                     <thead class="bg-gray-900/50 text-gray-400 uppercase">
                         <tr>
-                            <th class="p-4 w-20 sortable" data-col="ANIO" data-tab="tab-ingresos">Año</th>
-                            <th class="p-4 w-24 sortable" data-col="MES_NUM" data-tab="tab-ingresos">Mes</th>
                             <th class="p-4 w-28 sortable" data-col="FECHA" data-tab="tab-ingresos">Fecha</th>
                             <th class="p-4 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
                             <th class="p-4 w-32 text-right sortable" data-col="VALOR" data-tab="tab-ingresos">Valor</th>
                         </tr>
                         <tr class="bg-gray-900/30">
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINAnio" class="input-filter" placeholder="🔍 año"></th>
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINMes" class="input-filter" placeholder="🔍 mes"></th>
                             <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
                             <th class="p-2 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
                             <th class="p-2 border-b border-gray-800"></th>
@@ -181,31 +177,23 @@
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
-        <!-- PESTAÑA CANTIDADES CON FILTROS AVANZADOS -->
+        <!-- PESTAÑA CANTIDADES: Únicamente Producto, Cantidad (Veces), Costo Promedio y Total Acumulado -->
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center">
-                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Análisis de Frecuencia y Costos Promedio — Costo Ordinario</span>
+                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario (Global / Multi-proveedor)</span>
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="overflow-x-auto bg-card rounded-xl">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-gray-900/50 text-gray-400 uppercase">
                         <tr>
-                            <th class="p-4 w-20 sortable" data-col="ANIO" data-tab="tab-cantidades">Año</th>
-                            <th class="p-4 w-24 sortable" data-col="MES_NUM" data-tab="tab-cantidades">Mes</th>
-                            <th class="p-4 w-28 sortable" data-col="FECHA" data-tab="tab-cantidades">Fecha</th>
                             <th class="p-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">Producto / Descripción</th>
-                            <th class="p-4 w-48 sortable" data-col="PROVEEDOR" data-tab="tab-cantidades">Proveedor</th>
                             <th class="p-4 text-center sortable" data-col="veces" data-tab="tab-cantidades">Veces Comprado</th>
-                            <th class="p-4 text-right sortable" data-col="promedio" data-tab="tab-cantidades">Costo Promedio</th>
+                            <th class="p-4 text-right sortable" data-col="promedio" data-tab="tab-cantidades">Costo Promedio Unitario</th>
                             <th class="p-4 text-right sortable" data-col="TOTAL" data-tab="tab-cantidades">Total Acumulado</th>
                         </tr>
                         <tr class="bg-gray-900/30">
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-anio-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 año"></th>
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-mes-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 mes"></th>
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-fecha-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
                             <th class="p-2 border-b border-gray-800"><input type="text" id="fil-desc-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
-                            <th class="p-2 border-b border-gray-800"><input type="text" id="fil-prov-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
                             <th class="p-2 border-b border-gray-800"></th>
                             <th class="p-2 border-b border-gray-800"></th>
                             <th class="p-2 border-b border-gray-800"></th>
@@ -224,7 +212,6 @@
         let rawIngresos = [];
         let selectedYear = "TODOS";
         let selectedMonth = "TODOS";
-        let activeTabId = "tab-resumen";
         let chartBar = null;
         let chartDoughnut = null;
 
@@ -262,16 +249,12 @@
                         <table class="w-full text-left text-xs">
                             <thead class="bg-gray-900/50 text-gray-400 uppercase">
                                 <tr>
-                                    <th class="p-4 w-20 sortable" data-col="ANIO" data-tab="${id}">Año</th>
-                                    <th class="p-4 w-24 sortable" data-col="MES_NUM" data-tab="${id}">Mes</th>
                                     <th class="p-4 w-28 sortable" data-col="FECHA" data-tab="${id}">Fecha</th>
                                     <th class="p-4 sortable" data-col="DESCRIPCION" data-tab="${id}">Descripción</th>
                                     <th class="p-4 w-48 sortable" data-col="PROVEEDOR" data-tab="${id}">Proveedor</th>
                                     <th class="p-4 w-32 text-right sortable" data-col="TOTAL" data-tab="${id}">Total</th>
                                 </tr>
                                 <tr class="bg-gray-900/30">
-                                    <th class="p-2 border-b border-gray-800"><input type="text" id="fil-anio-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 año"></th>
-                                    <th class="p-2 border-b border-gray-800"><input type="text" id="fil-mes-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 mes"></th>
                                     <th class="p-2 border-b border-gray-800"><input type="text" id="fil-fecha-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
                                     <th class="p-2 border-b border-gray-800"><input type="text" id="fil-desc-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
                                     <th class="p-2 border-b border-gray-800"><input type="text" id="fil-prov-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
@@ -289,8 +272,6 @@
         document.getElementById('yearFilter').addEventListener('change', (e) => { selectedYear = e.target.value; updateDashboard(); });
         document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateDashboard(); });
         
-        document.getElementById('colFilINAnio').addEventListener('input', updateTablesOnly);
-        document.getElementById('colFilINMes').addEventListener('input', updateTablesOnly);
         document.getElementById('colFilINFecha').addEventListener('input', updateTablesOnly);
         document.getElementById('colFilINTipo').addEventListener('input', updateTablesOnly);
 
@@ -443,14 +424,10 @@
             
             // Tabla Ingresos
             let fIng = rawIngresos.filter(filterFn);
-            let vAnio = document.getElementById('colFilINAnio').value.toLowerCase();
-            let vMes = document.getElementById('colFilINMes').value.toLowerCase();
             let vFecha = document.getElementById('colFilINFecha').value.toLowerCase();
             let vTipo = document.getElementById('colFilINTipo').value.toLowerCase();
 
             fIng = fIng.filter(i => 
-                i.ANIO.toLowerCase().includes(vAnio) &&
-                i.MES_NUM.toString().toLowerCase().includes(vMes) &&
                 i.FECHA.toLowerCase().includes(vFecha) &&
                 i.TIPO.toLowerCase().includes(vTipo)
             );
@@ -461,40 +438,26 @@
 
             document.getElementById('tableIngresos').innerHTML = fIng.map(i => `
                 <tr class="hover:bg-gray-800/40">
-                    <td class="p-4">${i.ANIO}</td>
-                    <td class="p-4">${i.MES_NUM}</td>
                     <td class="p-4">${i.FECHA}</td>
                     <td class="p-4">${i.TIPO}</td>
                     <td class="p-4 text-right font-semibold text-income">${formatCurrency(i.VALOR)}</td>
                 </tr>
-            `).join('') || `<tr><td colspan="5" class="p-4 text-center text-gray-500">No se encontraron registros</td></tr>`;
+            `).join('') || `<tr><td colspan="3" class="p-4 text-center text-gray-500">No se encontraron registros</td></tr>`;
 
-            // Pestaña Cantidades con Filtros y Agrupación
+            // Pestaña Cantidades: Agrupación puramente global por producto (sin importar el proveedor ni año/mes directo)
             let fCant = rawEgresos.filter(filterFn).filter(e => e.TIPO === "COSTO ORDINARIO");
-            let cAnio = document.getElementById('fil-anio-tab-cantidades')?.value.toLowerCase() || '';
-            let cMes = document.getElementById('fil-mes-tab-cantidades')?.value.toLowerCase() || '';
-            let cFecha = document.getElementById('fil-fecha-tab-cantidades')?.value.toLowerCase() || '';
             let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
-            let cProv = document.getElementById('fil-prov-tab-cantidades')?.value.toLowerCase() || '';
 
             fCant = fCant.filter(e => 
-                e.ANIO.toLowerCase().includes(cAnio) &&
-                e.MES_NUM.toString().toLowerCase().includes(cMes) &&
-                e.FECHA.toLowerCase().includes(cFecha) &&
-                e.DESCRIPCION.toLowerCase().includes(cDesc) &&
-                e.PROVEEDOR.toLowerCase().includes(cProv)
+                e.DESCRIPCION.toLowerCase().includes(cDesc)
             );
 
             const agrupado = {};
             fCant.forEach(e => {
-                const key = `${(e.DESCRIPCION || "SIN DESCRIPCION").toUpperCase().trim()}_${e.PROVEEDOR.toUpperCase().trim()}_${e.ANIO}_${e.MES_NUM}_${e.FECHA}`;
+                const key = (e.DESCRIPCION || "SIN DESCRIPCION").toUpperCase().trim();
                 if (!agrupado[key]) {
                     agrupado[key] = { 
-                        ANIO: e.ANIO, 
-                        MES_NUM: e.MES_NUM, 
-                        FECHA: e.FECHA, 
-                        DESCRIPCION: e.DESCRIPCION.toUpperCase().trim(), 
-                        PROVEEDOR: e.PROVEEDOR, 
+                        DESCRIPCION: key, 
                         veces: 0, 
                         total: 0 
                     };
@@ -515,31 +478,23 @@
 
             document.getElementById('body-tab-cantidades').innerHTML = itemsCantidades.map(item => `
                 <tr class="hover:bg-gray-800/40">
-                    <td class="p-4">${item.ANIO}</td>
-                    <td class="p-4">${item.MES_NUM}</td>
-                    <td class="p-4">${item.FECHA}</td>
                     <td class="p-4 font-semibold">${item.DESCRIPCION}</td>
-                    <td class="p-4">${item.PROVEEDOR}</td>
                     <td class="p-4 text-center">${item.veces}</td>
                     <td class="p-4 text-right">${formatCurrency(item.promedio)}</td>
                     <td class="p-4 text-right font-bold text-expense">${formatCurrency(item.TOTAL)}</td>
                 </tr>
-            `).join('') || `<tr><td colspan="8" class="p-4 text-center text-gray-500">No se encontraron registros de Costo Ordinario</td></tr>`;
+            `).join('') || `<tr><td colspan="4" class="p-4 text-center text-gray-500">No se encontraron registros de Costo Ordinario</td></tr>`;
 
             // Tablas de Egresos por Categoría Regular
             Object.keys(mapaCategorias).forEach(tabId => {
                 let catName = mapaCategorias[tabId];
                 let fEgr = rawEgresos.filter(filterFn).filter(e => e.TIPO === catName);
 
-                let iAnio = document.getElementById(`fil-anio-${tabId}`)?.value.toLowerCase() || '';
-                let iMes = document.getElementById(`fil-mes-${tabId}`)?.value.toLowerCase() || '';
                 let iFecha = document.getElementById(`fil-fecha-${tabId}`)?.value.toLowerCase() || '';
                 let iDesc = document.getElementById(`fil-desc-${tabId}`)?.value.toLowerCase() || '';
                 let iProv = document.getElementById(`fil-prov-${tabId}`)?.value.toLowerCase() || '';
 
                 fEgr = fEgr.filter(e => 
-                    e.ANIO.toLowerCase().includes(iAnio) &&
-                    e.MES_NUM.toString().toLowerCase().includes(iMes) &&
                     e.FECHA.toLowerCase().includes(iFecha) &&
                     e.DESCRIPCION.toLowerCase().includes(iDesc) &&
                     e.PROVEEDOR.toLowerCase().includes(iProv)
@@ -551,14 +506,12 @@
 
                 document.getElementById(`body-${tabId}`).innerHTML = fEgr.map(e => `
                     <tr class="hover:bg-gray-800/40">
-                        <td class="p-4">${e.ANIO}</td>
-                        <td class="p-4">${e.MES_NUM}</td>
                         <td class="p-4">${e.FECHA}</td>
                         <td class="p-4">${e.DESCRIPCION}</td>
                         <td class="p-4">${e.PROVEEDOR}</td>
                         <td class="p-4 text-right font-semibold text-expense">${formatCurrency(e.TOTAL)}</td>
                     </tr>
-                `).join('') || `<tr><td colspan="6" class="p-4 text-center text-gray-500">No se encontraron registros</td></tr>`;
+                `).join('') || `<tr><td colspan="4" class="p-4 text-center text-gray-500">No se encontraron registros</td></tr>`;
             });
         }
 
