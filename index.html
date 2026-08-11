@@ -1,3 +1,4 @@
+HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -177,7 +178,6 @@
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
-        <!-- PESTAÑA CANTIDADES: Centrada y optimizada para evitar espacios excesivos -->
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center max-w-4xl mx-auto">
                 <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario</span>
@@ -568,25 +568,34 @@
         function actualizarEstadoResultados(fIng, fEgr) {
             const head = document.getElementById('headEstadoResultados');
             const body = document.getElementById('bodyEstadoResultados');
+            head.innerHTML = `<tr><th class="p-3">Concepto</th>${mesesAbrev.map(m => `<th class="p-3 text-right">${m}</th>`).join('')}<th class="p-3 text-right">Total</th></tr>`;
             
-            head.innerHTML = `<tr><th class="p-3">Concepto Contable</th>${mesesAbrev.map(m => `<th class="p-3 text-right">${m}</th>`).join('')}<th class="p-3 text-right">Total</th></tr>`;
+            const totalIng = fIng.reduce((s,i) => s + i.VALOR, 0);
+            const getMes = (arr, m, cat) => arr.filter(x => x.MES_NUM === m && (cat ? x.TIPO === cat : true)).reduce((s, x) => s + (x.VALOR || x.TOTAL || 0), 0);
             
-            let rowIngresosHTML = `<tr><td class="p-3 font-bold text-white">1. Ingresos Operacionales</td>${mesesAbrev.map((m, idx) => {
-                let v = fIng.filter(i => i.MES_NUM === idx + 1).reduce((s, i) => s + i.VALOR, 0);
-                return `<td class="p-3 text-right text-income">${formatCurrency(v)}</td>`;
-            }).join('')}<th class="p-3 text-right text-income">${formatCurrency(fIng.reduce((s,i)=>s+i.VALOR,0))}</th></tr>`;
-
-            let rowsCostosGastos = Object.entries(mapaCategorias).map(([_, catName], index) => {
-                let totalCatAnual = 0;
-                let mesesCols = mesesAbrev.map((m, idx) => {
-                    let v = fEgr.filter(e => e.MES_NUM === idx + 1 && e.TIPO === catName).reduce((s, e) => s + e.TOTAL, 0);
-                    totalCatAnual += v;
-                    return `<td class="p-3 text-right text-expense">${formatCurrency(v)}</td>`;
-                }).join('');
-                return `<tr><td class="p-3 pl-6 text-gray-400">1.${index + 1} ${catName}</td>${mesesCols}<th class="p-3 text-right text-expense">${formatCurrency(totalCatAnual)}</th></tr>`;
-            }).join('');
-
-            body.innerHTML = rowIngresosHTML + rowsCostosGastos;
+            let html = `<tr><td class="p-3 font-bold text-white">1. INGRESOS</td>` + mesesAbrev.map((_, i) => `<td class="p-3 text-right text-income">${formatCurrency(getMes(fIng, i+1))}</td>`).join('') + `<th class="p-3 text-right text-income">${formatCurrency(totalIng)}</th></tr>`;
+            
+            let costos = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO');
+            html += `<tr><td class="p-3 pl-6 text-gray-400">(-) Costos</td>` + mesesAbrev.map((_, i) => `<td class="p-3 text-right text-expense">${formatCurrency(getMes(costos, i+1))}</td>`).join('') + `<th class="p-3 text-right text-expense">${formatCurrency(costos.reduce((s,e)=>s+e.TOTAL,0))}</th></tr>`;
+            
+            let utilBruta = totalIng - costos.reduce((s,e)=>s+e.TOTAL,0);
+            html += `<tr class="bg-gray-800/50"><td class="p-3 font-bold">= UTILIDAD BRUTA</td>` + mesesAbrev.map(() => `<td class="p-3 text-right"></td>`).join('') + `<th class="p-3 text-right">${formatCurrency(utilBruta)} (${totalIng > 0 ? ((utilBruta/totalIng)*100).toFixed(1) : 0}%)</th></tr>`;
+            
+            ['GASTO ADMINISTRATIVO', 'GASTO DE VENTAS'].forEach(cat => {
+                let g = fEgr.filter(e => e.TIPO === cat);
+                html += `<tr><td class="p-3 pl-6 text-gray-400">(-) ${cat.split(' ')[1]}</td>` + mesesAbrev.map((_, i) => `<td class="p-3 text-right text-expense">${formatCurrency(getMes(g, i+1))}</td>`).join('') + `<th class="p-3 text-right text-expense">${formatCurrency(g.reduce((s,e)=>s+e.TOTAL,0))}</th></tr>`;
+            });
+            
+            let utilOp = utilBruta - fEgr.filter(e => ['GASTO ADMINISTRATIVO', 'GASTO DE VENTAS'].includes(e.TIPO)).reduce((s,e)=>s+e.TOTAL,0);
+            html += `<tr class="bg-gray-800/50"><td class="p-3 font-bold">= UTILIDAD OPERATIVA</td>` + mesesAbrev.map(() => `<td class="p-3 text-right"></td>`).join('') + `<th class="p-3 text-right">${formatCurrency(utilOp)} (${totalIng > 0 ? ((utilOp/totalIng)*100).toFixed(1) : 0}%)</th></tr>`;
+            
+            let pers = fEgr.filter(e => e.TIPO === 'GASTO PERSONAL');
+            html += `<tr><td class="p-3 pl-6 text-gray-400">(-) Gastos Personales</td>` + mesesAbrev.map((_, i) => `<td class="p-3 text-right text-expense">${formatCurrency(getMes(pers, i+1))}</td>`).join('') + `<th class="p-3 text-right text-expense">${formatCurrency(pers.reduce((s,e)=>s+e.TOTAL,0))}</th></tr>`;
+            
+            let utilNeta = utilOp - pers.reduce((s,e)=>s+e.TOTAL,0);
+            html += `<tr class="bg-emerald-900/20"><td class="p-3 font-bold">= UTILIDAD NETA</td>` + mesesAbrev.map(() => `<td class="p-3 text-right"></td>`).join('') + `<th class="p-3 text-right font-bold text-white">${formatCurrency(utilNeta)} (${totalIng > 0 ? ((utilNeta/totalIng)*100).toFixed(1) : 0}%)</th></tr>`;
+            
+            body.innerHTML = html;
         }
 
         function switchTab(e, tabId) {
