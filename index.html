@@ -102,16 +102,20 @@
 
         <div id="tab-resumen" class="tab-content space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl">
+                <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                     <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Ingresos vs Costos por Mes</h3>
-                    <div class="h-80">
-                        <canvas id="chartComparativo"></canvas>
+                    <div class="w-full flex justify-center items-center" style="height: 280px;">
+                        <div id="chartBarContainer" class="w-full h-full">
+                            <canvas id="chartComparativo"></canvas>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-card p-6 rounded-2xl shadow-xl">
-                    <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Distribución egresos: Costos y gastos</h3>
-                    <div class="h-64">
-                        <canvas id="chartDoughnut"></canvas>
+                <div class="bg-card p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-300 mb-4 uppercase tracking-wider">Distribución egresos: Costos y gastos</h3>
+                        <div class="w-full flex justify-center items-center" style="height: 180px;">
+                            <canvas id="chartDoughnut"></canvas>
+                        </div>
                     </div>
                     <div id="doughnutLegend" class="mt-4 space-y-2 text-[11px] max-h-32 overflow-y-auto custom-scrollbar">
                     </div>
@@ -535,6 +539,14 @@
                 dataEgrBar = [rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === mIdx).reduce((s, e) => s + e.TOTAL, 0)];
             }
 
+            const barContainer = document.getElementById('chartBarContainer');
+            if (selectedMonth !== "TODOS") {
+                barContainer.style.maxWidth = "280px";
+                barContainer.style.margin = "0 auto";
+            } else {
+                barContainer.style.maxWidth = "none";
+            }
+
             const ctxBar = document.getElementById('chartComparativo').getContext('2d');
             if (chartBar) chartBar.destroy();
             chartBar = new Chart(ctxBar, {
@@ -542,8 +554,8 @@
                 data: {
                     labels: labelsBar,
                     datasets: [
-                        { label: 'Ingresos', data: dataIngBar, backgroundColor: '#10B981', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 40 : 'flex' },
-                        { label: 'Costos y Gastos', data: dataEgrBar, backgroundColor: '#F87171', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 40 : 'flex' }
+                        { label: 'Ingresos', data: dataIngBar, backgroundColor: '#10B981', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' },
+                        { label: 'Costos y Gastos', data: dataEgrBar, backgroundColor: '#F87171', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' }
                     ]
                 },
                 options: { 
@@ -612,7 +624,7 @@
                 indicesActivos = [mesesAbrev.indexOf(selectedMonth) + 1];
             }
 
-            head.innerHTML = `<tr><th class="p-3">Concepto Contable</th>${mesesActivos.map(m => `<th class="p-3 text-right">${m}</th>`).join('')}<th class="p-3 text-right">Total</th></tr>`;
+            head.innerHTML = `<tr><th class="p-3 w-2/5">Concepto Contable</th>${mesesActivos.map(m => `<th class="p-3 text-right">${m}</th>`).join('')}<th class="p-3 text-right">Total</th></tr>`;
             
             const totalIng = fIng.reduce((s, i) => s + i.VALOR, 0);
             
