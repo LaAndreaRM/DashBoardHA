@@ -162,11 +162,13 @@
                         <tr>
                             <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="tab-ingresos">Fecha</th>
                             <th class="py-3 px-6 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
+                            <th class="py-3 px-6 text-center sortable" data-col="CANTIDAD" data-tab="tab-ingresos">Cantidad</th>
                             <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR" data-tab="tab-ingresos">Valor</th>
                         </tr>
                         <tr class="bg-gray-900/30">
                             <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
                             <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
+                            <th class="py-2 px-6 border-b border-gray-800"></th>
                             <th class="py-2 px-6 border-b border-gray-800"></th>
                         </tr>
                     </thead>
@@ -256,12 +258,18 @@
                                     <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="${id}">Fecha</th>
                                     <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="${id}">Descripción</th>
                                     <th class="py-3 px-6 w-48 sortable" data-col="PROVEEDOR" data-tab="${id}">Proveedor</th>
+                                    <th class="py-3 px-4 text-center sortable" data-col="CANTIDAD" data-tab="${id}">Cantidad</th>
+                                    <th class="py-3 px-4 text-center sortable" data-col="UNIDAD" data-tab="${id}">Unidad</th>
+                                    <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR_UNITARIO" data-tab="${id}">Valor Unitario</th>
                                     <th class="py-3 px-6 w-40 text-right sortable" data-col="TOTAL" data-tab="${id}">Total</th>
                                 </tr>
                                 <tr class="bg-gray-900/30">
                                     <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-fecha-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
                                     <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-desc-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
                                     <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-prov-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
+                                    <th class="py-2 px-4 border-b border-gray-800"></th>
+                                    <th class="py-2 px-4 border-b border-gray-800"></th>
+                                    <th class="py-2 px-6 border-b border-gray-800"></th>
                                     <th class="py-2 px-6 border-b border-gray-800"></th>
                                 </tr>
                             </thead>
@@ -332,6 +340,9 @@
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
                         let idxDesc = headers.indexOf("DESCRIPCIÓN") === -1 ? (headers.indexOf("DESCRIPCION") === -1 ? 6 : headers.indexOf("DESCRIPCION")) : headers.indexOf("DESCRIPCIÓN");
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
+                        let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
+                        let idxUnidad = headers.indexOf("UNIDAD");
+                        let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
                         rawEgresos = rawRows.slice(1).map(row => {
                             let parsedDate = parseExcelDate(row[idxFecha]);
@@ -346,6 +357,9 @@
                                 DESCRIPCION: (row[idxDesc] || "").toString(), 
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
+                                CANTIDAD: idxCant !== -1 ? (parseFloat(row[idxCant]) || 0) : 0,
+                                UNIDAD: idxUnidad !== -1 ? (row[idxUnidad] || "").toString().trim() : "",
+                                VALOR_UNITARIO: idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0,
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
                         }).filter(item => item !== null);
@@ -358,6 +372,7 @@
                         let idxFecha = headersIn.indexOf("FECHA") === -1 ? 1 : headersIn.indexOf("FECHA");
                         let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
                         let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
+                        let idxCantIn = headersIn.indexOf("CANT") === -1 ? headersIn.indexOf("CANTIDAD") : headersIn.indexOf("CANT");
 
                         rawIngresos = rawRowsIn.slice(1).map(row => {
                             if (!row || row[idxValor] === "") return null;
@@ -368,6 +383,7 @@
                                 MES_TXT: mesesAbrev[parsedDate.m - 1], 
                                 FECHA: parsedDate.text, 
                                 TIPO: (row[idxTipo] || "Venta Ordinaria").toString(), 
+                                CANTIDAD: idxCantIn !== -1 ? (parseFloat(row[idxCantIn]) || 0) : 0,
                                 VALOR: parseFloat(row[idxValor]) || 0 
                             };
                         }).filter(item => item !== null);
@@ -443,9 +459,10 @@
                 <tr class="hover:bg-gray-800/40">
                     <td class="py-3 px-6">${i.FECHA}</td>
                     <td class="py-3 px-6">${i.TIPO}</td>
+                    <td class="py-3 px-6 text-center">${i.CANTIDAD || 0}</td>
                     <td class="py-3 px-6 text-right font-semibold text-income">${formatCurrency(i.VALOR)}</td>
                 </tr>
-            `).join('') || `<tr><td colspan="3" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
+            `).join('') || `<tr><td colspan="7" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
 
             let fCant = rawEgresos.filter(filterFn).filter(e => e.TIPO === "COSTO ORDINARIO");
             let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
@@ -510,6 +527,9 @@
                         <td class="py-3 px-6">${e.FECHA}</td>
                         <td class="py-3 px-6">${e.DESCRIPCION}</td>
                         <td class="py-3 px-6">${e.PROVEEDOR}</td>
+                        <td class="py-3 px-4 text-center">${e.CANTIDAD || 0}</td>
+                        <td class="py-3 px-4 text-center">${e.UNIDAD || ''}</td>
+                        <td class="py-3 px-6 text-right">${formatCurrency(e.VALOR_UNITARIO)}</td>
                         <td class="py-3 px-6 text-right font-semibold text-expense">${formatCurrency(e.TOTAL)}</td>
                     </tr>
                 `).join('') || `<tr><td colspan="4" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
@@ -820,3 +840,4 @@
     </script>
 </body>
 </html>
+
