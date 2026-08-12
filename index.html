@@ -161,8 +161,8 @@
                     <thead class="bg-gray-900/50 text-gray-400 uppercase">
                         <tr>
                             <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="tab-ingresos">Fecha</th>
-                            <th class="py-3 px-6 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
                             <th class="py-3 px-6 text-center sortable" data-col="CANTIDAD" data-tab="tab-ingresos">Cantidad</th>
+                            <th class="py-3 px-6 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
                             <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR" data-tab="tab-ingresos">Valor</th>
                         </tr>
                         <tr class="bg-gray-900/30">
@@ -458,8 +458,8 @@
             document.getElementById('tableIngresos').innerHTML = fIng.map(i => `
                 <tr class="hover:bg-gray-800/40">
                     <td class="py-3 px-6">${i.FECHA}</td>
-                    <td class="py-3 px-6">${i.TIPO}</td>
                     <td class="py-3 px-6 text-center">${i.CANTIDAD || 0}</td>
+                    <td class="py-3 px-6">${i.TIPO}</td>
                     <td class="py-3 px-6 text-right font-semibold text-income">${formatCurrency(i.VALOR)}</td>
                 </tr>
             `).join('') || `<tr><td colspan="7" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
