@@ -162,13 +162,15 @@
                         <tr>
                             <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="tab-ingresos">Fecha</th>
                             <th class="py-3 px-6 text-center sortable" data-col="CANTIDAD" data-tab="tab-ingresos">Cantidad</th>
+                            <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="tab-ingresos">Descripción</th>
                             <th class="py-3 px-6 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
                             <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR" data-tab="tab-ingresos">Valor</th>
                         </tr>
                         <tr class="bg-gray-900/30">
                             <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
-                            <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
                             <th class="py-2 px-6 border-b border-gray-800"></th>
+                            <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINDesc" class="input-filter" placeholder="🔍 descripción..."></th>
+                            <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
                             <th class="py-2 px-6 border-b border-gray-800"></th>
                         </tr>
                     </thead>
@@ -373,6 +375,7 @@
                         let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
                         let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
                         let idxCantIn = headersIn.indexOf("CANT") === -1 ? headersIn.indexOf("CANTIDAD") : headersIn.indexOf("CANT");
+                        let idxDescIn = headersIn.indexOf("DESCRIPCIÓN") === -1 ? headersIn.indexOf("DESCRIPCION") : headersIn.indexOf("DESCRIPCIÓN");
 
                         rawIngresos = rawRowsIn.slice(1).map(row => {
                             if (!row || row[idxValor] === "") return null;
@@ -384,6 +387,7 @@
                                 FECHA: parsedDate.text, 
                                 TIPO: (row[idxTipo] || "Venta Ordinaria").toString(), 
                                 CANTIDAD: idxCantIn !== -1 ? (parseFloat(row[idxCantIn]) || 0) : 0,
+                                DESCRIPCION: idxDescIn !== -1 ? (row[idxDescIn] || "").toString() : "",
                                 VALOR: parseFloat(row[idxValor]) || 0 
                             };
                         }).filter(item => item !== null);
@@ -444,10 +448,12 @@
             
             let fIng = rawIngresos.filter(filterFn);
             let vFecha = document.getElementById('colFilINFecha').value.toLowerCase();
+            let vDesc = document.getElementById('colFilINDesc').value.toLowerCase();
             let vTipo = document.getElementById('colFilINTipo').value.toLowerCase();
 
             fIng = fIng.filter(i => 
                 i.FECHA.toLowerCase().includes(vFecha) &&
+                i.DESCRIPCION.toLowerCase().includes(vDesc) &&
                 i.TIPO.toLowerCase().includes(vTipo)
             );
 
@@ -459,10 +465,11 @@
                 <tr class="hover:bg-gray-800/40">
                     <td class="py-3 px-6">${i.FECHA}</td>
                     <td class="py-3 px-6 text-center">${i.CANTIDAD || 0}</td>
+                    <td class="py-3 px-6">${i.DESCRIPCION}</td>
                     <td class="py-3 px-6">${i.TIPO}</td>
                     <td class="py-3 px-6 text-right font-semibold text-income">${formatCurrency(i.VALOR)}</td>
                 </tr>
-            `).join('') || `<tr><td colspan="7" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
+            `).join('') || `<tr><td colspan="5" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
 
             let fCant = rawEgresos.filter(filterFn).filter(e => e.TIPO === "COSTO ORDINARIO");
             let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
