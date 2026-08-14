@@ -343,9 +343,7 @@
                         let idxDesc = headers.indexOf("DESCRIPCIÓN") === -1 ? (headers.indexOf("DESCRIPCION") === -1 ? 6 : headers.indexOf("DESCRIPCION")) : headers.indexOf("DESCRIPCIÓN");
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
-                        let idxUnidadCompra = headers.indexOf("UNIDAD DE COMPRA");
-                        let idxValorXUnidad = headers.indexOf("VALOR X UNIDAD");
-                        let idxUnidadReal = headers.indexOf("UNIDAD REAL");
+                        let idxUnidad = headers.indexOf("UNIDAD");
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
                         rawEgresos = rawRows.slice(1).map(row => {
@@ -362,8 +360,8 @@
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
                                 CANTIDAD: idxCant !== -1 ? (parseFloat(row[idxCant]) || 0) : 0,
-                                UNIDAD: idxUnidadReal !== -1 ? (row[idxUnidadReal] || "").toString().trim() : "",
-                                VALOR_UNITARIO: idxValorXUnidad !== -1 ? (parseFloat(row[idxValorXUnidad]) || 0) : 0,
+                                UNIDAD: idxUnidad !== -1 ? (row[idxUnidad] || "").toString().trim() : "",
+                                VALOR_UNITARIO: idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0,
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
                         }).filter(item => item !== null);
