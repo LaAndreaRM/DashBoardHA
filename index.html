@@ -188,7 +188,7 @@
         
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center">
-                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costos (Columna T)</span>
+                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costos (Columna T)[cite: 4]</span>
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="bg-card rounded-xl overflow-hidden shadow-xl">
@@ -412,23 +412,6 @@
             mesesAbrev.forEach((mAbrev, index) => { let opt = document.createElement('option'); opt.value = mAbrev; opt.innerText = mesesNombres[index]; mSelect.appendChild(opt); });
         }
 
-        function obtenerMesesActivosDinamicos(baseIngresos, baseEgresos) {
-            let mesesConDatos = new Set();
-            baseIngresos.forEach(i => mesesConDatos.add(i.MES_NUM));
-            baseEgresos.forEach(e => mesesConDatos.add(e.MES_NUM));
-            
-            if (mesesConDatos.size === 0) return { mesesActivos: ['ENE'], indicesActivos: [1] };
-            
-            let maxM = Math.max(...Array.from(mesesConDatos));
-            let indices = [];
-            let nombres = [];
-            for (let m = 1; m <= maxM; m++) {
-                indices.push(m);
-                nombres.push(mesesAbrev[m - 1]);
-            }
-            return { mesesActivos: nombres, indicesActivos: indices };
-        }
-
         function aplicarOrdenamiento(arr, sortConfig) {
             if (!sortConfig || !sortConfig.col) return arr;
             return [...arr].sort((a, b) => {
@@ -524,17 +507,26 @@
         }
 
         function renderizarTabCantidades(filterFn) {
-            let baseEgresosYear = rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear));
-            let baseIngresosYear = rawIngresos.filter(i => (selectedYear === "TODOS" || i.ANIO === selectedYear));
-            
-            let fCant = baseEgresosYear.filter(e => (selectedMonth === "TODOS" || e.MES_TXT === selectedMonth));
+            let baseEgresos = rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear));
+            let fCant = baseEgresos.filter(e => (selectedMonth === "TODOS" || e.MES_TXT === selectedMonth));
             let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
 
             fCant = fCant.filter(e => e.DESCRIPCION.toLowerCase().includes(cDesc));
 
-            let dinamicos = obtenerMesesActivosDinamicos(baseIngresosYear, baseEgresosYear);
-            let mesesActivos = dinamicos.mesesActivos;
-            let indicesActivos = dinamicos.indicesActivos;
+            let mesesActivos = [];
+            let indicesActivos = [];
+
+            if (selectedMonth === "TODOS") {
+                let maxMonthWithData = 1;
+                for (let m = 1; m <= 12; m++) {
+                    let hasEgr = baseEgresos.some(e => e.MES_NUM === m);
+                    if (hasEgr) maxMonthWithData = m;
+                }
+                for (let m = 1; m <= maxMonthWithData; m++) {
+                    mesesActivos.push(mesesAbrev[m - 1]);
+                    indicesActivos.push(m);
+                }
+            }
 
             let headHtml = `<tr>
                 <th class="py-3 px-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">PRODUCTO</th>`;
@@ -633,13 +625,17 @@
             let dataEgrBar = [];
 
             if (selectedMonth === "TODOS") {
-                let baseIYear = rawIngresos.filter(i => (selectedYear === "TODOS" || i.ANIO === selectedYear));
-                let baseEYear = rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear));
-                let dinamicos = obtenerMesesActivosDinamicos(baseIYear, baseEYear);
-                
-                labelsBar = dinamicos.mesesActivos;
-                dataIngBar = dinamicos.indicesActivos.map(m => baseIYear.filter(i => i.MES_NUM === m).reduce((s, i) => s + i.VALOR, 0));
-                dataEgrBar = dinamicos.indicesActivos.map(m => baseEYear.filter(e => e.MES_NUM === m).reduce((s, e) => s + e.TOTAL, 0));
+                let maxMonthWithData = 1;
+                for (let m = 1; m <= 12; m++) {
+                    let hasIng = rawIngresos.some(i => (selectedYear === "TODOS" || i.ANIO === selectedYear) && i.MES_NUM === m);
+                    let hasEgr = rawEgresos.some(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === m);
+                    if (hasIng || hasEgr) maxMonthWithData = m;
+                }
+                for (let m = 1; m <= maxMonthWithData; m++) {
+                    labelsBar.push(mesesAbrev[m - 1]);
+                    dataIngBar.push(rawIngresos.filter(i => (selectedYear === "TODOS" || i.ANIO === selectedYear) && i.MES_NUM === m).reduce((s, i) => s + i.VALOR, 0));
+                    dataEgrBar.push(rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === m).reduce((s, e) => s + e.TOTAL, 0));
+                }
             } else {
                 let mIdx = mesesAbrev.indexOf(selectedMonth) + 1;
                 labelsBar = [selectedMonth];
@@ -717,11 +713,16 @@
             let indicesActivos = [];
 
             if (selectedMonth === "TODOS") {
-                let baseIYear = rawIngresos.filter(i => (selectedYear === "TODOS" || i.ANIO === selectedYear));
-                let baseEYear = rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear));
-                let dinamicos = obtenerMesesActivosDinamicos(baseIYear, baseEYear);
-                mesesActivos = dinamicos.mesesActivos;
-                indicesActivos = dinamicos.indicesActivos;
+                let maxMonthWithData = 1;
+                for (let m = 1; m <= 12; m++) {
+                    let hasIng = rawIngresos.some(i => (selectedYear === "TODOS" || i.ANIO === selectedYear) && i.MES_NUM === m);
+                    let hasEgr = rawEgresos.some(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === m);
+                    if (hasIng || hasEgr) maxMonthWithData = m;
+                }
+                for (let m = 1; m <= maxMonthWithData; m++) {
+                    mesesActivos.push(mesesAbrev[m - 1]);
+                    indicesActivos.push(m);
+                }
             } else {
                 mesesActivos = [selectedMonth];
                 indicesActivos = [mesesAbrev.indexOf(selectedMonth) + 1];
