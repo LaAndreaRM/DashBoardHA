@@ -881,6 +881,7 @@
 
         function switchTab(e, tabId) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+            document.querySelectorAll('.tab-link').refEach?.(tl => tl.classList.remove('tab-active')); // safe check
             document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
             document.getElementById(tabId).classList.remove('hidden');
             e.currentTarget.classList.add('tab-active');
