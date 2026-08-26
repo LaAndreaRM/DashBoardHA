@@ -29,6 +29,14 @@
         th.sort-asc::after { content: ' ↑'; color: #10B981; }
         th.sort-desc::after { content: ' ↓'; color: #10B981; }
         .estado-mes-unico { font-size: 14px; }
+        
+        /* Contenedor de scroll con barra propia arriba y abajo accesible */
+        .table-scroll-container {
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            display: block;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -140,8 +148,8 @@
                     <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G Dinámico</span>
                 </div>
                 
-                <div class="overflow-x-auto custom-scrollbar">
-                    <table id="tablePG" class="w-full text-xs text-left transition-all duration-300">
+                <div class="table-scroll-container custom-scrollbar pb-2">
+                    <table id="tablePG" class="w-full text-xs text-left transition-all duration-300" style="min-width: 700px;">
                         <thead id="headEstadoResultados" class="text-[11px] text-gray-400 uppercase bg-gray-900/50">
                         </thead>
                         <tbody id="bodyEstadoResultados" class="divide-y divide-gray-800/60 text-gray-300 font-medium">
@@ -156,27 +164,29 @@
                 <span class="text-sm font-bold uppercase tracking-wider text-emerald-400">Suma de Ingresos Filtrados:</span>
                 <span id="sumIngresosFiltrados" class="text-xl font-bold text-income">$ 0</span>
             </div>
-            <div class="overflow-x-auto bg-card rounded-xl">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-gray-900/50 text-gray-400 uppercase">
-                        <tr>
-                            <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="tab-ingresos">Fecha</th>
-                            <th class="py-3 px-6 text-center sortable" data-col="CANTIDAD" data-tab="tab-ingresos">Cantidad</th>
-                            <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="tab-ingresos">Descripción</th>
-                            <th class="py-3 px-6 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
-                            <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR" data-tab="tab-ingresos">Valor</th>
-                        </tr>
-                        <tr class="bg-gray-900/30">
-                            <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
-                            <th class="py-2 px-6 border-b border-gray-800"></th>
-                            <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINDesc" class="input-filter" placeholder="🔍 descripción..."></th>
-                            <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
-                            <th class="py-2 px-6 border-b border-gray-800"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableIngresos" class="divide-y divide-gray-800 text-gray-300">
-                    </tbody>
-                </table>
+            <div class="bg-card rounded-xl overflow-hidden">
+                <div class="table-scroll-container custom-scrollbar pb-2">
+                    <table class="w-full text-left text-xs" style="min-width: 700px;">
+                        <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                            <tr>
+                                <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="tab-ingresos">Fecha</th>
+                                <th class="py-3 px-6 text-center sortable" data-col="CANTIDAD" data-tab="tab-ingresos">Cantidad</th>
+                                <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="tab-ingresos">Descripción</th>
+                                <th class="py-3 px-6 sortable" data-col="TIPO" data-tab="tab-ingresos">Tipo de Venta</th>
+                                <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR" data-tab="tab-ingresos">Valor</th>
+                            </tr>
+                            <tr class="bg-gray-900/30">
+                                <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINFecha" class="input-filter" placeholder="🔍 fecha"></th>
+                                <th class="py-2 px-6 border-b border-gray-800"></th>
+                                <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINDesc" class="input-filter" placeholder="🔍 descripción..."></th>
+                                <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="colFilINTipo" class="input-filter" placeholder="🔍 buscar tipo..."></th>
+                                <th class="py-2 px-6 border-b border-gray-800"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableIngresos" class="divide-y divide-gray-800 text-gray-300">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -192,8 +202,8 @@
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="bg-card rounded-xl overflow-hidden shadow-xl">
-                <div class="overflow-x-auto custom-scrollbar">
-                    <table id="tableCantidades" class="w-full text-xs text-left">
+                <div class="table-scroll-container custom-scrollbar pb-2">
+                    <table id="tableCantidades" class="w-full text-xs text-left" style="min-width: 900px;">
                         <thead id="headCantidades" class="bg-gray-900/50 text-gray-400 uppercase">
                         </thead>
                         <tr class="bg-gray-900/30">
@@ -247,31 +257,33 @@
                         <span class="text-sm font-bold uppercase tracking-wider text-red-400">Suma de ítems filtrados en esta pestaña:</span>
                         <span id="sum-${id}" class="text-xl font-bold text-expense">$ 0</span>
                     </div>
-                    <div class="overflow-x-auto bg-card rounded-xl">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-gray-900/50 text-gray-400 uppercase">
-                                <tr>
-                                    <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="${id}">Fecha</th>
-                                    <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="${id}">Descripción</th>
-                                    <th class="py-3 px-6 w-48 sortable" data-col="PROVEEDOR" data-tab="${id}">Proveedor</th>
-                                    <th class="py-3 px-4 text-center sortable" data-col="CANTIDAD" data-tab="${id}">Cantidad</th>
-                                    <th class="py-3 px-4 text-center sortable" data-col="UNIDAD" data-tab="${id}">Unidad</th>
-                                    <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR_UNITARIO" data-tab="${id}">Valor Unitario</th>
-                                    <th class="py-3 px-6 w-40 text-right sortable" data-col="TOTAL" data-tab="${id}">Total</th>
-                                </tr>
-                                <tr class="bg-gray-900/30">
-                                    <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-fecha-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
-                                    <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-desc-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
-                                    <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-prov-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
-                                    <th class="py-2 px-4 border-b border-gray-800"></th>
-                                    <th class="py-2 px-4 border-b border-gray-800"></th>
-                                    <th class="py-2 px-6 border-b border-gray-800"></th>
-                                    <th class="py-2 px-6 border-b border-gray-800"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="body-${id}" class="divide-y divide-gray-800 text-gray-300">
-                            </tbody>
-                        </table>
+                    <div class="bg-card rounded-xl overflow-hidden">
+                        <div class="table-scroll-container custom-scrollbar pb-2">
+                            <table class="w-full text-left text-xs" style="min-width: 850px;">
+                                <thead class="bg-gray-900/50 text-gray-400 uppercase">
+                                    <tr>
+                                        <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="${id}">Fecha</th>
+                                        <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="${id}">Descripción</th>
+                                        <th class="py-3 px-6 w-48 sortable" data-col="PROVEEDOR" data-tab="${id}">Proveedor</th>
+                                        <th class="py-3 px-4 text-center sortable" data-col="CANTIDAD" data-tab="${id}">Cantidad</th>
+                                        <th class="py-3 px-4 text-center sortable" data-col="UNIDAD" data-tab="${id}">Unidad</th>
+                                        <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR_UNITARIO" data-tab="${id}">Valor Unitario</th>
+                                        <th class="py-3 px-6 w-40 text-right sortable" data-col="TOTAL" data-tab="${id}">Total</th>
+                                    </tr>
+                                    <tr class="bg-gray-900/30">
+                                        <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-fecha-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
+                                        <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-desc-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
+                                        <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-prov-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
+                                        <th class="py-2 px-4 border-b border-gray-800"></th>
+                                        <th class="py-2 px-4 border-b border-gray-800"></th>
+                                        <th class="py-2 px-6 border-b border-gray-800"></th>
+                                        <th class="py-2 px-6 border-b border-gray-800"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-${id}" class="divide-y divide-gray-800 text-gray-300">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 `;
             }
@@ -372,11 +384,14 @@
                         const ws = workbook.Sheets["Res Ingresos"];
                         const rawRowsIn = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
                         const headersIn = rawRowsIn[0].map(h => (h || "").toString().trim().toUpperCase());
+                        
                         let idxFecha = headersIn.indexOf("FECHA") === -1 ? 1 : headersIn.indexOf("FECHA");
                         let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
                         let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
-                        let idxCantIn = headersIn.indexOf("CANT") === -1 ? headersIn.indexOf("CANTIDAD") : headersIn.indexOf("CANT");
-                        let idxDescIn = headersIn.indexOf("DESCRIPCIÓN") === -1 ? headersIn.indexOf("DESCRIPCION") : headersIn.indexOf("DESCRIPCIÓN");
+                        
+                        // Captura robusta de Cantidad e Inventario/Unidad en ingresos
+                        let idxCantIn = headersIn.indexOf("CANT") !== -1 ? headersIn.indexOf("CANT") : (headersIn.indexOf("CANTIDAD") !== -1 ? headersIn.indexOf("CANTIDAD") : 4);
+                        let idxDescIn = headersIn.indexOf("DESCRIPCIÓN") !== -1 ? headersIn.indexOf("DESCRIPCIÓN") : (headersIn.indexOf("DESCRIPCION") !== -1 ? headersIn.indexOf("DESCRIPCION") : 5);
 
                         rawIngresos = rawRowsIn.slice(1).map(row => {
                             if (!row || row[idxValor] === "") return null;
@@ -387,8 +402,8 @@
                                 MES_TXT: mesesAbrev[parsedDate.m - 1], 
                                 FECHA: parsedDate.text, 
                                 TIPO: (row[idxTipo] || "Venta Ordinaria").toString(), 
-                                CANTIDAD: idxCantIn !== -1 ? (parseFloat(row[idxCantIn]) || 0) : 0,
-                                DESCRIPCION: idxDescIn !== -1 ? (row[idxDescIn] || "").toString() : "",
+                                CANTIDAD: row[idxCantIn] !== undefined && row[idxCantIn] !== "" ? (parseFloat(row[idxCantIn]) || 0) : 0,
+                                DESCRIPCION: row[idxDescIn] !== undefined ? (row[idxDescIn] || "").toString() : "",
                                 VALOR: parseFloat(row[idxValor]) || 0 
                             };
                         }).filter(item => item !== null);
@@ -466,7 +481,7 @@
                 <tr class="hover:bg-gray-800/40">
                     <td class="py-3 px-6">${i.FECHA}</td>
                     <td class="py-3 px-6 text-center">${i.CANTIDAD || 0}</td>
-                    <td class="py-3 px-6">${i.DESCRIPCION}</td>
+                    <td class="py-3 px-6">${i.DESCRIPCION || '---'}</td>
                     <td class="py-3 px-6">${i.TIPO}</td>
                     <td class="py-3 px-6 text-right font-semibold text-income">${formatCurrency(i.VALOR)}</td>
                 </tr>
@@ -529,23 +544,23 @@
             }
 
             let headHtml = `<tr>
-                <th class="py-3 px-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">PRODUCTO</th>`;
+                <th class="py-3 px-4 sortable whitespace-nowrap" data-col="DESCRIPCION" data-tab="tab-cantidades">PRODUCTO</th>`;
             
             if (selectedMonth === "TODOS") {
-                headHtml += `<th class="py-3 px-4 text-center">UNIDAD (Columna R)</th>
-                             <th class="py-3 px-4 text-center">Cant x Prod (Columna Q)</th>`;
+                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">UNIDAD (Col. R)</th>
+                             <th class="py-3 px-4 text-center whitespace-nowrap">Cant x Prod (Col. Q)</th>`;
                 mesesActivos.forEach(m => {
-                    headHtml += `<th class="py-3 px-3 text-center">${m} (Veces)</th>`;
+                    headHtml += `<th class="py-3 px-3 text-center whitespace-nowrap">${m} (Veces)</th>`;
                 });
-                headHtml += `<th class="py-3 px-4 text-center">Total veces en el año (suma de todos)</th>
-                             <th class="py-3 px-4 text-right">Costo Promedio Unitario (columna K)</th>
-                             <th class="py-3 px-4 text-right">Promedio Total Acumulado</th>`;
+                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Total veces en el año</th>
+                             <th class="py-3 px-4 text-right whitespace-nowrap">Costo Prom. Unitario</th>
+                             <th class="py-3 px-4 text-right whitespace-nowrap">Promedio Total Acumulado</th>`;
             } else {
-                headHtml += `<th class="py-3 px-4 text-center">Cant x Prod (Columna Q)</th>
-                             <th class="py-3 px-4 text-center">Veces Comprado</th>
-                             <th class="py-3 px-4 text-center">UNIDAD (Columna R)</th>
-                             <th class="py-3 px-4 text-right">Costo Promedio Unitario (columna K)</th>
-                             <th class="py-3 px-4 text-right">Total Acumulado</th>`;
+                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Cant x Prod (Col. Q)</th>
+                             <th class="py-3 px-4 text-center whitespace-nowrap">Veces Comprado</th>
+                             <th class="py-3 px-4 text-center whitespace-nowrap">UNIDAD (Col. R)</th>
+                             <th class="py-3 px-4 text-right whitespace-nowrap">Costo Prom. Unitario</th>
+                             <th class="py-3 px-4 text-right whitespace-nowrap">Total Acumulado</th>`;
             }
 
             headHtml += `</tr>`;
@@ -599,24 +614,24 @@
 
             let bodyHtml = itemsCantidades.map(item => {
                 let row = `<tr class="hover:bg-gray-800/40">
-                    <td class="py-3 px-4 font-semibold">${item.DESCRIPCION}</td>`;
+                    <td class="py-3 px-4 font-semibold whitespace-nowrap">${item.DESCRIPCION}</td>`;
                 
                 if (selectedMonth === "TODOS") {
-                    row += `<td class="py-3 px-4 text-center text-gray-400">${item.UNIDAD || ''}</td>
-                            <td class="py-3 px-4 text-center text-gray-400">${item.CANTIDAD || 0}</td>`;
+                    row += `<td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.UNIDAD || ''}</td>
+                            <td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.CANTIDAD || 0}</td>`;
                     indicesActivos.forEach(idx => {
                         let vecesMes = item.vecesPorMes[idx] || 0;
-                        row += `<td class="py-3 px-3 text-center text-gray-400">${vecesMes > 0 ? vecesMes : '-'}</td>`;
+                        row += `<td class="py-3 px-3 text-center text-gray-400 whitespace-nowrap">${vecesMes > 0 ? vecesMes : '-'}</td>`;
                     });
-                    row += `<td class="py-3 px-4 text-center font-bold text-white">${item.vecesGlobal}</td>
-                            <td class="py-3 px-4 text-right">${formatCurrency(item.costoPromedioUnitario)}</td>
-                            <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(item.promedioTotalAcumulado)}</td>`;
+                    row += `<td class="py-3 px-4 text-center font-bold text-white whitespace-nowrap">${item.vecesGlobal}</td>
+                            <td class="py-3 px-4 text-right whitespace-nowrap">${formatCurrency(item.costoPromedioUnitario)}</td>
+                            <td class="py-3 px-4 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(item.promedioTotalAcumulado)}</td>`;
                 } else {
-                    row += `<td class="py-3 px-4 text-center text-gray-400">${item.CANTIDAD || 0}</td>
-                            <td class="py-3 px-4 text-center">${item.vecesGlobal}</td>
-                            <td class="py-3 px-4 text-center text-gray-400">${item.UNIDAD || ''}</td>
-                            <td class="py-3 px-4 text-right">${formatCurrency(item.costoPromedioUnitario)}</td>
-                            <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(item.TOTAL)}</td>`;
+                    row += `<td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.CANTIDAD || 0}</td>
+                            <td class="py-3 px-4 text-center whitespace-nowrap">${item.vecesGlobal}</td>
+                            <td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.UNIDAD || ''}</td>
+                            <td class="py-3 px-4 text-right whitespace-nowrap">${formatCurrency(item.costoPromedioUnitario)}</td>
+                            <td class="py-3 px-4 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(item.TOTAL)}</td>`;
                 }
 
                 row += `</tr>`;
@@ -736,7 +751,7 @@
                 indicesActivos = [mesesAbrev.indexOf(selectedMonth) + 1];
             }
 
-            head.innerHTML = `<tr><th class="p-3 w-2/5">Concepto Contable</th>${mesesActivos.map(m => `<th class="p-3 text-right">${m}</th>`).join('')}<th class="p-3 text-right">Total</th></tr>`;
+            head.innerHTML = `<tr><th class="p-3 w-2/5 whitespace-nowrap">Concepto Contable</th>${mesesActivos.map(m => `<th class="p-3 text-right whitespace-nowrap">${m}</th>`).join('')}<th class="p-3 text-right whitespace-nowrap">Total</th></tr>`;
             document.getElementById('tablePG').classList.toggle('estado-mes-unico', selectedMonth !== "TODOS");
             
             const totalIng = fIng.reduce((s, i) => s + i.VALOR, 0);
@@ -749,79 +764,79 @@
 
             let html = "";
             
-            html += `<tr><td class="p-3 font-bold text-white">Ingresos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
+            html += `<tr><td class="p-3 font-bold text-white whitespace-nowrap">Ingresos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
             
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Local</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Local</td>` + 
                 indicesActivos.map(idx => {
                     let mIngVal = fIng.filter(i => i.MES_NUM === idx && (i.TIPO||'').toUpperCase().includes('LOCAL')).reduce((s,i)=>s+i.VALOR,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mIngVal / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right text-income">${formatCurrency(mIngVal)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right text-income whitespace-nowrap">${formatCurrency(mIngVal)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-income">${formatCurrency(ingresosLocal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((ingresosLocal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-income whitespace-nowrap">${formatCurrency(ingresosLocal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((ingresosLocal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Producción</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Producción</td>` + 
                 indicesActivos.map(idx => {
                     let mIngVal = fIng.filter(i => i.MES_NUM === idx && ((i.TIPO||'').toUpperCase().includes('PRODUCCION')||(i.TIPO||'').toUpperCase().includes('PRODUCCIÓN'))).reduce((s,i)=>s+i.VALOR,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mIngVal / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right text-income">${formatCurrency(mIngVal)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right text-income whitespace-nowrap">${formatCurrency(mIngVal)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-income">${formatCurrency(ingresosProd)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((ingresosProd/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-income whitespace-nowrap">${formatCurrency(ingresosProd)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((ingresosProd/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
-            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Ingresos (100%)</td>` + 
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white whitespace-nowrap">Total Ingresos (100%)</td>` + 
                 indicesActivos.map(idx => {
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
-                    return `<td class="p-3 text-right font-bold text-income">${formatCurrency(mTotIng)} <span class="text-[10px] text-gray-500">(100.0%)</span></td>`;
+                    return `<td class="p-3 text-right font-bold text-income whitespace-nowrap">${formatCurrency(mTotIng)} <span class="text-[10px] text-gray-500">(100.0%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right font-bold text-income">${formatCurrency(totalIng)} <span class="text-[10px] text-gray-500">(100.0%)</span></th></tr>`;
+                `<th class="p-3 text-right font-bold text-income whitespace-nowrap">${formatCurrency(totalIng)} <span class="text-[10px] text-gray-500">(100.0%)</span></th></tr>`;
 
             let costosTotales = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO' || e.TIPO === 'COSTO EXTRAORDINARIO');
             let costosOrdinarios = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO');
             let costosExtraordinarios = fEgr.filter(e => e.TIPO === 'COSTO EXTRAORDINARIO');
             let sumaCostos = costosTotales.reduce((s,e)=>s+e.TOTAL,0);
             
-            html += `<tr><td class="p-3 font-bold text-white">Costo</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
+            html += `<tr><td class="p-3 font-bold text-white whitespace-nowrap">Costo</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
             
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Costo ordinario</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Costo ordinario</td>` + 
                 indicesActivos.map(idx => {
                     let mCost = costosOrdinarios.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-expense">${formatCurrency(costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             if (costosExtraordinarios.length > 0) {
-                html += `<tr><td class="p-3 pl-6 text-gray-400">Costo extraordinario</td>` + 
+                html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Costo extraordinario</td>` + 
                     indicesActivos.map(idx => {
                         let mCost = costosExtraordinarios.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                         let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                         let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
-                        return `<td class="p-3 text-right text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                        return `<td class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                     }).join('') + 
-                    `<th class="p-3 text-right text-expense">${formatCurrency(costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                    `<th class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
             }
 
-            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Costo</td>` + 
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white whitespace-nowrap">Total Costo</td>` + 
                 indicesActivos.map(idx => {
                     let mCost = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right font-bold text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right font-bold text-expense">${formatCurrency(sumaCostos)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaCostos/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(sumaCostos)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaCostos/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             let utilidad1 = totalIng - sumaCostos;
-            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad bruta</td>` + 
+            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400 whitespace-nowrap">Utilidad bruta</td>` + 
                 indicesActivos.map(idx => {
                     let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mUtil = mIng - mCos;
                     let mPct = mIng > 0 ? ((mUtil / mIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right font-bold text-cyan-400">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right font-bold text-cyan-400 whitespace-nowrap">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right font-bold text-cyan-400">${formatCurrency(utilidad1)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidad1/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right font-bold text-cyan-400 whitespace-nowrap">${formatCurrency(utilidad1)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidad1/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             let gastosOperativos = fEgr.filter(e => e.TIPO === 'GASTO OPERATIVO');
             let gastosAdm = fEgr.filter(e => e.TIPO === 'GASTO ADMINISTRATIVO');
@@ -829,70 +844,70 @@
             let sumaGastosAdmVen = [...gastosOperativos, ...gastosAdm, ...gastosVentas];
             let totalGastosAdmVenVal = sumaGastosAdmVen.reduce((s,e)=>s+e.TOTAL,0);
 
-            html += `<tr><td class="p-3 font-bold text-white">Gastos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
+            html += `<tr><td class="p-3 font-bold text-white whitespace-nowrap">Gastos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
             
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto Operativo</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Gasto Operativo</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosOperativos.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-expense">${formatCurrency(gastosOperativos.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosOperativos.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(gastosOperativos.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosOperativos.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto Administrativo</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Gasto Administrativo</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosAdm.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-expense">${formatCurrency(gastosAdm.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosAdm.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(gastosAdm.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosAdm.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto de venta</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Gasto de venta</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosVentas.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-expense">${formatCurrency(gastosVentas.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosVentas.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(gastosVentas.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosVentas.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
-            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Gastos</td>` + 
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white whitespace-nowrap">Total Gastos</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = sumaGastosAdmVen.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right font-bold text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right font-bold text-expense">${formatCurrency(totalGastosAdmVenVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((totalGastosAdmVenVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(totalGastosAdmVenVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((totalGastosAdmVenVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             let utilidad2 = utilidad1 - totalGastosAdmVenVal;
-            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad Operativa</td>` + 
+            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400 whitespace-nowrap">Utilidad Operativa</td>` + 
                 indicesActivos.map(idx => {
                     let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mGas = sumaGastosAdmVen.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mUtil = mIng - mCos - mGas;
                     let mPct = mIng > 0 ? ((mUtil / mIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right font-bold text-cyan-400">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right font-bold text-cyan-400 whitespace-nowrap">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right font-bold text-cyan-400">${formatCurrency(utilidad2)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidad2/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right font-bold text-cyan-400 whitespace-nowrap">${formatCurrency(utilidad2)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidad2/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             let gastosPers = fEgr.filter(e => e.TIPO === 'GASTO PERSONAL');
             let sumaGastosPersVal = gastosPers.reduce((s,e)=>s+e.TOTAL,0);
             
-            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos personales</td>` + 
+            html += `<tr><td class="p-3 pl-6 text-gray-400 whitespace-nowrap">Gastos personales</td>` + 
                 indicesActivos.map(idx => {
                     let mGast = gastosPers.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right text-expense">${formatCurrency(sumaGastosPersVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaGastosPersVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right text-expense whitespace-nowrap">${formatCurrency(sumaGastosPersVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaGastosPersVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             let utilidadFinal = utilidad2 - sumaGastosPersVal;
-            html += `<tr class="bg-emerald-900/30"><td class="p-3 font-bold text-emerald-400">Utilidad Final</td>` + 
+            html += `<tr class="bg-emerald-900/30"><td class="p-3 font-bold text-emerald-400 whitespace-nowrap">Utilidad Final</td>` + 
                 indicesActivos.map(idx => {
                     let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
                     let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
@@ -900,9 +915,9 @@
                     let mPer = gastosPers.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
                     let mUtil = mIng - mCos - mGas - mPer;
                     let mPct = mIng > 0 ? ((mUtil / mIng) * 100).toFixed(1) : "0.0";
-                    return `<td class="p-3 text-right font-bold text-emerald-400">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
+                    return `<td class="p-3 text-right font-bold text-emerald-400 whitespace-nowrap">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
                 }).join('') + 
-                `<th class="p-3 text-right font-bold text-emerald-400">${formatCurrency(utilidadFinal)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidadFinal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+                `<th class="p-3 text-right font-bold text-emerald-400 whitespace-nowrap">${formatCurrency(utilidadFinal)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidadFinal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             body.innerHTML = html;
         }
