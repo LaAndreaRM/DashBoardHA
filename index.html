@@ -340,7 +340,7 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        let idxDesc = headers.indexOf("PRODUCTO") === -1 ? 19 : headers.indexOf("PRODUCTO"); // Columna T (Producto)
+                        let idxDesc = 19; // Columna T estricta (índice 19)
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
                         let idxUnidad = headers.indexOf("UNIDAD");
@@ -471,7 +471,7 @@
                 </tr>
             `).join('') || `<tr><td colspan="5" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
 
-            // Pestaña Cantidades: Toma estrictamente de la columna T (DESCRIPCION) filtrando por COSTO ORDINARIO
+            // Pestaña Cantidades: Toma estrictamente de la columna T (índice 19) filtrando por COSTO ORDINARIO
             let fCant = rawEgresos.filter(filterFn).filter(e => e.TIPO === "COSTO ORDINARIO");
             let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
 
