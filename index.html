@@ -76,8 +76,8 @@
                     <th>Fecha</th>
                     <th>Categoría</th>
                     <th>Tipo</th>
-                    <th>Producto</th>
-                    <th>Valor Total (N)</th>
+                    <th>Descripción Compra</th>
+                    <th>Valor Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -100,9 +100,9 @@
                 <tr>
                     <th>Mes</th>
                     <th>Fecha</th>
-                    <th>Producto</th>
-                    <th>Cant Real (Q)</th>
-                    <th>Un Real (R)</th>
+                    <th>Descripción Compra</th>
+                    <th>Cant Real</th>
+                    <th>Un Real</th>
                 </tr>
             </thead>
             <tbody>
@@ -116,26 +116,28 @@
     let globalData = [];
     let chartInstance = null;
 
+    // Cargar archivo Excel automáticamente desde GitHub o ruta local configurada
     async function cargarExcel() {
         try {
+            // Reemplaza con la ruta de tu archivo o lógica de carga actual
             let respuesta = await fetch('Herencia Argentina 2026.xlsm');
             let datosBuffer = await respuesta.arrayBuffer();
             let workbook = XLSX.read(datosBuffer, {type: 'array'});
             
-            let nombreHoja = workbook.SheetNames[0]; 
+            let nombreHoja = workbook.SheetNames[0]; // Asume que la primera hoja es "Datos"
             let hoja = workbook.Sheets[nombreHoja];
             let jsonData = XLSX.utils.sheet_to_json(hoja, {header: 1});
 
-            // Mapeo exacto basado en las columnas A hasta T (índices 0 al 19)
+            // Omitir cabecera y parsear filas usando las columnas correctas detectadas en el Excel
             globalData = jsonData.slice(1).map(row => ({
-                mes: row[0] ? row[0].toString().trim() : '',       // A: Mes
-                fecha: row[1] || '',                               // B: Fecha
-                categoria: row[4] || '',                           // E: Categoría
-                tipo: row[5] || '',                                // F: Tipo
-                producto: row[19] || row[6] || 'Sin Producto',     // T: Producto (si está vacío, recurre a G)
-                valorTotal: row[13] || 0,                          // N: Total
-                cantReal: row[16] || 0,                            // Q: Cant real
-                unReal: row[17] || ''                              // R: Un Real
+                mes: row[1] ? row[1].toString().trim() : '',
+                fecha: row[2] || '',
+                categoria: row[5] || '',
+                tipo: row[6] || '',
+                descripcion: row[7] || 'Sin Descripción', // Columna H corregida
+                cantReal: row[15] || 0,
+                unReal: row[16] || '',
+                valorUnitario: row[18] || 0
             })).filter(item => item.mes !== '');
 
             poblarFiltros();
@@ -168,14 +170,15 @@
 
     function actualizarResumen() {
         let totalRegistros = globalData.length;
-        let totalEgresos = globalData.reduce((acc, item) => acc + Number(item.valorTotal || 0), 0);
+        let totalEgresos = globalData.reduce((acc, item) => acc + Number(item.valorUnitario || 0), 0);
 
         document.getElementById('total-registros').innerText = totalRegistros;
         document.getElementById('total-egresos').innerText = `$${totalEgresos.toLocaleString()}`;
 
+        // Agrupar por mes para el gráfico
         let porMes = {};
         globalData.forEach(item => {
-            porMes[item.mes] = (porMes[item.mes] || 0) + Number(item.valorTotal || 0);
+            porMes[item.mes] = (porMes[item.mes] || 0) + Number(item.valorUnitario || 0);
         });
 
         let ctx = document.getElementById('graficoResumen').getContext('2d');
@@ -204,8 +207,8 @@
                     <td>${item.fecha}</td>
                     <td>${item.categoria}</td>
                     <td>${item.tipo}</td>
-                    <td>${item.producto}</td>
-                    <td>$${Number(item.valorTotal).toLocaleString()}</td>
+                    <td>${item.descripcion}</td>
+                    <td>$${Number(item.valorUnitario).toLocaleString()}</td>
                 </tr>`;
         });
     }
@@ -224,7 +227,7 @@
                 <tr>
                     <td>${item.mes}</td>
                     <td>${item.fecha}</td>
-                    <td>${item.producto}</td>
+                    <td>${item.descripcion}</td>
                     <td>${item.cantReal}</td>
                     <td>${item.unReal}</td>
                 </tr>`;
