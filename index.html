@@ -532,17 +532,19 @@
                 <th class="py-3 px-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">PRODUCTO</th>`;
             
             if (selectedMonth === "TODOS") {
-                headHtml += `<th class="py-3 px-4 text-center">UNIDAD</th>`;
+                headHtml += `<th class="py-3 px-4 text-center">UNIDAD (Columna R)</th>
+                             <th class="py-3 px-4 text-center">Cant x Prod (Columna Q)</th>`;
                 mesesActivos.forEach(m => {
                     headHtml += `<th class="py-3 px-3 text-center">${m} (Veces)</th>`;
                 });
-                headHtml += `<th class="py-3 px-4 text-center">Total veces en el año</th>
-                             <th class="py-3 px-4 text-right">Costo Promedio Unitario</th>
+                headHtml += `<th class="py-3 px-4 text-center">Total veces en el año (suma de todos)</th>
+                             <th class="py-3 px-4 text-right">Costo Promedio Unitario (columna K)</th>
                              <th class="py-3 px-4 text-right">Promedio Total Acumulado</th>`;
             } else {
-                headHtml += `<th class="py-3 px-4 text-center">Veces Comprado</th>
-                             <th class="py-3 px-4 text-center">UNIDAD</th>
-                             <th class="py-3 px-4 text-right">Costo Promedio Unitario</th>
+                headHtml += `<th class="py-3 px-4 text-center">Cant x Prod (Columna Q)</th>
+                             <th class="py-3 px-4 text-center">Veces Comprado</th>
+                             <th class="py-3 px-4 text-center">UNIDAD (Columna R)</th>
+                             <th class="py-3 px-4 text-right">Costo Promedio Unitario (columna K)</th>
                              <th class="py-3 px-4 text-right">Total Acumulado</th>`;
             }
 
@@ -556,6 +558,7 @@
                     agrupado[key] = {
                         DESCRIPCION: key,
                         UNIDAD: e.UNIDAD || '',
+                        CANTIDAD: e.CANTIDAD || 0,
                         vecesPorMes: {},
                         totalGlobal: 0,
                         vecesGlobal: 0,
@@ -568,6 +571,9 @@
                 }
                 if (!agrupado[key].UNIDAD && e.UNIDAD) {
                     agrupado[key].UNIDAD = e.UNIDAD;
+                }
+                if (e.CANTIDAD > 0 && agrupado[key].CANTIDAD === 0) {
+                    agrupado[key].CANTIDAD = e.CANTIDAD;
                 }
                 agrupado[key].totalGlobal += e.TOTAL;
                 agrupado[key].vecesGlobal += 1;
@@ -596,7 +602,8 @@
                     <td class="py-3 px-4 font-semibold">${item.DESCRIPCION}</td>`;
                 
                 if (selectedMonth === "TODOS") {
-                    row += `<td class="py-3 px-4 text-center text-gray-400">${item.UNIDAD || ''}</td>`;
+                    row += `<td class="py-3 px-4 text-center text-gray-400">${item.UNIDAD || ''}</td>
+                            <td class="py-3 px-4 text-center text-gray-400">${item.CANTIDAD || 0}</td>`;
                     indicesActivos.forEach(idx => {
                         let vecesMes = item.vecesPorMes[idx] || 0;
                         row += `<td class="py-3 px-3 text-center text-gray-400">${vecesMes > 0 ? vecesMes : '-'}</td>`;
@@ -605,7 +612,8 @@
                             <td class="py-3 px-4 text-right">${formatCurrency(item.costoPromedioUnitario)}</td>
                             <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(item.promedioTotalAcumulado)}</td>`;
                 } else {
-                    row += `<td class="py-3 px-4 text-center">${item.vecesGlobal}</td>
+                    row += `<td class="py-3 px-4 text-center text-gray-400">${item.CANTIDAD || 0}</td>
+                            <td class="py-3 px-4 text-center">${item.vecesGlobal}</td>
                             <td class="py-3 px-4 text-center text-gray-400">${item.UNIDAD || ''}</td>
                             <td class="py-3 px-4 text-right">${formatCurrency(item.costoPromedioUnitario)}</td>
                             <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(item.TOTAL)}</td>`;
@@ -615,7 +623,7 @@
                 return row;
             }).join('');
 
-            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 4) : 5;
+            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 5) : 6;
             document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${colSpanTotal}" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de costos</td></tr>`;
         }
 
