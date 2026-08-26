@@ -337,8 +337,11 @@
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
                         let idxDesc = 19; // Columna T
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
-                        let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
-                        let idxUnidad = headers.indexOf("UNIDAD");
+                        
+                        // Modificado: Columna Q (índice 16) para Cantidad y Columna R (índice 17) para Unidad
+                        let idxCant = 16; 
+                        let idxUnidad = 17; 
+
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
                         rawEgresos = rawRows.slice(1).map(row => {
@@ -358,8 +361,8 @@
                                 DESCRIPCION: productoTexto, 
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
-                                CANTIDAD: idxCant !== -1 ? (parseFloat(row[idxCant]) || 0) : 0,
-                                UNIDAD: idxUnidad !== -1 ? (row[idxUnidad] || "").toString().trim() : "",
+                                CANTIDAD: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
+                                UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
                                 VALOR_UNITARIO: idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0,
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
