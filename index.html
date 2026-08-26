@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Herencia Argentina - Panel Avanzado</title>
+    <!-- Tailwind CSS y Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -13,28 +14,79 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #0B0F19; color: #EEEEEE; }
-        .bg-card { background-color: #1F2937; border: 1px solid #374151; }
-        .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0B0F19;
+            color: #EEEEEE;
+        }
+        .bg-card {
+            background-color: #1F2937;
+            border: 1px solid #374151;
+        }
+        .tab-active {
+            border-bottom: 3px solid #10B981;
+            color: #10B981;
+            font-weight: 700;
+        }
         .text-income { color: #10B981; }
         .text-expense { color: #F87171; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
-        .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
-        .input-filter::placeholder { color: #6B7280; }
-        th.sortable { cursor: pointer; position: relative; user-select: none; }
-        th.sortable:hover { background-color: rgba(55, 65, 81, 0.4); color: #FFF; }
-        th.sortable::after { content: ' ↕'; font-size: 10px; color: #6B7280; margin-left: 4px; }
-        th.sort-asc::after { content: ' ↑'; color: #10B981; }
-        th.sort-desc::after { content: ' ↓'; color: #10B981; }
-        .estado-mes-unico { font-size: 14px; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+        .input-filter {
+            background-color: #111827;
+            border: 1px solid #4B5563;
+            color: #FFF;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            width: 100%;
+            font-weight: normal;
+        }
+        .input-filter::placeholder {
+            color: #6B7280;
+        }
+        th.sortable {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        th.sortable:hover {
+            background-color: rgba(55, 65, 81, 0.4);
+            color: #FFF;
+        }
+        th.sortable::after {
+            content: ' ↕';
+            font-size: 10px;
+            color: #6B7280;
+            margin-left: 4px;
+        }
+        th.sort-asc::after {
+            content: ' ↑';
+            color: #10B981;
+        }
+        th.sort-desc::after {
+            content: ' ↓';
+            color: #10B981;
+        }
+        .estado-mes-unico {
+            font-size: 14px;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
     <div class="max-w-6xl mx-auto space-y-6">
         
+        <!-- Cabecera y Estado de Carga -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-white tracking-tight">Herencia Argentina</h1>
@@ -45,6 +97,7 @@
             </div>
         </div>
 
+        <!-- Filtros Globales -->
         <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl">
             <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-gray-400 uppercase">Año:</span>
@@ -60,6 +113,7 @@
             </div>
         </div>
 
+        <!-- Tarjetas de KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500">
                 <p class="text-xs font-bold text-gray-400 uppercase">Total Ingresos</p>
@@ -87,6 +141,7 @@
             </div>
         </div>
 
+        <!-- Pestañas de Navegación -->
         <div class="border-b border-gray-800 overflow-x-auto whitespace-nowrap custom-scrollbar">
             <ul class="flex text-sm font-medium text-center gap-6 pb-2">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
@@ -101,6 +156,7 @@
             </ul>
         </div>
 
+        <!-- CONTENIDO: Resumen -->
         <div id="tab-resumen" class="tab-content space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl flex flex-col justify-between">
@@ -130,6 +186,7 @@
             </div>
         </div>
 
+        <!-- CONTENIDO: Estado de Resultados -->
         <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
             <div class="bg-card p-6 rounded-2xl shadow-xl w-full overflow-hidden">
                 <div class="border-b border-gray-700 pb-4 mb-4 flex justify-between items-center">
@@ -151,6 +208,7 @@
             </div>
         </div>
 
+        <!-- CONTENIDO: Ingresos -->
         <div id="tab-ingresos" class="tab-content hidden space-y-4">
             <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex justify-between items-center">
                 <span class="text-sm font-bold uppercase tracking-wider text-emerald-400">Suma de Ingresos Filtrados:</span>
@@ -180,12 +238,14 @@
             </div>
         </div>
 
+        <!-- CONTENIDOS DINÁMICOS DE EGRESOS (Generados por bucle de plantillas) -->
         <div id="tab-costo-ordinario" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-operativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-administrativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
+        <!-- CONTENIDO: Pestaña Cantidades -->
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center max-w-4xl mx-auto">
                 <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario</span>
@@ -215,6 +275,7 @@
 
     </div>
 
+    <!-- Script Principal de Lógica -->
     <script>
         let rawEgresos = [];
         let rawIngresos = [];
@@ -245,6 +306,7 @@
             'tab-gasto-personal': 'GASTO PERSONAL'
         };
 
+        // Rellenar las plantillas HTML para las pestañas de egresos dinámicamente
         Object.keys(mapaCategorias).forEach(id => {
             const container = document.getElementById(id);
             if (container) {
@@ -287,6 +349,7 @@
         document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateDashboard(); });
         
         document.getElementById('colFilINFecha').addEventListener('input', updateTablesOnly);
+        document.getElementById('colFilINDesc').addEventListener('input', updateTablesOnly);
         document.getElementById('colFilINTipo').addEventListener('input', updateTablesOnly);
 
         document.addEventListener('input', function(e) {
@@ -609,17 +672,98 @@
             let thead = document.getElementById('headEstadoResultados');
             let tbody = document.getElementById('bodyEstadoResultados');
 
-            thead.innerHTML = `<tr><th class="py-3 px-4">Concepto / Partida Contable</th><th class="py-3 px-4 text-right">Total Acumulado</th></tr>`;
-            
-            let totalIng = ingresos.reduce((s,i) => s + i.VALOR, 0);
-            let totalEgr = egresos.reduce((s,e) => s + e.TOTAL, 0);
-            let utilidad = totalIng - totalEgr;
+            if (selectedMonth === "TODOS") {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="py-3 px-4">Concepto / Partida Contable</th>
+                        ${mesesAbrev.map(m => `<th class="py-3 px-2 text-right">${m}</th>`).join('')}
+                        <th class="py-3 px-4 text-right">Total Acumulado</th>
+                    </tr>
+                `;
 
-            tbody.innerHTML = `
-                <tr class="bg-emerald-500/5 font-semibold text-income"><td class="py-3 px-4">1. TOTAL INGRESOS OPERATIVOS</td><td class="py-3 px-4 text-right">${formatCurrency(totalIng)}</td></tr>
-                <tr class="bg-red-500/5 font-semibold text-expense"><td class="py-3 px-4">2. TOTAL COSTOS Y GASTOS</td><td class="py-3 px-4 text-right">${formatCurrency(totalEgr)}</td></tr>
-                <tr class="bg-cyan-500/10 font-bold text-cyan-400 text-sm"><td class="py-3 px-4">3. UTILIDAD NETA DEL PERIODO</td><td class="py-3 px-4 text-right">${formatCurrency(utilidad)}</td></tr>
-            `;
+                let rowIngresosMensuales = mesesAbrev.map(m => ingresos.filter(i => i.MES_TXT === m).reduce((s, i) => s + i.VALOR, 0));
+                let totalIng = rowIngresosMensuales.reduce((a, b) => a + b, 0);
+
+                let categoriasEgresosUnicas = [...new Set(rawEgresos.map(e => e.TIPO))].sort();
+                let filasEgresosHtml = "";
+                let sumaTotalEgresosMensuales = new Array(12).fill(0);
+
+                categoriasEgresosUnicas.forEach((cat, index) => {
+                    let valoresCat = mesesAbrev.map(m => egresos.filter(e => e.TIPO === cat && e.MES_TXT === m).reduce((s, e) => s + e.TOTAL, 0));
+                    let totalCat = valoresCat.reduce((a, b) => a + b, 0);
+                    for(let i=0; i<12; i++) sumaTotalEgresosMensuales[i] += valoresCat[i];
+
+                    filasEgresosHtml += `
+                        <tr class="hover:bg-gray-800/40">
+                            <td class="py-2.5 px-4 text-gray-400 pl-6">2.${index + 1} ${cat}</td>
+                            ${valoresCat.map(v => `<td class="py-2.5 px-2 text-right text-gray-300">${v > 0 ? formatCurrency(v) : '-'}</td>`).join('')}
+                            <td class="py-2.5 px-4 text-right font-semibold text-expense">${formatCurrency(totalCat)}</td>
+                        </tr>
+                    `;
+                });
+
+                let utilidadMensual = mesesAbrev.map((m, idx) => rowIngresosMensuales[idx] - sumaTotalEgresosMensuales[idx]);
+                let totalUtilidad = totalIng - egresos.reduce((s, e) => s + e.TOTAL, 0);
+
+                tbody.innerHTML = `
+                    <tr class="bg-emerald-500/5 font-semibold text-income">
+                        <td class="py-3 px-4">1. TOTAL INGRESOS OPERATIVOS</td>
+                        ${rowIngresosMensuales.map(v => `<td class="py-3 px-2 text-right">${v > 0 ? formatCurrency(v) : '-'}</td>`).join('')}
+                        <td class="py-3 px-4 text-right">${formatCurrency(totalIng)}</td>
+                    </tr>
+                    <tr class="bg-gray-900/40 font-bold text-gray-300"><td colspan="14" class="py-2 px-4 uppercase text-[10px] tracking-wider text-gray-400">Desglose de Costos y Gastos</td></tr>
+                    ${filasEgresosHtml}
+                    <tr class="bg-red-500/5 font-semibold text-expense border-t border-gray-700">
+                        <td class="py-3 px-4">TOTAL COSTOS Y GASTOS</td>
+                        ${sumaTotalEgresosMensuales.map(v => `<td class="py-3 px-2 text-right">${v > 0 ? formatCurrency(v) : '-'}</td>`).join('')}
+                        <td class="py-3 px-4 text-right">${formatCurrency(egresos.reduce((s, e) => s + e.TOTAL, 0))}</td>
+                    </tr>
+                    <tr class="bg-cyan-500/10 font-bold text-cyan-400 text-sm border-t-2 border-cyan-500/30">
+                        <td class="py-3 px-4">3. UTILIDAD NETA DEL PERIODO</td>
+                        ${utilidadMensual.map(v => `<td class="py-3 px-2 text-right">${v !== 0 ? formatCurrency(v) : '-'}</td>`).join('')}
+                        <td class="py-3 px-4 text-right">${formatCurrency(totalUtilidad)}</td>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="py-3 px-4">Concepto / Partida Contable (${selectedMonth})</th>
+                        <th class="py-3 px-4 text-right">Total del Mes</th>
+                    </tr>
+                `;
+
+                let totalIng = ingresos.reduce((s, i) => s + i.VALOR, 0);
+                let totalEgr = egresos.reduce((s, e) => s + e.TOTAL, 0);
+                let utilidad = totalIng - totalEgr;
+
+                let categoriasEgresosUnicas = [...new Set(rawEgresos.map(e => e.TIPO))].sort();
+                let filasEgresosHtml = categoriasEgresosUnicas.map((cat, index) => {
+                    let totalCat = egresos.filter(e => e.TIPO === cat).reduce((s, e) => s + e.TOTAL, 0);
+                    return `
+                        <tr class="hover:bg-gray-800/40">
+                            <td class="py-2.5 px-4 text-gray-400 pl-6">2.${index + 1} ${cat}</td>
+                            <td class="py-2.5 px-4 text-right text-gray-300">${formatCurrency(totalCat)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                tbody.innerHTML = `
+                    <tr class="bg-emerald-500/5 font-semibold text-income">
+                        <td class="py-3 px-4">1. TOTAL INGRESOS OPERATIVOS</td>
+                        <td class="py-3 px-4 text-right">${formatCurrency(totalIng)}</td>
+                    </tr>
+                    <tr class="bg-gray-900/40 font-bold text-gray-300"><td colspan="2" class="py-2 px-4 uppercase text-[10px] tracking-wider text-gray-400">Desglose de Costos y Gastos</td></tr>
+                    ${filasEgresosHtml}
+                    <tr class="bg-red-500/5 font-semibold text-expense border-t border-gray-700">
+                        <td class="py-3 px-4">TOTAL COSTOS Y GASTOS</td>
+                        <td class="py-3 px-4 text-right">${formatCurrency(totalEgr)}</td>
+                    </tr>
+                    <tr class="bg-cyan-500/10 font-bold text-cyan-400 text-sm border-t-2 border-cyan-500/30">
+                        <td class="py-3 px-4">3. UTILIDAD NETA DEL PERIODO</td>
+                        <td class="py-3 px-4 text-right">${formatCurrency(utilidad)}</td>
+                    </tr>
+                `;
+            }
         }
     </script>
 </body>
