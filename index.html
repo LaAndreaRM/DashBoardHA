@@ -388,7 +388,8 @@
 
         function loadExcelAutomatically() {
             const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
-            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
+            // Actualizado para exportar correctamente como .xlsm desde Google Drive
+            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsm`;
 
             fetch(driveUrl)
                 .then(res => res.arrayBuffer())
