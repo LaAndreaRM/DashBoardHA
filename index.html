@@ -341,7 +341,7 @@
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
                         let idxDesc = headers.findIndex(h => h.trim().toUpperCase() === "PRODUCTO");
-                        if (idxDesc === -1) idxDesc = 19; // Respaldo por índice 19 si no lo encuentra por texto
+                        if (idxDesc === -1) idxDesc = 19; 
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
                         let idxUnidad = headers.indexOf("UNIDAD");
