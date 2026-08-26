@@ -389,7 +389,6 @@
                         let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
                         let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
                         
-                        // Captura robusta de Cantidad e Inventario/Unidad en ingresos
                         let idxCantIn = headersIn.indexOf("CANT") !== -1 ? headersIn.indexOf("CANT") : (headersIn.indexOf("CANTIDAD") !== -1 ? headersIn.indexOf("CANTIDAD") : 4);
                         let idxDescIn = headersIn.indexOf("DESCRIPCIÓN") !== -1 ? headersIn.indexOf("DESCRIPCIÓN") : (headersIn.indexOf("DESCRIPCION") !== -1 ? headersIn.indexOf("DESCRIPCION") : 5);
 
