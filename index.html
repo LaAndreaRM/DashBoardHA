@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Herencia Argentina - Panel Avanzado</title>
-    <!-- Tailwind CSS y Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,79 +13,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0B0F19;
-            color: #EEEEEE;
-        }
-        .bg-card {
-            background-color: #1F2937;
-            border: 1px solid #374151;
-        }
-        .tab-active {
-            border-bottom: 3px solid #10B981;
-            color: #10B981;
-            font-weight: 700;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #0B0F19; color: #EEEEEE; }
+        .bg-card { background-color: #1F2937; border: 1px solid #374151; }
+        .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
         .text-income { color: #10B981; }
         .text-expense { color: #F87171; }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #111827;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 10px;
-        }
-        .input-filter {
-            background-color: #111827;
-            border: 1px solid #4B5563;
-            color: #FFF;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            width: 100%;
-            font-weight: normal;
-        }
-        .input-filter::placeholder {
-            color: #6B7280;
-        }
-        th.sortable {
-            cursor: pointer;
-            position: relative;
-            user-select: none;
-        }
-        th.sortable:hover {
-            background-color: rgba(55, 65, 81, 0.4);
-            color: #FFF;
-        }
-        th.sortable::after {
-            content: ' ↕';
-            font-size: 10px;
-            color: #6B7280;
-            margin-left: 4px;
-        }
-        th.sort-asc::after {
-            content: ' ↑';
-            color: #10B981;
-        }
-        th.sort-desc::after {
-            content: ' ↓';
-            color: #10B981;
-        }
-        .estado-mes-unico {
-            font-size: 14px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .input-filter { background-color: #111827; border: 1px solid #4B5563; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
+        .input-filter::placeholder { color: #6B7280; }
+        th.sortable { cursor: pointer; position: relative; user-select: none; }
+        th.sortable:hover { background-color: rgba(55, 65, 81, 0.4); color: #FFF; }
+        th.sortable::after { content: ' ↕'; font-size: 10px; color: #6B7280; margin-left: 4px; }
+        th.sort-asc::after { content: ' ↑'; color: #10B981; }
+        th.sort-desc::after { content: ' ↓'; color: #10B981; }
+        .estado-mes-unico { font-size: 14px; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
     <div class="max-w-6xl mx-auto space-y-6">
         
-        <!-- Cabecera y Estado de Carga -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-white tracking-tight">Herencia Argentina</h1>
@@ -97,7 +45,6 @@
             </div>
         </div>
 
-        <!-- Filtros Globales -->
         <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl">
             <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-gray-400 uppercase">Año:</span>
@@ -113,7 +60,6 @@
             </div>
         </div>
 
-        <!-- Tarjetas de KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500">
                 <p class="text-xs font-bold text-gray-400 uppercase">Total Ingresos</p>
@@ -141,7 +87,6 @@
             </div>
         </div>
 
-        <!-- Pestañas de Navegación -->
         <div class="border-b border-gray-800 overflow-x-auto whitespace-nowrap custom-scrollbar">
             <ul class="flex text-sm font-medium text-center gap-6 pb-2">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
@@ -156,7 +101,6 @@
             </ul>
         </div>
 
-        <!-- CONTENIDO: Resumen -->
         <div id="tab-resumen" class="tab-content space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-xl flex flex-col justify-between">
@@ -186,7 +130,6 @@
             </div>
         </div>
 
-        <!-- CONTENIDO: Estado de Resultados -->
         <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
             <div class="bg-card p-6 rounded-2xl shadow-xl w-full overflow-hidden">
                 <div class="border-b border-gray-700 pb-4 mb-4 flex justify-between items-center">
@@ -208,7 +151,6 @@
             </div>
         </div>
 
-        <!-- CONTENIDO: Ingresos -->
         <div id="tab-ingresos" class="tab-content hidden space-y-4">
             <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex justify-between items-center">
                 <span class="text-sm font-bold uppercase tracking-wider text-emerald-400">Suma de Ingresos Filtrados:</span>
@@ -238,14 +180,12 @@
             </div>
         </div>
 
-        <!-- CONTENIDOS DINÁMICOS DE EGRESOS (Generados por bucle de plantillas) -->
         <div id="tab-costo-ordinario" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-operativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-administrativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
-        <!-- CONTENIDO: Pestaña Cantidades -->
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center max-w-4xl mx-auto">
                 <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario</span>
@@ -275,7 +215,6 @@
 
     </div>
 
-    <!-- Script Principal de Lógica -->
     <script>
         let rawEgresos = [];
         let rawIngresos = [];
@@ -306,7 +245,6 @@
             'tab-gasto-personal': 'GASTO PERSONAL'
         };
 
-        // Rellenar las plantillas HTML para las pestañas de egresos dinámicamente
         Object.keys(mapaCategorias).forEach(id => {
             const container = document.getElementById(id);
             if (container) {
@@ -349,7 +287,6 @@
         document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateDashboard(); });
         
         document.getElementById('colFilINFecha').addEventListener('input', updateTablesOnly);
-        document.getElementById('colFilINDesc').addEventListener('input', updateTablesOnly);
         document.getElementById('colFilINTipo').addEventListener('input', updateTablesOnly);
 
         document.addEventListener('input', function(e) {
@@ -387,9 +324,9 @@
         }
 
         function loadExcelAutomatically() {
+            // ID actualizado apuntando al nuevo archivo .xlsm
             const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
-            // Actualizado para exportar correctamente como .xlsm desde Google Drive
-            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsm`;
+            const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
 
             fetch(driveUrl)
                 .then(res => res.arrayBuffer())
@@ -546,225 +483,367 @@
             fCant.forEach(e => {
                 const key = (e.DESCRIPCION || "SIN DESCRIPCION").toUpperCase().trim();
                 if (!agrupado[key]) {
-                    agrupado[key] = { DESCRIPCION: key, veces: 0, sumaCantidad: 0, sumaTotal: 0 };
+                    agrupado[key] = { 
+                        DESCRIPCION: key, 
+                        veces: 0, 
+                        total: 0 
+                    };
                 }
                 agrupado[key].veces += 1;
-                agrupado[key].sumaCantidad += (e.CANTIDAD || 0);
-                agrupado[key].sumaTotal += e.TOTAL;
+                agrupado[key].total += e.TOTAL;
             });
 
-            let arrCant = Object.values(agrupado).map(item => ({
-                DESCRIPCION: item.DESCRIPCION,
-                veces: item.veces,
-                promedio: item.veces > 0 ? (item.sumaTotal / item.veces) : 0,
-                TOTAL: item.sumaTotal
+            let itemsCantidades = Object.values(agrupado).map(item => ({
+                ...item,
+                promedio: item.total / item.veces,
+                TOTAL: item.total
             }));
 
-            let sumCantFil = arrCant.reduce((s, i) => s + i.TOTAL, 0);
+            let sumCantFil = itemsCantidades.reduce((s, i) => s + i.TOTAL, 0);
             document.getElementById('sum-tab-cantidades').innerText = formatCurrency(sumCantFil);
-            arrCant = aplicarOrdenamiento(arrCant, currentSort['tab-cantidades']);
+            itemsCantidades = aplicarOrdenamiento(itemsCantidades, currentSort['tab-cantidades']);
 
-            document.getElementById('body-tab-cantidades').innerHTML = arrCant.map(i => `
+            document.getElementById('body-tab-cantidades').innerHTML = itemsCantidades.map(item => `
                 <tr class="hover:bg-gray-800/40">
-                    <td class="py-3 px-6 font-medium">${i.DESCRIPCION}</td>
-                    <td class="py-3 px-4 text-center">${i.veces}</td>
-                    <td class="py-3 px-4 text-right">${formatCurrency(i.promedio)}</td>
-                    <td class="py-3 px-6 text-right font-semibold text-expense">${formatCurrency(i.TOTAL)}</td>
+                    <td class="py-3 px-6 font-semibold">${item.DESCRIPCION}</td>
+                    <td class="py-3 px-4 text-center">${item.veces}</td>
+                    <td class="py-3 px-4 text-right">${formatCurrency(item.promedio)}</td>
+                    <td class="py-3 px-6 text-right font-bold text-expense">${formatCurrency(item.TOTAL)}</td>
                 </tr>
-            `).join('') || `<tr><td colspan="4" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de cantidades</td></tr>`;
+            `).join('') || `<tr><td colspan="4" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de Costo Ordinario</td></tr>`;
 
             Object.keys(mapaCategorias).forEach(tabId => {
                 let catName = mapaCategorias[tabId];
                 let fEgr = rawEgresos.filter(filterFn).filter(e => e.TIPO === catName);
 
-                let fFecha = document.getElementById(`fil-fecha-${tabId}`)?.value.toLowerCase() || '';
-                let fDesc = document.getElementById(`fil-desc-${tabId}`)?.value.toLowerCase() || '';
-                let fProv = document.getElementById(`fil-prov-${tabId}`)?.value.toLowerCase() || '';
+                let iFecha = document.getElementById(`fil-fecha-${tabId}`)?.value.toLowerCase() || '';
+                let iDesc = document.getElementById(`fil-desc-${tabId}`)?.value.toLowerCase() || '';
+                let iProv = document.getElementById(`fil-prov-${tabId}`)?.value.toLowerCase() || '';
 
                 fEgr = fEgr.filter(e => 
-                    e.FECHA.toLowerCase().includes(fFecha) &&
-                    e.DESCRIPCION.toLowerCase().includes(fDesc) &&
-                    e.PROVEEDOR.toLowerCase().includes(fProv)
+                    e.FECHA.toLowerCase().includes(iFecha) &&
+                    e.DESCRIPCION.toLowerCase().includes(iDesc) &&
+                    e.PROVEEDOR.toLowerCase().includes(iProv)
                 );
 
-                let sumEgrFil = fEgr.reduce((s, e) => s + e.TOTAL, 0);
-                let sumElem = document.getElementById(`sum-${tabId}`);
-                if (sumElem) sumElem.innerText = formatCurrency(sumEgrFil);
-
+                let sumCat = fEgr.reduce((s, e) => s + e.TOTAL, 0);
+                document.getElementById(`sum-${tabId}`).innerText = formatCurrency(sumCat);
                 fEgr = aplicarOrdenamiento(fEgr, currentSort[tabId]);
 
-                let bodyElem = document.getElementById(`body-${tabId}`);
-                if (bodyElem) {
-                    bodyElem.innerHTML = fEgr.map(e => `
-                        <tr class="hover:bg-gray-800/40">
-                            <td class="py-3 px-6">${e.FECHA}</td>
-                            <td class="py-3 px-6">${e.DESCRIPCION}</td>
-                            <td class="py-3 px-6">${e.PROVEEDOR}</td>
-                            <td class="py-3 px-4 text-center">${e.CANTIDAD || 0}</td>
-                            <td class="py-3 px-4 text-center">${e.UNIDAD || ''}</td>
-                            <td class="py-3 px-6 text-right">${formatCurrency(e.VALOR_UNITARIO)}</td>
-                            <td class="py-3 px-6 text-right font-semibold text-expense">${formatCurrency(e.TOTAL)}</td>
-                        </tr>
-                    `).join('') || `<tr><td colspan="7" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
-                }
+                document.getElementById(`body-${tabId}`).innerHTML = fEgr.map(e => `
+                    <tr class="hover:bg-gray-800/40">
+                        <td class="py-3 px-6">${e.FECHA}</td>
+                        <td class="py-3 px-6">${e.DESCRIPCION}</td>
+                        <td class="py-3 px-6">${e.PROVEEDOR}</td>
+                        <td class="py-3 px-4 text-center">${e.CANTIDAD || 0}</td>
+                        <td class="py-3 px-4 text-center">${e.UNIDAD || ''}</td>
+                        <td class="py-3 px-6 text-right">${formatCurrency(e.VALOR_UNITARIO)}</td>
+                        <td class="py-3 px-6 text-right font-semibold text-expense">${formatCurrency(e.TOTAL)}</td>
+                    </tr>
+                `).join('') || `<tr><td colspan="4" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
             });
         }
 
-        function formatCurrency(amount) {
-            return "$ " + Math.round(amount).toLocaleString('es-CO');
-        }
+        function actualizarGraficosYCategorias(fIng, fEgr) {
+            let labelsBar = [];
+            let dataIngBar = [];
+            let dataEgrBar = [];
 
-        function switchTab(event, tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('tab-active'));
-            document.getElementById(tabId).classList.remove('hidden');
-            event.currentTarget.classList.add('tab-active');
-        }
+            if (selectedMonth === "TODOS") {
+                let maxMonthWithData = 1;
+                for (let m = 1; m <= 12; m++) {
+                    let hasIng = rawIngresos.some(i => (selectedYear === "TODOS" || i.ANIO === selectedYear) && i.MES_NUM === m);
+                    let hasEgr = rawEgresos.some(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === m);
+                    if (hasIng || hasEgr) maxMonthWithData = m;
+                }
+                for (let m = 1; m <= maxMonthWithData; m++) {
+                    labelsBar.push(mesesAbrev[m - 1]);
+                    dataIngBar.push(rawIngresos.filter(i => (selectedYear === "TODOS" || i.ANIO === selectedYear) && i.MES_NUM === m).reduce((s, i) => s + i.VALOR, 0));
+                    dataEgrBar.push(rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === m).reduce((s, e) => s + e.TOTAL, 0));
+                }
+            } else {
+                let mIdx = mesesAbrev.indexOf(selectedMonth) + 1;
+                labelsBar = [selectedMonth];
+                dataIngBar = [rawIngresos.filter(i => (selectedYear === "TODOS" || i.ANIO === selectedYear) && i.MES_NUM === mIdx).reduce((s, i) => s + i.VALOR, 0)];
+                dataEgrBar = [rawEgresos.filter(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === mIdx).reduce((s, e) => s + e.TOTAL, 0)];
+            }
 
-        function actualizarGraficosYCategorias(ingresos, egresos) {
-            const mesesTotales = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
-            let barLabels = mesesTotales;
-            let ingData = mesesTotales.map(m => ingresos.filter(i => i.MES_TXT === m).reduce((s, i) => s + i.VALOR, 0));
-            let egrData = mesesTotales.map(m => egresos.filter(e => e.MES_TXT === m).reduce((s, e) => s + e.TOTAL, 0));
+            const barContainer = document.getElementById('chartBarContainer');
+            if (selectedMonth !== "TODOS") {
+                barContainer.style.maxWidth = "520px";
+                barContainer.style.margin = "0 auto";
+            } else {
+                barContainer.style.maxWidth = "none";
+            }
 
-            if (chartBar) chartBar.destroy();
             const ctxBar = document.getElementById('chartComparativo').getContext('2d');
+            if (chartBar) chartBar.destroy();
             chartBar = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
-                    labels: barLabels,
+                    labels: labelsBar,
                     datasets: [
-                        { label: 'Ingresos', data: ingData, backgroundColor: '#10B981', borderRadius: 4 },
-                        { label: 'Costos y Gastos', data: egrData, backgroundColor: '#F87171', borderRadius: 4 }
+                        { label: 'Ingresos', data: dataIngBar, backgroundColor: '#10B981', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' },
+                        { label: 'Costos y Gastos', data: dataEgrBar, backgroundColor: '#F87171', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } }, x: { grid: { display: false }, ticks: { color: '#9CA3AF' } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { labels: { color: '#AAA' } } }, 
+                    scales: { 
+                        x: { ticks: { color: '#888' }, grid: { display: false } }, 
+                        y: { ticks: { color: '#888' }, grid: { color: 'rgba(55, 65, 81, 0.2)' } } 
+                    } 
+                }
             });
 
-            const catMap = {};
-            egresos.forEach(e => { catMap[e.TIPO] = (catMap[e.TIPO] || 0) + e.TOTAL; });
-            let sortedCats = Object.entries(catMap).sort((a,b) => b[1] - a[1]);
+            const porCat = {};
+            fEgr.forEach(e => { porCat[e.TIPO] = (porCat[e.TIPO] || 0) + e.TOTAL; });
+            const labelsCat = Object.keys(porCat);
+            const dataCat = Object.values(porCat);
 
-            if (chartDoughnut) chartDoughnut.destroy();
             const ctxDoughnut = document.getElementById('chartDoughnut').getContext('2d');
+            if (chartDoughnut) chartDoughnut.destroy();
             chartDoughnut = new Chart(ctxDoughnut, {
                 type: 'doughnut',
                 data: {
-                    labels: sortedCats.map(c => c[0]),
-                    datasets: [{ data: sortedCats.map(c => c[1]), backgroundColor: colors }]
+                    labels: labelsCat,
+                    datasets: [{ data: dataCat, backgroundColor: colors }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            document.getElementById('doughnutLegend').innerHTML = sortedCats.map((c, idx) => `
-                <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${colors[idx % colors.length]}"></span>${c[0]}</span><span class="font-semibold">${formatCurrency(c[1])}</span></div>
+            document.getElementById('doughnutLegend').innerHTML = labelsCat.map((lbl, idx) => `
+                <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${colors[idx % colors.length]}"></span>${lbl}</span><span class="font-bold">${formatCurrency(dataCat[idx])}</span></div>
             `).join('');
 
-            let provMap = {};
-            egresos.forEach(e => { if (e.PROVEEDOR) provMap[e.PROVEEDOR] = (provMap[e.PROVEEDOR] || 0) + e.TOTAL; });
-            let topProv = Object.entries(provMap).sort((a,b) => b[1] - a[1]).slice(0, 8);
-
-            document.getElementById('topProveedoresList').innerHTML = topProv.map(p => `
-                <div class="bg-gray-900/40 p-3 rounded-xl border border-gray-800"><p class="text-xs text-gray-400 truncate">${p[0]}</p><p class="text-base font-bold text-expense mt-1">${formatCurrency(p[1])}</p></div>
-            `).join('') || '<p class="text-xs text-gray-500">Sin registros de proveedores</p>';
+            const porProv = {};
+            fEgr.forEach(e => { porProv[e.PROVEEDOR] = (porProv[e.PROVEEDOR] || 0) + e.TOTAL; });
+            const topProv = Object.entries(porProv).sort((a,b) => b[1] - a[1]).slice(0, 8);
+            document.getElementById('topProveedoresList').innerHTML = topProv.map(([prov, val], idx) => `
+                <div class="bg-gray-900/40 p-4 rounded-xl border border-gray-800">
+                    <span class="text-[10px] text-gray-500 uppercase font-bold">#${idx + 1} Proveedor</span>
+                    <h4 class="font-semibold text-sm truncate mt-1" title="${prov}">${prov}</h4>
+                    <p class="text-lg font-bold text-expense mt-2">${formatCurrency(val)}</p>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-xs col-span-full">Sin registros</p>';
         }
 
-        function actualizarEstadoResultados(ingresos, egresos) {
-            let thead = document.getElementById('headEstadoResultados');
-            let tbody = document.getElementById('bodyEstadoResultados');
+        function actualizarEstadoResultados(fIng, fEgr) {
+            const head = document.getElementById('headEstadoResultados');
+            const body = document.getElementById('bodyEstadoResultados');
+            
+            let mesesActivos = [];
+            let indicesActivos = [];
 
             if (selectedMonth === "TODOS") {
-                thead.innerHTML = `
-                    <tr>
-                        <th class="py-3 px-4">Concepto / Partida Contable</th>
-                        ${mesesAbrev.map(m => `<th class="py-3 px-2 text-right">${m}</th>`).join('')}
-                        <th class="py-3 px-4 text-right">Total Acumulado</th>
-                    </tr>
-                `;
-
-                let rowIngresosMensuales = mesesAbrev.map(m => ingresos.filter(i => i.MES_TXT === m).reduce((s, i) => s + i.VALOR, 0));
-                let totalIng = rowIngresosMensuales.reduce((a, b) => a + b, 0);
-
-                let categoriasEgresosUnicas = [...new Set(rawEgresos.map(e => e.TIPO))].sort();
-                let filasEgresosHtml = "";
-                let sumaTotalEgresosMensuales = new Array(12).fill(0);
-
-                categoriasEgresosUnicas.forEach((cat, index) => {
-                    let valoresCat = mesesAbrev.map(m => egresos.filter(e => e.TIPO === cat && e.MES_TXT === m).reduce((s, e) => s + e.TOTAL, 0));
-                    let totalCat = valoresCat.reduce((a, b) => a + b, 0);
-                    for(let i=0; i<12; i++) sumaTotalEgresosMensuales[i] += valoresCat[i];
-
-                    filasEgresosHtml += `
-                        <tr class="hover:bg-gray-800/40">
-                            <td class="py-2.5 px-4 text-gray-400 pl-6">2.${index + 1} ${cat}</td>
-                            ${valoresCat.map(v => `<td class="py-2.5 px-2 text-right text-gray-300">${v > 0 ? formatCurrency(v) : '-'}</td>`).join('')}
-                            <td class="py-2.5 px-4 text-right font-semibold text-expense">${formatCurrency(totalCat)}</td>
-                        </tr>
-                    `;
-                });
-
-                let utilidadMensual = mesesAbrev.map((m, idx) => rowIngresosMensuales[idx] - sumaTotalEgresosMensuales[idx]);
-                let totalUtilidad = totalIng - egresos.reduce((s, e) => s + e.TOTAL, 0);
-
-                tbody.innerHTML = `
-                    <tr class="bg-emerald-500/5 font-semibold text-income">
-                        <td class="py-3 px-4">1. TOTAL INGRESOS OPERATIVOS</td>
-                        ${rowIngresosMensuales.map(v => `<td class="py-3 px-2 text-right">${v > 0 ? formatCurrency(v) : '-'}</td>`).join('')}
-                        <td class="py-3 px-4 text-right">${formatCurrency(totalIng)}</td>
-                    </tr>
-                    <tr class="bg-gray-900/40 font-bold text-gray-300"><td colspan="14" class="py-2 px-4 uppercase text-[10px] tracking-wider text-gray-400">Desglose de Costos y Gastos</td></tr>
-                    ${filasEgresosHtml}
-                    <tr class="bg-red-500/5 font-semibold text-expense border-t border-gray-700">
-                        <td class="py-3 px-4">TOTAL COSTOS Y GASTOS</td>
-                        ${sumaTotalEgresosMensuales.map(v => `<td class="py-3 px-2 text-right">${v > 0 ? formatCurrency(v) : '-'}</td>`).join('')}
-                        <td class="py-3 px-4 text-right">${formatCurrency(egresos.reduce((s, e) => s + e.TOTAL, 0))}</td>
-                    </tr>
-                    <tr class="bg-cyan-500/10 font-bold text-cyan-400 text-sm border-t-2 border-cyan-500/30">
-                        <td class="py-3 px-4">3. UTILIDAD NETA DEL PERIODO</td>
-                        ${utilidadMensual.map(v => `<td class="py-3 px-2 text-right">${v !== 0 ? formatCurrency(v) : '-'}</td>`).join('')}
-                        <td class="py-3 px-4 text-right">${formatCurrency(totalUtilidad)}</td>
-                    </tr>
-                `;
+                let maxMonthWithData = 1;
+                for (let m = 1; m <= 12; m++) {
+                    let hasIng = rawIngresos.some(i => (selectedYear === "TODOS" || i.ANIO === selectedYear) && i.MES_NUM === m);
+                    let hasEgr = rawEgresos.some(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === m);
+                    if (hasIng || hasEgr) maxMonthWithData = m;
+                }
+                for (let m = 1; m <= maxMonthWithData; m++) {
+                    mesesActivos.push(mesesAbrev[m - 1]);
+                    indicesActivos.push(m);
+                }
             } else {
-                thead.innerHTML = `
-                    <tr>
-                        <th class="py-3 px-4">Concepto / Partida Contable (${selectedMonth})</th>
-                        <th class="py-3 px-4 text-right">Total del Mes</th>
-                    </tr>
-                `;
-
-                let totalIng = ingresos.reduce((s, i) => s + i.VALOR, 0);
-                let totalEgr = egresos.reduce((s, e) => s + e.TOTAL, 0);
-                let utilidad = totalIng - totalEgr;
-
-                let categoriasEgresosUnicas = [...new Set(rawEgresos.map(e => e.TIPO))].sort();
-                let filasEgresosHtml = categoriasEgresosUnicas.map((cat, index) => {
-                    let totalCat = egresos.filter(e => e.TIPO === cat).reduce((s, e) => s + e.TOTAL, 0);
-                    return `
-                        <tr class="hover:bg-gray-800/40">
-                            <td class="py-2.5 px-4 text-gray-400 pl-6">2.${index + 1} ${cat}</td>
-                            <td class="py-2.5 px-4 text-right text-gray-300">${formatCurrency(totalCat)}</td>
-                        </tr>
-                    `;
-                }).join('');
-
-                tbody.innerHTML = `
-                    <tr class="bg-emerald-500/5 font-semibold text-income">
-                        <td class="py-3 px-4">1. TOTAL INGRESOS OPERATIVOS</td>
-                        <td class="py-3 px-4 text-right">${formatCurrency(totalIng)}</td>
-                    </tr>
-                    <tr class="bg-gray-900/40 font-bold text-gray-300"><td colspan="2" class="py-2 px-4 uppercase text-[10px] tracking-wider text-gray-400">Desglose de Costos y Gastos</td></tr>
-                    ${filasEgresosHtml}
-                    <tr class="bg-red-500/5 font-semibold text-expense border-t border-gray-700">
-                        <td class="py-3 px-4">TOTAL COSTOS Y GASTOS</td>
-                        <td class="py-3 px-4 text-right">${formatCurrency(totalEgr)}</td>
-                    </tr>
-                    <tr class="bg-cyan-500/10 font-bold text-cyan-400 text-sm border-t-2 border-cyan-500/30">
-                        <td class="py-3 px-4">3. UTILIDAD NETA DEL PERIODO</td>
-                        <td class="py-3 px-4 text-right">${formatCurrency(utilidad)}</td>
-                    </tr>
-                `;
+                mesesActivos = [selectedMonth];
+                indicesActivos = [mesesAbrev.indexOf(selectedMonth) + 1];
             }
+
+            head.innerHTML = `<tr><th class="p-3 w-2/5">Concepto Contable</th>${mesesActivos.map(m => `<th class="p-3 text-right">${m}</th>`).join('')}<th class="p-3 text-right">Total</th></tr>`;
+            document.getElementById('tablePG').classList.toggle('estado-mes-unico', selectedMonth !== "TODOS");
+            
+            const totalIng = fIng.reduce((s, i) => s + i.VALOR, 0);
+            
+            let ingresosLocal = fIng.filter(i => (i.TIPO || '').toUpperCase().includes('LOCAL')).reduce((s, i) => s + i.VALOR, 0);
+            let ingresosProd = fIng.filter(i => (i.TIPO || '').toUpperCase().includes('PRODUCCION') || (i.TIPO || '').toUpperCase().includes('PRODUCCIÓN')).reduce((s, i) => s + i.VALOR, 0);
+            if (ingresosLocal === 0 && ingresosProd === 0) {
+                ingresosLocal = totalIng; 
+            }
+
+            let html = "";
+            
+            html += `<tr><td class="p-3 font-bold text-white">Ingresos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
+            
+            // Local
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Local</td>` + 
+                indicesActivos.map(idx => {
+                    let mIngVal = fIng.filter(i => i.MES_NUM === idx && (i.TIPO||'').toUpperCase().includes('LOCAL')).reduce((s,i)=>s+i.VALOR,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mIngVal / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-income">${formatCurrency(mIngVal)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-income">${formatCurrency(ingresosLocal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((ingresosLocal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            // Producción
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Producción</td>` + 
+                indicesActivos.map(idx => {
+                    let mIngVal = fIng.filter(i => i.MES_NUM === idx && ((i.TIPO||'').toUpperCase().includes('PRODUCCION')||(i.TIPO||'').toUpperCase().includes('PRODUCCIÓN'))).reduce((s,i)=>s+i.VALOR,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mIngVal / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-income">${formatCurrency(mIngVal)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-income">${formatCurrency(ingresosProd)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((ingresosProd/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            // Total Ingresos
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Ingresos (100%)</td>` + 
+                indicesActivos.map(idx => {
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    return `<td class="p-3 text-right font-bold text-income">${formatCurrency(mTotIng)} <span class="text-[10px] text-gray-500">(100.0%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right font-bold text-income">${formatCurrency(totalIng)} <span class="text-[10px] text-gray-500">(100.0%)</span></th></tr>`;
+
+            let costosTotales = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO' || e.TIPO === 'COSTO EXTRAORDINARIO');
+            let costosOrdinarios = fEgr.filter(e => e.TIPO === 'COSTO ORDINARIO');
+            let costosExtraordinarios = fEgr.filter(e => e.TIPO === 'COSTO EXTRAORDINARIO');
+            let sumaCostos = costosTotales.reduce((s,e)=>s+e.TOTAL,0);
+            
+            html += `<tr><td class="p-3 font-bold text-white">Costo</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
+            
+            // Costo Ordinario
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Costo ordinario</td>` + 
+                indicesActivos.map(idx => {
+                    let mCost = costosOrdinarios.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-expense">${formatCurrency(costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosOrdinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            // Costo Extraordinario (solo si existe)
+            if (costosExtraordinarios.length > 0) {
+                html += `<tr><td class="p-3 pl-6 text-gray-400">Costo extraordinario</td>` + 
+                    indicesActivos.map(idx => {
+                        let mCost = costosExtraordinarios.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                        let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                        let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
+                        return `<td class="p-3 text-right text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                    }).join('') + 
+                    `<th class="p-3 text-right text-expense">${formatCurrency(costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((costosExtraordinarios.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+            }
+
+            // Total Costos
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Costo</td>` + 
+                indicesActivos.map(idx => {
+                    let mCost = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mCost / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right font-bold text-expense">${formatCurrency(mCost)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right font-bold text-expense">${formatCurrency(sumaCostos)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaCostos/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            let utilidad1 = totalIng - sumaCostos;
+            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad bruta</td>` + 
+                indicesActivos.map(idx => {
+                    let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mUtil = mIng - mCos;
+                    let mPct = mIng > 0 ? ((mUtil / mIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right font-bold text-cyan-400">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right font-bold text-cyan-400">${formatCurrency(utilidad1)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidad1/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            let gastosOperativos = fEgr.filter(e => e.TIPO === 'GASTO OPERATIVO');
+            let gastosAdm = fEgr.filter(e => e.TIPO === 'GASTO ADMINISTRATIVO');
+            let gastosVentas = fEgr.filter(e => e.TIPO === 'GASTO DE VENTAS');
+            let sumaGastosAdmVen = [...gastosOperativos, ...gastosAdm, ...gastosVentas];
+            let totalGastosAdmVenVal = sumaGastosAdmVen.reduce((s,e)=>s+e.TOTAL,0);
+
+            html += `<tr><td class="p-3 font-bold text-white">Gastos:</td><td colspan="${mesesActivos.length + 1}" class="p-3"></td></tr>`;
+            
+            // Gastos Operativos
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto Operativo</td>` + 
+                indicesActivos.map(idx => {
+                    let mGast = gastosOperativos.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-expense">${formatCurrency(gastosOperativos.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosOperativos.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            // Gastos Administrativos
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto Administrativo</td>` + 
+                indicesActivos.map(idx => {
+                    let mGast = gastosAdm.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-expense">${formatCurrency(gastosAdm.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosAdm.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            // Gastos de Ventas
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gasto de venta</td>` + 
+                indicesActivos.map(idx => {
+                    let mGast = gastosVentas.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-expense">${formatCurrency(gastosVentas.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((gastosVentas.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            // Total Gastos Operativos, Adm y Ventas
+            html += `<tr class="bg-gray-900/40"><td class="p-3 font-bold text-white">Total Gastos</td>` + 
+                indicesActivos.map(idx => {
+                    let mGast = sumaGastosAdmVen.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right font-bold text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right font-bold text-expense">${formatCurrency(totalGastosAdmVenVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((totalGastosAdmVenVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            let utilidad2 = utilidad1 - totalGastosAdmVenVal;
+            html += `<tr class="bg-gray-800/60"><td class="p-3 font-bold text-cyan-400">Utilidad Operativa</td>` + 
+                indicesActivos.map(idx => {
+                    let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mGas = sumaGastosAdmVen.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mUtil = mIng - mCos - mGas;
+                    let mPct = mIng > 0 ? ((mUtil / mIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right font-bold text-cyan-400">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right font-bold text-cyan-400">${formatCurrency(utilidad2)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidad2/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            let gastosPers = fEgr.filter(e => e.TIPO === 'GASTO PERSONAL');
+            let sumaGastosPersVal = gastosPers.reduce((s,e)=>s+e.TOTAL,0);
+            
+            // Gastos Personales
+            html += `<tr><td class="p-3 pl-6 text-gray-400">Gastos personales</td>` + 
+                indicesActivos.map(idx => {
+                    let mGast = gastosPers.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right text-expense">${formatCurrency(mGast)} <span class="text-[10px] text-gray-500">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right text-expense">${formatCurrency(sumaGastosPersVal)} <span class="text-[10px] text-gray-500">(${totalIng > 0 ? ((sumaGastosPersVal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            let utilidadFinal = utilidad2 - sumaGastosPersVal;
+            html += `<tr class="bg-emerald-900/30"><td class="p-3 font-bold text-emerald-400">Utilidad Final</td>` + 
+                indicesActivos.map(idx => {
+                    let mIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mCos = costosTotales.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mGas = sumaGastosAdmVen.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mPer = gastosPers.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mUtil = mIng - mCos - mGas - mPer;
+                    let mPct = mIng > 0 ? ((mUtil / mIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="p-3 text-right font-bold text-emerald-400">${formatCurrency(mUtil)} <span class="text-[10px] text-gray-400">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="p-3 text-right font-bold text-emerald-400">${formatCurrency(utilidadFinal)} <span class="text-[10px] text-gray-400">(${totalIng > 0 ? ((utilidadFinal/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            body.innerHTML = html;
+        }
+
+        function switchTab(e, tabId) {
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+            document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            e.currentTarget.classList.add('tab-active');
+        }
+        
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
         }
     </script>
 </body>
