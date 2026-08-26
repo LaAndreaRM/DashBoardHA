@@ -319,7 +319,8 @@
         }
 
         function loadExcelAutomatically() {
-            const fileId = "17svRLWvupcy0ZVIC52xV8mcHEXHUhwBh";
+            // ID actualizado con el archivo proporcionado por el usuario
+            const fileId = "1BZD1iUqPXmMppwrepyqOsTw_lGhu75u3";
             const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
 
             fetch(driveUrl)
@@ -335,8 +336,7 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        // Forzar lectura estricta de la columna T (índice 19) para todas las descripciones de egresos
-                        let idxDesc = 19; 
+                        let idxDesc = 19; // Columna T
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
                         let idxUnidad = headers.indexOf("UNIDAD");
@@ -471,7 +471,6 @@
                 </tr>
             `).join('') || `<tr><td colspan="5" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
 
-            // Renderizar Pestaña Cantidades basada en Columna T y Costo Ordinario
             renderizarTabCantidades(filterFn);
 
             Object.keys(mapaCategorias).forEach(tabId => {
