@@ -188,7 +188,7 @@
         
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center">
-                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Columna T (Producto)</span>
+                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario (Columna T)</span>
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="bg-card rounded-xl overflow-hidden shadow-xl">
@@ -252,7 +252,7 @@
                             <thead class="bg-gray-900/50 text-gray-400 uppercase">
                                 <tr>
                                     <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="${id}">Fecha</th>
-                                    <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="${id}">Producto</th>
+                                    <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="${id}">Descripción</th>
                                     <th class="py-3 px-6 w-48 sortable" data-col="PROVEEDOR" data-tab="${id}">Proveedor</th>
                                     <th class="py-3 px-4 text-center sortable" data-col="CANTIDAD" data-tab="${id}">Cantidad</th>
                                     <th class="py-3 px-4 text-center sortable" data-col="UNIDAD" data-tab="${id}">Unidad</th>
@@ -261,7 +261,7 @@
                                 </tr>
                                 <tr class="bg-gray-900/30">
                                     <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-fecha-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 fecha"></th>
-                                    <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-desc-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 producto..."></th>
+                                    <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-desc-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
                                     <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-prov-${id}" class="input-filter input-dinamico-egreso" placeholder="🔍 proveedor..."></th>
                                     <th class="py-2 px-4 border-b border-gray-800"></th>
                                     <th class="py-2 px-4 border-b border-gray-800"></th>
@@ -319,6 +319,7 @@
         }
 
         function loadExcelAutomatically() {
+            // ID actualizado con el archivo proporcionado por el usuario
             const fileId = "1BZD1iUqPXmMppwrepyqOsTw_lGhu75u3";
             const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
 
@@ -335,13 +336,7 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        
-                        // Búsqueda inteligente de la columna 'PRODUCTO' (Columna T)
-                        let idxDesc = headers.indexOf("PRODUCTO");
-                        if (idxDesc === -1) idxDesc = headers.indexOf("DESCRIPCIÓN");
-                        if (idxDesc === -1) idxDesc = headers.indexOf("DESCRIPCION");
-                        if (idxDesc === -1) idxDesc = 19; // Forzado a la columna T por defecto si no lo encuentra por nombre
-
+                        let idxDesc = 19; // Columna T
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
                         let idxUnidad = headers.indexOf("UNIDAD");
@@ -353,8 +348,8 @@
                             let idxMontoReal = headers.indexOf(mesAbrevFila) !== -1 ? headers.indexOf(mesAbrevFila) : (headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL"));
                             if (row[idxMontoReal] === "" || row[idxMontoReal] === undefined) return null;
                             
-                            // Toma el texto directo de la columna T (Producto) sin rellenar con "SIN DESCRIPCION" si está vacío
-                            let productoTexto = (row[idxDesc] !== undefined && row[idxDesc] !== null) ? row[idxDesc].toString().trim() : "";
+                            let productoTexto = (row[idxDesc] || "").toString().trim();
+                            if (productoTexto === "") productoTexto = "SIN DESCRIPCION";
 
                             return { 
                                 ANIO: parsedDate.y.toString(), 
@@ -535,7 +530,7 @@
             }
 
             let headHtml = `<tr>
-                <th class="py-3 px-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">Producto</th>`;
+                <th class="py-3 px-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">Producto / Descripción</th>`;
             
             if (selectedMonth === "TODOS") {
                 mesesActivos.forEach(m => {
@@ -581,7 +576,7 @@
 
             let bodyHtml = itemsCantidades.map(item => {
                 let row = `<tr class="hover:bg-gray-800/40">
-                    <td class="py-3 px-4 font-semibold">${item.DESCRIPCION || '(Sin producto)'}</td>`;
+                    <td class="py-3 px-4 font-semibold">${item.DESCRIPCION}</td>`;
                 
                 if (selectedMonth === "TODOS") {
                     indicesActivos.forEach(idx => {
