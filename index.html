@@ -335,8 +335,8 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        let idxDesc = headers.findIndex(h => h.trim().toUpperCase() === "PRODUCTO");
-                        if (idxDesc === -1) idxDesc = 19; // Columna T (índice 19)
+                        // Forzar lectura estricta de la columna T (índice 19) para todas las descripciones de egresos
+                        let idxDesc = 19; 
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
                         let idxUnidad = headers.indexOf("UNIDAD");
@@ -349,7 +349,7 @@
                             if (row[idxMontoReal] === "" || row[idxMontoReal] === undefined) return null;
                             
                             let productoTexto = (row[idxDesc] || "").toString().trim();
-                            if (productoTexto === "") productoTexto = "SIN PRODUCTO";
+                            if (productoTexto === "") productoTexto = "SIN DESCRIPCION";
 
                             return { 
                                 ANIO: parsedDate.y.toString(), 
@@ -502,7 +502,7 @@
                         <td class="py-3 px-6 text-right">${formatCurrency(e.VALOR_UNITARIO)}</td>
                         <td class="py-3 px-6 text-right font-semibold text-expense">${formatCurrency(e.TOTAL)}</td>
                     </tr>
-                `).join('') || `<tr><td colspan="4" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
+                `).join('') || `<tr><td colspan="7" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
             });
         }
 
@@ -530,7 +530,6 @@
                 indicesActivos = [mesesAbrev.indexOf(selectedMonth) + 1];
             }
 
-            // Construir Cabecera Dinámica
             let headHtml = `<tr>
                 <th class="py-3 px-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">Producto / Descripción</th>`;
             
@@ -547,7 +546,6 @@
             </tr>`;
             document.getElementById('headCantidades').innerHTML = headHtml;
 
-            // Agrupar datos por producto (Columna T)
             const agrupado = {};
             fCant.forEach(e => {
                 const key = e.DESCRIPCION.toUpperCase().trim();
@@ -881,7 +879,6 @@
 
         function switchTab(e, tabId) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
-            document.querySelectorAll('.tab-link').refEach?.(tl => tl.classList.remove('tab-active')); // safe check
             document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
             document.getElementById(tabId).classList.remove('hidden');
             e.currentTarget.classList.add('tab-active');
