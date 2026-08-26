@@ -187,29 +187,23 @@
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
-            <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center max-w-4xl mx-auto">
-                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario</span>
+            <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center">
+                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario (Columna T)</span>
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
-            <div class="max-w-4xl mx-auto bg-card rounded-xl overflow-hidden shadow-xl">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-gray-900/50 text-gray-400 uppercase">
-                        <tr>
-                            <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">Producto / Descripción</th>
-                            <th class="py-3 px-4 text-center sortable w-32" data-col="veces" data-tab="tab-cantidades">Veces Comprado</th>
-                            <th class="py-3 px-4 text-right sortable w-40" data-col="promedio" data-tab="tab-cantidades">Costo Promedio</th>
-                            <th class="py-3 px-6 text-right sortable w-40" data-col="TOTAL" data-tab="tab-cantidades">Total Acumulado</th>
-                        </tr>
+            <div class="bg-card rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table id="tableCantidades" class="w-full text-xs text-left">
+                        <thead id="headCantidades" class="bg-gray-900/50 text-gray-400 uppercase">
+                        </thead>
                         <tr class="bg-gray-900/30">
-                            <th class="py-2 px-6 border-b border-gray-800"><input type="text" id="fil-desc-tab-cantidades" class="input-filter input-dinamico-egreso" placeholder="🔍 desc..."></th>
-                            <th class="py-2 px-4 border-b border-gray-800"></th>
-                            <th class="py-2 px-4 border-b border-gray-800"></th>
-                            <th class="py-2 px-6 border-b border-gray-800"></th>
+                            <th colspan="1" class="py-2 px-4 border-b border-gray-800"><input type="text" id="fil-desc-tab-cantidades" class="input-filter" placeholder="🔍 producto..."></th>
+                            <th colspan="20" class="py-2 px-4 border-b border-gray-800"></th>
                         </tr>
-                    </thead>
-                    <tbody id="body-tab-cantidades" class="divide-y divide-gray-800 text-gray-300">
-                    </tbody>
-                </table>
+                        <tbody id="body-tab-cantidades" class="divide-y divide-gray-800 text-gray-300">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -288,6 +282,7 @@
         
         document.getElementById('colFilINFecha').addEventListener('input', updateTablesOnly);
         document.getElementById('colFilINTipo').addEventListener('input', updateTablesOnly);
+        document.getElementById('fil-desc-tab-cantidades').addEventListener('input', updateTablesOnly);
 
         document.addEventListener('input', function(e) {
             if (e.target.classList.contains('input-dinamico-egreso')) {
@@ -341,7 +336,7 @@
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
                         let idxDesc = headers.findIndex(h => h.trim().toUpperCase() === "PRODUCTO");
-                        if (idxDesc === -1) idxDesc = 19; 
+                        if (idxDesc === -1) idxDesc = 19; // Columna T (índice 19)
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         let idxCant = headers.indexOf("CANT") === -1 ? headers.indexOf("CANTIDAD") : headers.indexOf("CANT");
                         let idxUnidad = headers.indexOf("UNIDAD");
@@ -352,12 +347,16 @@
                             let mesAbrevFila = mesesAbrev[parsedDate.m - 1];
                             let idxMontoReal = headers.indexOf(mesAbrevFila) !== -1 ? headers.indexOf(mesAbrevFila) : (headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL"));
                             if (row[idxMontoReal] === "" || row[idxMontoReal] === undefined) return null;
+                            
+                            let productoTexto = (row[idxDesc] || "").toString().trim();
+                            if (productoTexto === "") productoTexto = "SIN PRODUCTO";
+
                             return { 
                                 ANIO: parsedDate.y.toString(), 
                                 MES_NUM: parsedDate.m, 
                                 MES_TXT: mesAbrevFila, 
                                 FECHA: parsedDate.text, 
-                                DESCRIPCION: (row[idxDesc] || "").toString().trim(), 
+                                DESCRIPCION: productoTexto, 
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
                                 CANTIDAD: idxCant !== -1 ? (parseFloat(row[idxCant]) || 0) : 0,
@@ -472,45 +471,8 @@
                 </tr>
             `).join('') || `<tr><td colspan="5" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
 
-            let fCant = rawEgresos.filter(filterFn).filter(e => e.TIPO === "COSTO ORDINARIO");
-            let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
-
-            fCant = fCant.filter(e => 
-                e.DESCRIPCION.toLowerCase().includes(cDesc)
-            );
-
-            const agrupado = {};
-            fCant.forEach(e => {
-                const key = (e.DESCRIPCION || "SIN PRODUCTO").toUpperCase().trim();
-                if (!agrupado[key]) {
-                    agrupado[key] = { 
-                        DESCRIPCION: key, 
-                        veces: 0, 
-                        total: 0 
-                    };
-                }
-                agrupado[key].veces += 1;
-                agrupado[key].total += e.TOTAL;
-            });
-
-            let itemsCantidades = Object.values(agrupado).map(item => ({
-                ...item,
-                promedio: item.veces > 0 ? item.total / item.veces : 0,
-                TOTAL: item.total
-            }));
-
-            let sumCantFil = itemsCantidades.reduce((s, i) => s + i.TOTAL, 0);
-            document.getElementById('sum-tab-cantidades').innerText = formatCurrency(sumCantFil);
-            itemsCantidades = aplicarOrdenamiento(itemsCantidades, currentSort['tab-cantidades']);
-
-            document.getElementById('body-tab-cantidades').innerHTML = itemsCantidades.map(item => `
-                <tr class="hover:bg-gray-800/40">
-                    <td class="py-3 px-6 font-semibold">${item.DESCRIPCION}</td>
-                    <td class="py-3 px-4 text-center">${item.veces}</td>
-                    <td class="py-3 px-4 text-right">${formatCurrency(item.promedio)}</td>
-                    <td class="py-3 px-6 text-right font-bold text-expense">${formatCurrency(item.TOTAL)}</td>
-                </tr>
-            `).join('') || `<tr><td colspan="4" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de Costo Ordinario</td></tr>`;
+            // Renderizar Pestaña Cantidades basada en Columna T y Costo Ordinario
+            renderizarTabCantidades(filterFn);
 
             Object.keys(mapaCategorias).forEach(tabId => {
                 let catName = mapaCategorias[tabId];
@@ -542,6 +504,99 @@
                     </tr>
                 `).join('') || `<tr><td colspan="4" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
             });
+        }
+
+        function renderizarTabCantidades(filterFn) {
+            let fCant = rawEgresos.filter(filterFn).filter(e => e.TIPO === "COSTO ORDINARIO");
+            let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
+
+            fCant = fCant.filter(e => e.DESCRIPCION.toLowerCase().includes(cDesc));
+
+            let mesesActivos = [];
+            let indicesActivos = [];
+
+            if (selectedMonth === "TODOS") {
+                let maxMonthWithData = 1;
+                for (let m = 1; m <= 12; m++) {
+                    let hasEgr = rawEgresos.some(e => (selectedYear === "TODOS" || e.ANIO === selectedYear) && e.MES_NUM === m && e.TIPO === "COSTO ORDINARIO");
+                    if (hasEgr) maxMonthWithData = m;
+                }
+                for (let m = 1; m <= maxMonthWithData; m++) {
+                    mesesActivos.push(mesesAbrev[m - 1]);
+                    indicesActivos.push(m);
+                }
+            } else {
+                mesesActivos = [selectedMonth];
+                indicesActivos = [mesesAbrev.indexOf(selectedMonth) + 1];
+            }
+
+            // Construir Cabecera Dinámica
+            let headHtml = `<tr>
+                <th class="py-3 px-4 sortable" data-col="DESCRIPCION" data-tab="tab-cantidades">Producto / Descripción</th>`;
+            
+            if (selectedMonth === "TODOS") {
+                mesesActivos.forEach(m => {
+                    headHtml += `<th class="py-3 px-3 text-center">${m} (Veces)</th>`;
+                });
+            } else {
+                headHtml += `<th class="py-3 px-4 text-center">Veces Comprado</th>`;
+            }
+
+            headHtml += `<th class="py-3 px-4 text-right">Costo Promedio</th>
+                         <th class="py-3 px-4 text-right">Total Acumulado</th>
+            </tr>`;
+            document.getElementById('headCantidades').innerHTML = headHtml;
+
+            // Agrupar datos por producto (Columna T)
+            const agrupado = {};
+            fCant.forEach(e => {
+                const key = e.DESCRIPCION.toUpperCase().trim();
+                if (!agrupado[key]) {
+                    agrupado[key] = {
+                        DESCRIPCION: key,
+                        vecesPorMes: {},
+                        totalGlobal: 0,
+                        vecesGlobal: 0
+                    };
+                    indicesActivos.forEach(idx => agrupado[key].vecesPorMes[idx] = 0);
+                }
+                agrupado[key].totalGlobal += e.TOTAL;
+                agrupado[key].vecesGlobal += 1;
+                if (agrupado[key].vecesPorMes[e.MES_NUM] !== undefined) {
+                    agrupado[key].vecesPorMes[e.MES_NUM] += 1;
+                }
+            });
+
+            let itemsCantidades = Object.values(agrupado).map(item => ({
+                ...item,
+                promedio: item.vecesGlobal > 0 ? item.totalGlobal / item.vecesGlobal : 0,
+                TOTAL: item.totalGlobal
+            }));
+
+            let sumCantFil = itemsCantidades.reduce((s, i) => s + i.TOTAL, 0);
+            document.getElementById('sum-tab-cantidades').innerText = formatCurrency(sumCantFil);
+            itemsCantidades = aplicarOrdenamiento(itemsCantidades, currentSort['tab-cantidades']);
+
+            let bodyHtml = itemsCantidades.map(item => {
+                let row = `<tr class="hover:bg-gray-800/40">
+                    <td class="py-3 px-4 font-semibold">${item.DESCRIPCION}</td>`;
+                
+                if (selectedMonth === "TODOS") {
+                    indicesActivos.forEach(idx => {
+                        let vecesMes = item.vecesPorMes[idx] || 0;
+                        row += `<td class="py-3 px-3 text-center text-gray-400">${vecesMes > 0 ? vecesMes : '-'}</td>`;
+                    });
+                } else {
+                    row += `<td class="py-3 px-4 text-center">${item.vecesGlobal}</td>`;
+                }
+
+                row += `<td class="py-3 px-4 text-right">${formatCurrency(item.promedio)}</td>
+                        <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(item.TOTAL)}</td>
+                </tr>`;
+                return row;
+            }).join('');
+
+            document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${indicesActivos.length + 3}" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de Costo Ordinario</td></tr>`;
         }
 
         function actualizarGraficosYCategorias(fIng, fEgr) {
