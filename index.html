@@ -430,6 +430,7 @@
                         let idxCant = 16;   
                         let idxUnidad = 17; 
                         let idxS = 18;      
+                        let idxK = 10;      
 
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
@@ -453,6 +454,7 @@
                                 CANTIDAD_RECETA_DEFAULT: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
                                 VALOR_PROMEDIO_UNITARIO: row[idxS] !== undefined && row[idxS] !== "" ? (parseFloat(row[idxS]) || 0) : (idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0),
+                                VALOR_PROM_COMPRA_K: row[idxK] !== undefined && row[idxK] !== "" ? (parseFloat(row[idxK]) || 0) : 0,
                                 VALOR: parseFloat(row[idxMontoReal]) || 0, 
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
@@ -633,13 +635,12 @@
                     headHtml += `<th class="py-3 px-3 text-center whitespace-nowrap">${m}</th>`;
                 });
                 headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Total veces en el año</th>
-                             <th class="py-3 px-6 text-right whitespace-nowrap">Costo Prom. Unitario</th>`;
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio Unitario</th>`;
             } else {
                 headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Cant x Prod (Col. Q)</th>
                              <th class="py-3 px-4 text-center whitespace-nowrap">UNIDAD (Col. R)</th>
                              <th class="py-3 px-4 text-center whitespace-nowrap">Veces Comprado</th>
-                             <th class="py-3 px-6 text-right whitespace-nowrap">Costo Prom. Unitario</th>
-                             <th class="py-3 px-4 text-right whitespace-nowrap">Total Acumulado</th>`;
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio Unitario</th>`;
             }
 
             headHtml += `</tr>`;
@@ -656,8 +657,8 @@
                         vecesPorMes: {},
                         totalGlobal: 0,
                         vecesGlobal: 0,
-                        sumaVUnit: 0,
-                        conteoVUnit: 0
+                        sumaK: 0,
+                        conteoK: 0
                     };
                     if (selectedMonth === "TODOS") {
                         indicesActivos.forEach(idx => agrupado[key].vecesPorMes[idx] = 0);
@@ -671,9 +672,9 @@
                 }
                 agrupado[key].totalGlobal += e.TOTAL;
                 agrupado[key].vecesGlobal += 1;
-                if (e.VALOR_PROMEDIO_UNITARIO > 0) {
-                    agrupado[key].sumaVUnit += e.VALOR_PROMEDIO_UNITARIO;
-                    agrupado[key].conteoVUnit += 1;
+                if (e.VALOR_PROM_COMPRA_K > 0) {
+                    agrupado[key].sumaK += e.VALOR_PROM_COMPRA_K;
+                    agrupado[key].conteoK += 1;
                 }
                 if (selectedMonth === "TODOS" && agrupado[key].vecesPorMes[e.MES_NUM] !== undefined) {
                     agrupado[key].vecesPorMes[e.MES_NUM] += 1;
@@ -682,7 +683,7 @@
 
             let itemsCantidades = Object.values(agrupado).map(item => ({
                 ...item,
-                costoPromedioUnitario: item.conteoVUnit > 0 ? item.sumaVUnit / item.conteoVUnit : 0,
+                costoPromedioUnitario: item.conteoK > 0 ? item.sumaK / item.conteoK : 0,
                 TOTAL: item.totalGlobal
             }));
 
@@ -707,15 +708,14 @@
                     row += `<td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.CANTIDAD || 0}</td>
                             <td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.UNIDAD || ''}</td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">${item.vecesGlobal}</td>
-                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioUnitario)}</td>
-                            <td class="py-3 px-4 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(item.TOTAL)}</td>`;
+                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioUnitario)}</td>`;
                 }
 
                 row += `</tr>`;
                 return row;
             }).join('');
 
-            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 4) : 6;
+            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 3) : 5;
             document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${colSpanTotal}" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de costos ordinarios</td></tr>`;
         }
 
