@@ -373,7 +373,6 @@
             }
         });
 
-        // Ocultar dropdowns de autocompletado si se hace clic fuera
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.autocomplete-container')) {
                 document.querySelectorAll('.autocomplete-dropdown').forEach(d => d.style.display = 'none');
@@ -425,19 +424,19 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        let idxDesc = 19; // Columna T (Descripción)
+                        let idxDesc = 19; 
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         
-                        let idxCant = 16;   // Columna Q
-                        let idxUnidad = 17; // Columna R
-                        let idxS = 18;      // Columna S (Valor promedio unitario)
+                        let idxCant = 16;   
+                        let idxUnidad = 17; 
+                        let idxS = 18;      
 
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
                         rawEgresos = rawRows.slice(1).map(row => {
                             let parsedDate = parseExcelDate(row[idxFecha]);
                             let mesAbrevFila = mesesAbrev[parsedDate.m - 1];
-                            let idxMontoReal = headers.indexOf(mesAbrevFila) !== -1 ? headers.indexOf(mesAbrevFila) : (headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL")); // Columna K / Mes correspondiente
+                            let idxMontoReal = headers.indexOf(mesAbrevFila) !== -1 ? headers.indexOf(mesAbrevFila) : (headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL"));
                             if (row[idxMontoReal] === "" || row[idxMontoReal] === undefined) return null;
                             
                             let productoTexto = (row[idxDesc] || "").toString().trim();
@@ -454,7 +453,7 @@
                                 CANTIDAD_RECETA_DEFAULT: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
                                 VALOR_PROMEDIO_UNITARIO: row[idxS] !== undefined && row[idxS] !== "" ? (parseFloat(row[idxS]) || 0) : (idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0),
-                                VALOR: parseFloat(row[idxMontoReal]) || 0, // Columna K (Valor real / Total mes)
+                                VALOR: parseFloat(row[idxMontoReal]) || 0, 
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
                         }).filter(item => item !== null);
@@ -720,7 +719,6 @@
             document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${colSpanTotal}" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de costos ordinarios</td></tr>`;
         }
 
-        // FUNCIONES DE RECETAS CON CÁLCULO PONDERADO CORRECTO Y FILA DE TOTALES
         function agregarIngredienteReceta() {
             ingredientesReceta.push({ producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 });
             renderizarTablaRecetas();
@@ -736,7 +734,6 @@
             
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
             if (match.length > 0) {
-                // Cálculo corregido del Valor Prom. Compra (Col. K) trayéndolo directamente de la columna K (VALOR)
                 let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
                 let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
                 
