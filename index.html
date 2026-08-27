@@ -252,16 +252,15 @@
                         <p class="text-xs text-gray-400">Selecciona o digita los ingredientes de tus costos ordinarios para calcular el costo de preparación.</p>
                     </div>
                     <div class="flex items-center gap-2 w-full md:w-auto">
-                        <input type="text" id="nombreRecetaInput" placeholder="Nombre de la receta..." class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg px-3 py-2 w-full md:w-48">
                         <button onclick="agregarIngredienteReceta()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition whitespace-nowrap">
                             <i class="fa-solid fa-plus"></i> Agregar Ingrediente
                         </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-gray-900/40 p-4 rounded-xl border border-gray-800">
-                        <span class="text-[10px] text-gray-400 uppercase font-bold">Costo Total de la Receta</span>
+                        <span class="text-[10px] text-gray-400 uppercase font-bold">Totales</span>
                         <h4 id="recetaCostoTotal" class="text-2xl font-bold text-emerald-400 mt-1">$ 0</h4>
                     </div>
                 </div>
@@ -733,7 +732,6 @@
         function seleccionarIngredienteAutocomplete(index, nombreProducto) {
             ingredientesReceta[index].producto = nombreProducto;
             
-            // Buscar todas las ocurrencias del producto en Costo Ordinario para promediar o extraer datos
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
             if (match.length > 0) {
                 let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
@@ -748,7 +746,6 @@
                 ingredientesReceta[index].unidad = '';
             }
 
-            // Ocultar dropdown
             const dropdown = document.getElementById(`dropdown-${index}`);
             if (dropdown) dropdown.style.display = 'none';
 
