@@ -736,7 +736,7 @@
             
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
             if (match.length > 0) {
-                // Cálculo corregido del Valor Prom. Compra (Col. K) mediante sumatoria del valor real dividido entre el número de registros
+                // Cálculo corregido del Valor Prom. Compra (Col. K) trayéndolo directamente de la columna K (VALOR)
                 let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
                 let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
                 
@@ -817,7 +817,6 @@
                 `;
             }).join('') || `<tr><td colspan="7" class="py-4 px-4 text-center text-gray-500">No hay ingredientes agregados a la receta. Haga clic en "Agregar Ingrediente".</td></tr>`;
 
-            // Fila de totales al final de cada columna de la tabla de recetas
             tfoot.innerHTML = `
                 <tr>
                     <td class="py-3 px-4 text-white uppercase">Totales / Promedios:</td>
