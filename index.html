@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -198,7 +198,7 @@
         
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center">
-                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario[cite: 4]</span>
+                <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario</span>
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="bg-card rounded-xl overflow-hidden shadow-xl">
@@ -354,11 +354,11 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        let idxDesc = 19; // Columna T
+                        let idxDesc = 19; 
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         
-                        let idxCant = 16; // Columna Q
-                        let idxUnidad = 17; // Columna R
+                        let idxCant = 16; 
+                        let idxUnidad = 17; 
 
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
@@ -415,13 +415,15 @@
                         }).filter(item => item !== null);
                     }
 
-                    document.getElementById('loadingStatus').remove();
+                    const loadingStatus = document.getElementById('loadingStatus');
+                    if (loadingStatus) loadingStatus.remove();
                     poblarFiltrosEstructurales();
                     updateDashboard();
                 })
                 .catch(err => {
                     console.error("Error al cargar el archivo de Excel:", err);
-                    document.getElementById('loadingStatus').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error al cargar datos.`;
+                    const loadingStatus = document.getElementById('loadingStatus');
+                    if (loadingStatus) loadingStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error al cargar datos.`;
                 });
         }
 
@@ -670,70 +672,83 @@
             }
 
             const barContainer = document.getElementById('chartBarContainer');
-            if (selectedMonth !== "TODOS") {
+            if (selectedMonth !== "TODOS" && barContainer) {
                 barContainer.style.maxWidth = "520px";
                 barContainer.style.margin = "0 auto";
-            } else {
+            } else if (barContainer) {
                 barContainer.style.maxWidth = "none";
             }
 
-            const ctxBar = document.getElementById('chartComparativo').getContext('2d');
-            if (chartBar) chartBar.destroy();
-            chartBar = new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: labelsBar,
-                    datasets: [
-                        { label: 'Ingresos', data: dataIngBar, backgroundColor: '#10B981', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' },
-                        { label: 'Costos y Gastos', data: dataEgrBar, backgroundColor: '#F87171', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { labels: { color: '#AAA' } } }, 
-                    scales: { 
-                        x: { ticks: { color: '#888' }, grid: { display: false } }, 
-                        y: { ticks: { color: '#888' }, grid: { color: 'rgba(55, 65, 81, 0.2)' } } 
-                    } 
-                }
-            });
+            const canvasBar = document.getElementById('chartComparativo');
+            if (canvasBar) {
+                const ctxBar = canvasBar.getContext('2d');
+                if (chartBar) chartBar.destroy();
+                chartBar = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsBar,
+                        datasets: [
+                            { label: 'Ingresos', data: dataIngBar, backgroundColor: '#10B981', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' },
+                            { label: 'Costos y Gastos', data: dataEgrBar, backgroundColor: '#F87171', borderRadius: 4, barThickness: selectedMonth !== 'TODOS' ? 45 : 'flex' }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { labels: { color: '#AAA' } } }, 
+                        scales: { 
+                            x: { ticks: { color: '#888' }, grid: { display: false } }, 
+                            y: { ticks: { color: '#888' }, grid: { color: 'rgba(55, 65, 81, 0.2)' } } 
+                        } 
+                    }
+                });
+            }
 
             const porCat = {};
             fEgr.forEach(e => { porCat[e.TIPO] = (porCat[e.TIPO] || 0) + e.TOTAL; });
             const labelsCat = Object.keys(porCat);
             const dataCat = Object.values(porCat);
 
-            const ctxDoughnut = document.getElementById('chartDoughnut').getContext('2d');
-            if (chartDoughnut) chartDoughnut.destroy();
-            chartDoughnut = new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: labelsCat,
-                    datasets: [{ data: dataCat, backgroundColor: colors }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+            const canvasDoughnut = document.getElementById('chartDoughnut');
+            if (canvasDoughnut) {
+                const ctxDoughnut = canvasDoughnut.getContext('2d');
+                if (chartDoughnut) chartDoughnut.destroy();
+                chartDoughnut = new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labelsCat,
+                        datasets: [{ data: dataCat, backgroundColor: colors }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
 
-            document.getElementById('doughnutLegend').innerHTML = labelsCat.map((lbl, idx) => `
-                <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${colors[idx % colors.length]}"></span>${lbl}</span><span class="font-bold">${formatCurrency(dataCat[idx])}</span></div>
-            `).join('');
+            const doughnutLegend = document.getElementById('doughnutLegend');
+            if (doughnutLegend) {
+                doughnutLegend.innerHTML = labelsCat.map((lbl, idx) => `
+                    <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${colors[idx % colors.length]}"></span>${lbl}</span><span class="font-bold">${formatCurrency(dataCat[idx])}</span></div>
+                `).join('');
+            }
 
             const porProv = {};
             fEgr.forEach(e => { porProv[e.PROVEEDOR] = (porProv[e.PROVEEDOR] || 0) + e.TOTAL; });
             const topProv = Object.entries(porProv).sort((a,b) => b[1] - a[1]).slice(0, 8);
-            document.getElementById('topProveedoresList').innerHTML = topProv.map(([prov, val], idx) => `
-                <div class="bg-gray-900/40 p-4 rounded-xl border border-gray-800">
-                    <span class="text-[10px] text-gray-500 uppercase font-bold">#${idx + 1} Proveedor</span>
-                    <h4 class="font-semibold text-sm truncate mt-1" title="${prov}">${prov}</h4>
-                    <p class="text-lg font-bold text-expense mt-2">${formatCurrency(val)}</p>
-                </div>
-            `).join('') || '<p class="text-gray-500 text-xs col-span-full">Sin registros</p>';
+            const topProveedoresList = document.getElementById('topProveedoresList');
+            if (topProveedoresList) {
+                topProveedoresList.innerHTML = topProv.map(([prov, val], idx) => `
+                    <div class="bg-gray-900/40 p-4 rounded-xl border border-gray-800">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold">#${idx + 1} Proveedor</span>
+                        <h4 class="font-semibold text-sm truncate mt-1" title="${prov}">${prov}</h4>
+                        <p class="text-lg font-bold text-expense mt-2">${formatCurrency(val)}</p>
+                    </div>
+                `).join('') || '<p class="text-gray-500 text-xs col-span-full">Sin registros</p>';
+            }
         }
 
         function actualizarEstadoResultados(fIng, fEgr) {
             const head = document.getElementById('headEstadoResultados');
             const body = document.getElementById('bodyEstadoResultados');
+            if (!head || !body) return;
             
             let mesesActivos = [];
             let indicesActivos = [];
@@ -755,7 +770,8 @@
             }
 
             head.innerHTML = `<tr><th class="p-3 w-2/5 whitespace-nowrap">Concepto Contable</th>${mesesActivos.map(m => `<th class="p-3 text-right whitespace-nowrap">${m}</th>`).join('')}<th class="p-3 text-right whitespace-nowrap">Total</th></tr>`;
-            document.getElementById('tablePG').classList.toggle('estado-mes-unico', selectedMonth !== "TODOS");
+            const tablePG = document.getElementById('tablePG');
+            if (tablePG) tablePG.classList.toggle('estado-mes-unico', selectedMonth !== "TODOS");
             
             const totalIng = fIng.reduce((s, i) => s + i.VALOR, 0);
             
