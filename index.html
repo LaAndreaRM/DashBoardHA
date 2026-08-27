@@ -36,6 +36,33 @@
             overflow-y: hidden;
             display: block;
         }
+
+        /* Estilos para el autocompletado de recetas */
+        .autocomplete-container { position: relative; width: 100%; }
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #111827;
+            border: 1px solid #374151;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+        }
+        .autocomplete-item {
+            padding: 8px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            color: #D1D5DB;
+        }
+        .autocomplete-item:hover {
+            background-color: #1F2937;
+            color: #10B981;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -222,7 +249,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-700 pb-4">
                     <div>
                         <h3 class="text-lg font-bold text-white tracking-wider uppercase">Módulo de Recetas y Costeo</h3>
-                        <p class="text-xs text-gray-400">Selecciona los ingredientes de tus costos ordinarios para calcular el costo de preparación.</p>
+                        <p class="text-xs text-gray-400">Selecciona o digita los ingredientes de tus costos ordinarios para calcular el costo de preparación.</p>
                     </div>
                     <div class="flex items-center gap-2 w-full md:w-auto">
                         <input type="text" id="nombreRecetaInput" placeholder="Nombre de la receta..." class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg px-3 py-2 w-full md:w-48">
@@ -240,13 +267,15 @@
                 </div>
 
                 <div class="table-scroll-container custom-scrollbar pb-2">
-                    <table class="w-full text-xs text-left" style="min-width: 600px;">
+                    <table class="w-full text-xs text-left" style="min-width: 800px;">
                         <thead class="bg-gray-900/50 text-gray-400 uppercase">
                             <tr>
-                                <th class="py-3 px-4">Ingrediente (Costo Ordinario)</th>
-                                <th class="py-3 px-4 text-center w-32">Cant. en Receta</th>
-                                <th class="py-3 px-4 text-right w-36">Costo Unitario Prom.</th>
-                                <th class="py-3 px-4 text-right w-36">Subtotal</th>
+                                <th class="py-3 px-4">Ingrediente</th>
+                                <th class="py-3 px-4 text-right w-36">Valor Prom. Compra (Col. K)</th>
+                                <th class="py-3 px-4 text-right w-36">Valor Prom. Unitario (Col. S)</th>
+                                <th class="py-3 px-4 text-center w-24">Unidad (Col. R)</th>
+                                <th class="py-3 px-4 text-center w-32">Cant Receta</th>
+                                <th class="py-3 px-4 text-right w-36">Valor Costo</th>
                                 <th class="py-3 px-4 text-center w-16">Acción</th>
                             </tr>
                         </thead>
@@ -343,6 +372,13 @@
             }
         });
 
+        // Ocultar dropdowns de autocompletado si se hace clic fuera
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete-container')) {
+                document.querySelectorAll('.autocomplete-dropdown').forEach(d => d.style.display = 'none');
+            }
+        });
+
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('sortable')) {
                 const col = e.target.getAttribute('data-col');
@@ -388,18 +424,19 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        let idxDesc = 19; 
+                        let idxDesc = 19; // Columna T (Descripción)
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         
-                        let idxCant = 16; 
-                        let idxUnidad = 17; 
+                        let idxCant = 16;   // Columna Q
+                        let idxUnidad = 17; // Columna R
+                        let idxS = 18;      // Columna S (Valor promedio unitario)
 
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
                         rawEgresos = rawRows.slice(1).map(row => {
                             let parsedDate = parseExcelDate(row[idxFecha]);
                             let mesAbrevFila = mesesAbrev[parsedDate.m - 1];
-                            let idxMontoReal = headers.indexOf(mesAbrevFila) !== -1 ? headers.indexOf(mesAbrevFila) : (headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL"));
+                            let idxMontoReal = headers.indexOf(mesAbrevFila) !== -1 ? headers.indexOf(mesAbrevFila) : (headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL")); // Columna K / Mes correspondiente
                             if (row[idxMontoReal] === "" || row[idxMontoReal] === undefined) return null;
                             
                             let productoTexto = (row[idxDesc] || "").toString().trim();
@@ -413,9 +450,10 @@
                                 DESCRIPCION: productoTexto, 
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
-                                CANTIDAD: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
+                                CANTIDAD_RECETA_DEFAULT: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
-                                VALOR_UNITARIO: idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0,
+                                VALOR_PROMEDIO_UNITARIO: row[idxS] !== undefined && row[idxS] !== "" ? (parseFloat(row[idxS]) || 0) : (idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0),
+                                VALOR: parseFloat(row[idxMontoReal]) || 0, // Columna K (Valor promedio de compra / Total mes)
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
                         }).filter(item => item !== null);
@@ -452,7 +490,6 @@
                     const loadingStatus = document.getElementById('loadingStatus');
                     if (loadingStatus) loadingStatus.remove();
                     poblarFiltrosEstructurales();
-                    actualizarSelectoresRecetas();
                     updateDashboard();
                 })
                 .catch(err => {
@@ -557,7 +594,7 @@
                         <td class="py-3 px-6">${e.PROVEEDOR}</td>
                         <td class="py-3 px-4 text-center">${e.CANTIDAD || 0}</td>
                         <td class="py-3 px-4 text-center">${e.UNIDAD || ''}</td>
-                        <td class="py-3 px-6 text-right">${formatCurrency(e.VALOR_UNITARIO)}</td>
+                        <td class="py-3 px-6 text-right">${formatCurrency(e.VALOR_PROMEDIO_UNITARIO)}</td>
                         <td class="py-3 px-6 text-right font-semibold text-expense">${formatCurrency(e.TOTAL)}</td>
                     </tr>
                 `).join('') || `<tr><td colspan="7" class="py-4 px-6 text-center text-gray-500">No se encontraron registros</td></tr>`;
@@ -615,7 +652,7 @@
                     agrupado[key] = {
                         DESCRIPCION: key,
                         UNIDAD: e.UNIDAD || '',
-                        CANTIDAD: e.CANTIDAD || 0,
+                        CANTIDAD: e.CANTIDAD_RECETA_DEFAULT || 0,
                         vecesPorMes: {},
                         totalGlobal: 0,
                         vecesGlobal: 0,
@@ -629,13 +666,13 @@
                 if (!agrupado[key].UNIDAD && e.UNIDAD) {
                     agrupado[key].UNIDAD = e.UNIDAD;
                 }
-                if (e.CANTIDAD > 0 && agrupado[key].CANTIDAD === 0) {
-                    agrupado[key].CANTIDAD = e.CANTIDAD;
+                if (e.CANTIDAD_RECETA_DEFAULT > 0 && agrupado[key].CANTIDAD === 0) {
+                    agrupado[key].CANTIDAD = e.CANTIDAD_RECETA_DEFAULT;
                 }
                 agrupado[key].totalGlobal += e.TOTAL;
                 agrupado[key].vecesGlobal += 1;
-                if (e.VALOR_UNITARIO > 0) {
-                    agrupado[key].sumaVUnit += e.VALOR_UNITARIO;
+                if (e.VALOR_PROMEDIO_UNITARIO > 0) {
+                    agrupado[key].sumaVUnit += e.VALOR_PROMEDIO_UNITARIO;
                     agrupado[key].conteoVUnit += 1;
                 }
                 if (selectedMonth === "TODOS" && agrupado[key].vecesPorMes[e.MES_NUM] !== undefined) {
@@ -682,12 +719,9 @@
             document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${colSpanTotal}" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de costos ordinarios</td></tr>`;
         }
 
-        function actualizarSelectoresRecetas() {
-            // Lógica auxiliar si se requiere precargar listados específicos para recetas
-        }
-
+        // FUNCIONES DE RECETAS CON BÚSQUEDA DINÁMICA Y COLUMNAS K, S, R
         function agregarIngredienteReceta() {
-            ingredientesReceta.push({ producto: '', cantidad: 1, costoUnitario: 0 });
+            ingredientesReceta.push({ producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 });
             renderizarTablaRecetas();
         }
 
@@ -696,53 +730,84 @@
             renderizarTablaRecetas();
         }
 
-        function actualizarIngredienteReceta(index, campo, valor) {
-            if (campo === 'producto') {
-                ingredientesReceta[index].producto = valor;
-                // Buscar el costo unitario promedio del producto seleccionado en Costo Ordinario
-                let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === valor.toUpperCase());
-                if (match.length > 0) {
-                    let sumaV = match.reduce((s, x) => s + (x.VALOR_UNITARIO || 0), 0);
-                    ingredientesReceta[index].costoUnitario = sumaV / match.length;
-                } else {
-                    ingredientesReceta[index].costoUnitario = 0;
-                }
-            } else if (campo === 'cantidad') {
-                ingredientesReceta[index].cantidad = parseFloat(valor) || 0;
+        function seleccionarIngredienteAutocomplete(index, nombreProducto) {
+            ingredientesReceta[index].producto = nombreProducto;
+            
+            // Buscar todas las ocurrencias del producto en Costo Ordinario para promediar o extraer datos
+            let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
+            if (match.length > 0) {
+                let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
+                let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
+                
+                ingredientesReceta[index].valorCompra = sumaValorCompra / match.length;
+                ingredientesReceta[index].valorUnitario = sumaVUnit / match.length;
+                ingredientesReceta[index].unidad = match[match.length - 1].UNIDAD || '';
+            } else {
+                ingredientesReceta[index].valorCompra = 0;
+                ingredientesReceta[index].valorUnitario = 0;
+                ingredientesReceta[index].unidad = '';
             }
+
+            // Ocultar dropdown
+            const dropdown = document.getElementById(`dropdown-${index}`);
+            if (dropdown) dropdown.style.display = 'none';
+
+            renderizarTablaRecetas();
+        }
+
+        function filtrarAutocomplete(index, textoInput) {
+            ingredientesReceta[index].producto = textoInput;
+            const dropdown = document.getElementById(`dropdown-${index}`);
+            if (!dropdown) return;
+
+            const productosDisponibles = [...new Set(rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO").map(e => e.DESCRIPCION))].sort();
+            const filtrados = productosDisponibles.filter(p => p.toLowerCase().includes(textoInput.toLowerCase()));
+
+            if (filtrados.length > 0 && textoInput.trim() !== '') {
+                dropdown.innerHTML = filtrados.map(p => `
+                    <div class="autocomplete-item" onclick="seleccionarIngredienteAutocomplete(${index}, '${p.replace(/'/g, "\\'")}')">${p}</div>
+                `).join('');
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        function actualizarCantidadReceta(index, valor) {
+            ingredientesReceta[index].cantidadReceta = parseFloat(valor) || 0;
             renderizarTablaRecetas();
         }
 
         function renderizarTablaRecetas() {
-            const productosDisponibles = [...new Set(rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO").map(e => e.DESCRIPCION))].sort();
             let costoTotalReceta = 0;
-
             const tbody = document.getElementById('bodyTablaRecetas');
             if (!tbody) return;
 
             tbody.innerHTML = ingredientesReceta.map((item, index) => {
-                let subtotal = item.cantidad * item.costoUnitario;
-                costoTotalReceta += subtotal;
+                let valorCosto = item.cantidadReceta * item.valorUnitario;
+                costoTotalReceta += valorCosto;
 
                 return `
                     <tr class="hover:bg-gray-800/40">
                         <td class="py-3 px-4">
-                            <select onchange="actualizarIngredienteReceta(${index}, 'producto', this.value)" class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg p-2 w-full">
-                                <option value="">Seleccione un ingrediente...</option>
-                                ${productosDisponibles.map(p => `<option value="${p}" ${p === item.producto ? 'selected' : ''}>${p}</option>`).join('')}
-                            </select>
+                            <div class="autocomplete-container">
+                                <input type="text" value="${item.producto}" placeholder="Escribe para buscar ingrediente..." oninput="filtrarAutocomplete(${index}, this.value)" onclick="filtrarAutocomplete(${index}, this.value)" class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg p-2 w-full">
+                                <div id="dropdown-${index}" class="autocomplete-dropdown custom-scrollbar"></div>
+                            </div>
                         </td>
+                        <td class="py-3 px-4 text-right font-medium text-gray-300">${formatCurrency(item.valorCompra)}</td>
+                        <td class="py-3 px-4 text-right font-medium text-emerald-400">${formatCurrency(item.valorUnitario)}</td>
+                        <td class="py-3 px-4 text-center text-gray-400">${item.unidad || '-'}</td>
                         <td class="py-3 px-4 text-center">
-                            <input type="number" step="any" value="${item.cantidad}" oninput="actualizarIngredienteReceta(${index}, 'cantidad', this.value)" class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg p-2 w-full text-center">
+                            <input type="number" step="any" value="${item.cantidadReceta}" oninput="actualizarCantidadReceta(${index}, this.value)" class="bg-gray-900 border border-gray-700 text-white text-xs rounded-lg p-2 w-full text-center">
                         </td>
-                        <td class="py-3 px-4 text-right font-medium text-emerald-400">${formatCurrency(item.costoUnitario)}</td>
-                        <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(subtotal)}</td>
+                        <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(valorCosto)}</td>
                         <td class="py-3 px-4 text-center">
                             <button onclick="eliminarIngredienteReceta(${index})" class="text-red-400 hover:text-red-300 p-1"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
-            }).join('') || `<tr><td colspan="5" class="py-4 px-4 text-center text-gray-500">No hay ingredientes agregados a la receta. Haga clic en "Agregar Ingrediente".</td></tr>`;
+            }).join('') || `<tr><td colspan="7" class="py-4 px-4 text-center text-gray-500">No hay ingredientes agregados a la receta. Haga clic en "Agregar Ingrediente".</td></tr>`;
 
             document.getElementById('recetaCostoTotal').innerText = formatCurrency(costoTotalReceta);
         }
