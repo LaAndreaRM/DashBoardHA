@@ -13,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
+        /* Variables de colores para Modo Oscuro (por defecto mejorado) y Modo Claro */
         :root {
             --bg-body: #111827;
             --bg-card: #1F2937;
@@ -40,7 +41,7 @@
         .tab-active { border-bottom: 3px solid #10B981; color: #10B981; font-weight: 700; }
         .text-income { color: #10B981; }
         .text-expense { color: #EF4444; }
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg-body); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
         .input-filter { background-color: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 4px 8px; border-radius: 4px; font-size: 11px; width: 100%; font-weight: normal; }
@@ -57,9 +58,9 @@
             overflow-x: auto;
             overflow-y: hidden;
             display: block;
-            -webkit-overflow-scrolling: touch;
         }
 
+        /* Estilos para el autocompletado de recetas */
         .autocomplete-container { position: relative; width: 100%; }
         .autocomplete-dropdown {
             position: absolute;
@@ -257,12 +258,12 @@
             </div>
             <div class="bg-card rounded-xl overflow-hidden shadow-sm">
                 <div class="table-scroll-container custom-scrollbar pb-2">
-                    <table id="tableCantidades" class="w-full text-xs text-left" style="min-width: 1200px;">
+                    <table id="tableCantidades" class="w-full text-xs text-left" style="min-width: 100%;">
                         <thead id="headCantidades" class="uppercase" style="background-color: var(--table-header); color: var(--text-muted);">
                         </thead>
                         <tr style="background-color: var(--table-header);">
                             <th colspan="1" class="py-2 px-4 border-b" style="border-color: var(--border-color);"><input type="text" id="fil-desc-tab-cantidades" class="input-filter" placeholder="🔍 producto..."></th>
-                            <th colspan="25" class="py-2 px-4 border-b" style="border-color: var(--border-color);"></th>
+                            <th colspan="20" class="py-2 px-4 border-b" style="border-color: var(--border-color);"></th>
                         </tr>
                         <tbody id="body-tab-cantidades" class="divide-y" style="border-color: var(--border-color);">
                         </tbody>
@@ -297,9 +298,9 @@
                         <thead class="uppercase" style="background-color: var(--table-header); color: var(--text-muted);">
                             <tr>
                                 <th class="py-3 px-4">Ingrediente</th>
-                                <th class="py-3 px-4 text-right w-36">Valor Prom. Compra</th>
-                                <th class="py-3 px-4 text-right w-36">Valor Prom. Unitario (Col. K)</th>
-                                <th class="py-3 px-4 text-center w-24">Unidad (Col. J)</th>
+                                <th class="py-3 px-4 text-right w-36">Valor Prom. Compra (Col. K)</th>
+                                <th class="py-3 px-4 text-right w-36">Valor Prom. Unitario (Col. S)</th>
+                                <th class="py-3 px-4 text-center w-24">Unidad (Col. R)</th>
                                 <th class="py-3 px-4 text-center w-32">Cant Receta</th>
                                 <th class="py-3 px-4 text-right w-36">Valor Costo</th>
                                 <th class="py-3 px-4 text-center w-16">Acción</th>
@@ -374,15 +375,15 @@
                     </div>
                     <div class="bg-card rounded-xl overflow-hidden shadow-sm">
                         <div class="table-scroll-container custom-scrollbar pb-2">
-                            <table class="w-full text-left text-xs" style="min-width: 950px;">
+                            <table class="w-full text-left text-xs" style="min-width: 850px;">
                                 <thead class="uppercase" style="background-color: var(--table-header); color: var(--text-muted);">
                                     <tr>
                                         <th class="py-3 px-6 w-32 sortable" data-col="FECHA" data-tab="${id}">Fecha</th>
                                         <th class="py-3 px-6 sortable" data-col="DESCRIPCION" data-tab="${id}">Descripción</th>
                                         <th class="py-3 px-6 w-48 sortable" data-col="PROVEEDOR" data-tab="${id}">Proveedor</th>
-                                        <th class="py-3 px-4 text-center sortable" data-col="CANTIDAD" data-tab="${id}">Cantidad (I)</th>
-                                        <th class="py-3 px-4 text-center sortable" data-col="UNIDAD" data-tab="${id}">Unidad (J)</th>
-                                        <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR_UNITARIO" data-tab="${id}">Valor Unitario (K)</th>
+                                        <th class="py-3 px-4 text-center sortable" data-col="CANTIDAD" data-tab="${id}">Cantidad</th>
+                                        <th class="py-3 px-4 text-center sortable" data-col="UNIDAD" data-tab="${id}">Unidad</th>
+                                        <th class="py-3 px-6 w-40 text-right sortable" data-col="VALOR_UNITARIO" data-tab="${id}">Valor Unitario</th>
                                         <th class="py-3 px-6 w-40 text-right sortable" data-col="TOTAL" data-tab="${id}">Total</th>
                                     </tr>
                                     <tr style="background-color: var(--table-header);">
@@ -468,16 +469,15 @@
                         
                         let idxFecha = headers.indexOf("FECHA") === -1 ? 1 : headers.indexOf("FECHA");
                         let idxTipo = headers.indexOf("TIPO") === -1 ? 5 : headers.indexOf("TIPO");
-                        let idxDesc = headers.indexOf("DESCRIPCIÓN COMPRA") !== -1 ? headers.indexOf("DESCRIPCIÓN COMPRA") : (headers.indexOf("DESCRIPCION COMPRA") !== -1 ? headers.indexOf("DESCRIPCION COMPRA") : 7);
+                        let idxDesc = 19; 
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         
-                        // Mapeo exacto según tu Excel (Imagen):
-                        // Columna I (índice 8) = Cant Compra
-                        // Columna J (índice 9) = Un Compra
-                        // Columna K (índice 10) = V Unitario
-                        let idxCant = 8;
-                        let idxUnidad = 9;
-                        let idxVUnit = 10;
+                        let idxCant = 16;   
+                        let idxUnidad = 17; 
+                        let idxS = 18;      
+                        let idxK = 10;      
+
+                        let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
                         rawEgresos = rawRows.slice(1).map(row => {
                             let parsedDate = parseExcelDate(row[idxFecha]);
@@ -496,9 +496,10 @@
                                 DESCRIPCION: productoTexto, 
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
-                                CANTIDAD: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
+                                CANTIDAD_RECETA_DEFAULT: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
-                                VALOR_UNITARIO: row[idxVUnit] !== undefined && row[idxVUnit] !== "" ? (parseFloat(row[idxVUnit]) || 0) : 0,
+                                VALOR_PROMEDIO_UNITARIO: row[idxS] !== undefined && row[idxS] !== "" ? (parseFloat(row[idxS]) || 0) : (idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0),
+                                VALOR_PROM_COMPRA_K: row[idxK] !== undefined && row[idxK] !== "" ? (parseFloat(row[idxK]) || 0) : 0,
                                 VALOR: parseFloat(row[idxMontoReal]) || 0, 
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
@@ -513,6 +514,7 @@
                         let idxFecha = headersIn.indexOf("FECHA") === -1 ? 1 : headersIn.indexOf("FECHA");
                         let idxValor = headersIn.indexOf("VALOR") === -1 ? 2 : headersIn.indexOf("VALOR");
                         let idxTipo = headersIn.indexOf("TIPO") === -1 ? 3 : headersIn.indexOf("TIPO");
+                        
                         let idxCantIn = headersIn.indexOf("CANT") !== -1 ? headersIn.indexOf("CANT") : (headersIn.indexOf("CANTIDAD") !== -1 ? headersIn.indexOf("CANTIDAD") : 4);
                         let idxDescIn = headersIn.indexOf("DESCRIPCIÓN") !== -1 ? headersIn.indexOf("DESCRIPCIÓN") : (headersIn.indexOf("DESCRIPCION") !== -1 ? headersIn.indexOf("DESCRIPCION") : 5);
 
@@ -604,11 +606,11 @@
 
             document.getElementById('tableIngresos').innerHTML = fIng.map(i => `
                 <tr style="border-color: var(--border-color);" class="hover:opacity-80">
-                    <td class="py-3 px-6 whitespace-nowrap">${i.FECHA}</td>
-                    <td class="py-3 px-6 text-center whitespace-nowrap">${i.CANTIDAD || 0}</td>
-                    <td class="py-3 px-6 whitespace-nowrap">${i.DESCRIPCION || '---'}</td>
-                    <td class="py-3 px-6 whitespace-nowrap">${i.TIPO}</td>
-                    <td class="py-3 px-6 text-right font-semibold text-income whitespace-nowrap">${formatCurrency(i.VALOR)}</td>
+                    <td class="py-3 px-6">${i.FECHA}</td>
+                    <td class="py-3 px-6 text-center">${i.CANTIDAD || 0}</td>
+                    <td class="py-3 px-6">${i.DESCRIPCION || '---'}</td>
+                    <td class="py-3 px-6">${i.TIPO}</td>
+                    <td class="py-3 px-6 text-right font-semibold text-income">${formatCurrency(i.VALOR)}</td>
                 </tr>
             `).join('') || `<tr><td colspan="5" class="py-4 px-6 text-center opacity-60">No se encontraron registros</td></tr>`;
 
@@ -634,13 +636,13 @@
 
                 document.getElementById(`body-${tabId}`).innerHTML = fEgr.map(e => `
                     <tr style="border-color: var(--border-color);" class="hover:opacity-80">
-                        <td class="py-3 px-6 whitespace-nowrap">${e.FECHA}</td>
-                        <td class="py-3 px-6 whitespace-nowrap">${e.DESCRIPCION}</td>
-                        <td class="py-3 px-6 whitespace-nowrap">${e.PROVEEDOR}</td>
-                        <td class="py-3 px-4 text-center whitespace-nowrap">${e.CANTIDAD || 0}</td>
-                        <td class="py-3 px-4 text-center whitespace-nowrap">${e.UNIDAD || ''}</td>
-                        <td class="py-3 px-6 text-right whitespace-nowrap">${formatCurrency(e.VALOR_UNITARIO)}</td>
-                        <td class="py-3 px-6 text-right font-semibold text-expense whitespace-nowrap">${formatCurrency(e.TOTAL)}</td>
+                        <td class="py-3 px-6">${e.FECHA}</td>
+                        <td class="py-3 px-6">${e.DESCRIPCION}</td>
+                        <td class="py-3 px-6">${e.PROVEEDOR}</td>
+                        <td class="py-3 px-4 text-center">${e.CANTIDAD || 0}</td>
+                        <td class="py-3 px-4 text-center">${e.UNIDAD || ''}</td>
+                        <td class="py-3 px-6 text-right">${formatCurrency(e.VALOR_PROMEDIO_UNITARIO)}</td>
+                        <td class="py-3 px-6 text-right font-semibold text-expense">${formatCurrency(e.TOTAL)}</td>
                     </tr>
                 `).join('') || `<tr><td colspan="7" class="py-4 px-6 text-center opacity-60">No se encontraron registros</td></tr>`;
             });
@@ -672,16 +674,18 @@
                 <th class="py-3 px-4 sortable whitespace-nowrap" data-col="DESCRIPCION" data-tab="tab-cantidades">PRODUCTO</th>`;
             
             if (selectedMonth === "TODOS") {
-                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Unidad (Col. J)</th>`;
+                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Cant x Prod (Col. Q)</th>
+                             <th class="py-3 px-4 text-center whitespace-nowrap">UNIDAD (Col. R)</th>`;
                 mesesActivos.forEach(m => {
                     headHtml += `<th class="py-3 px-3 text-center whitespace-nowrap">${m}</th>`;
                 });
-                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Veces Comprado</th>
-                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Prom. Unitario (Col. K)</th>`;
+                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Total veces en el año</th>
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio Unitario</th>`;
             } else {
-                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Unidad (Col. J)</th>
+                headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Cant x Prod (Col. Q)</th>
+                             <th class="py-3 px-4 text-center whitespace-nowrap">UNIDAD (Col. R)</th>
                              <th class="py-3 px-4 text-center whitespace-nowrap">Veces Comprado</th>
-                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Prom. Unitario (Col. K)</th>`;
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio Unitario</th>`;
             }
 
             headHtml += `</tr>`;
@@ -694,6 +698,7 @@
                     agrupado[key] = {
                         DESCRIPCION: key,
                         UNIDAD: e.UNIDAD || '',
+                        CANTIDAD: e.CANTIDAD_RECETA_DEFAULT || 0,
                         vecesPorMes: {},
                         totalGlobal: 0,
                         vecesGlobal: 0,
@@ -707,12 +712,15 @@
                 if (!agrupado[key].UNIDAD && e.UNIDAD) {
                     agrupado[key].UNIDAD = e.UNIDAD;
                 }
+                if (e.CANTIDAD_RECETA_DEFAULT > 0 && agrupado[key].CANTIDAD === 0) {
+                    agrupado[key].CANTIDAD = e.CANTIDAD_RECETA_DEFAULT;
+                }
                 agrupado[key].totalGlobal += e.TOTAL;
                 agrupado[key].vecesGlobal += 1;
                 
-                // Promedio exacto basado estrictamente en la columna K (VALOR_UNITARIO)
-                if (e.VALOR_UNITARIO > 0) {
-                    agrupado[key].sumaUnitarios += e.VALOR_UNITARIO;
+                // CORRECCIÓN DEL PROMEDIO UNITARIO: Tomar exactamente la columna S (VALOR_PROMEDIO_UNITARIO) de los registros de la fila
+                if (e.VALOR_PROMEDIO_UNITARIO > 0) {
+                    agrupado[key].sumaUnitarios += e.VALOR_PROMEDIO_UNITARIO;
                     agrupado[key].conteoUnitarios += 1;
                 }
 
@@ -736,15 +744,17 @@
                     <td class="py-3 px-4 font-semibold whitespace-nowrap">${item.DESCRIPCION}</td>`;
                 
                 if (selectedMonth === "TODOS") {
-                    row += `<td class="py-3 px-4 text-center opacity-75 whitespace-nowrap">${item.UNIDAD || ''}</td>`;
+                    row += `<td class="py-3 px-4 text-center opacity-70 whitespace-nowrap">${item.CANTIDAD || 0}</td>
+                            <td class="py-3 px-4 text-center opacity-70 whitespace-nowrap">${item.UNIDAD || ''}</td>`;
                     indicesActivos.forEach(idx => {
                         let vecesMes = item.vecesPorMes[idx] || 0;
-                        row += `<td class="py-3 px-3 text-center opacity-75 whitespace-nowrap">${vecesMes > 0 ? vecesMes : '-'}</td>`;
+                        row += `<td class="py-3 px-3 text-center opacity-70 whitespace-nowrap">${vecesMes > 0 ? vecesMes : '-'}</td>`;
                     });
                     row += `<td class="py-3 px-4 text-center font-bold whitespace-nowrap">${item.vecesGlobal}</td>
                             <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioUnitario)}</td>`;
                 } else {
-                    row += `<td class="py-3 px-4 text-center opacity-75 whitespace-nowrap">${item.UNIDAD || ''}</td>
+                    row += `<td class="py-3 px-4 text-center opacity-70 whitespace-nowrap">${item.CANTIDAD || 0}</td>
+                            <td class="py-3 px-4 text-center opacity-70 whitespace-nowrap">${item.UNIDAD || ''}</td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">${item.vecesGlobal}</td>
                             <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioUnitario)}</td>`;
                 }
@@ -753,7 +763,7 @@
                 return row;
             }).join('');
 
-            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 3) : 4;
+            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 3) : 5;
             document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${colSpanTotal}" class="py-4 px-6 text-center opacity-60">No se encontraron registros de costos ordinarios</td></tr>`;
         }
 
@@ -773,7 +783,7 @@
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
             if (match.length > 0) {
                 let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
-                let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_UNITARIO || 0), 0);
+                let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
                 
                 ingredientesReceta[index].valorCompra = sumaValorCompra / match.length;
                 ingredientesReceta[index].valorUnitario = sumaVUnit / match.length;
