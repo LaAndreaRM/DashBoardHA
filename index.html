@@ -280,6 +280,8 @@
                         </thead>
                         <tbody id="bodyTablaRecetas" class="divide-y divide-gray-800 text-gray-300">
                         </tbody>
+                        <tfoot id="footTablaRecetas" class="bg-gray-900/60 font-bold border-t border-gray-700">
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -452,7 +454,7 @@
                                 CANTIDAD_RECETA_DEFAULT: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
                                 VALOR_PROMEDIO_UNITARIO: row[idxS] !== undefined && row[idxS] !== "" ? (parseFloat(row[idxS]) || 0) : (idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0),
-                                VALOR: parseFloat(row[idxMontoReal]) || 0, // Columna K (Valor promedio de compra / Total mes)
+                                VALOR: parseFloat(row[idxMontoReal]) || 0, // Columna K (Valor real / Total mes)
                                 TOTAL: parseFloat(row[idxMontoReal]) || 0 
                             };
                         }).filter(item => item !== null);
@@ -718,7 +720,7 @@
             document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${colSpanTotal}" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de costos ordinarios</td></tr>`;
         }
 
-        // FUNCIONES DE RECETAS CON BÚSQUEDA DINÁMICA Y COLUMNAS K, S, R
+        // FUNCIONES DE RECETAS CON CÁLCULO PONDERADO CORRECTO Y FILA DE TOTALES
         function agregarIngredienteReceta() {
             ingredientesReceta.push({ producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 });
             renderizarTablaRecetas();
@@ -734,6 +736,7 @@
             
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
             if (match.length > 0) {
+                // Cálculo corregido del Valor Prom. Compra (Col. K) mediante sumatoria del valor real dividido entre el número de registros
                 let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
                 let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
                 
@@ -777,12 +780,20 @@
 
         function renderizarTablaRecetas() {
             let costoTotalReceta = 0;
+            let sumaTotalValorCompra = 0;
+            let sumaTotalValorUnitario = 0;
+            let sumaTotalCantReceta = 0;
+
             const tbody = document.getElementById('bodyTablaRecetas');
-            if (!tbody) return;
+            const tfoot = document.getElementById('footTablaRecetas');
+            if (!tbody || !tfoot) return;
 
             tbody.innerHTML = ingredientesReceta.map((item, index) => {
                 let valorCosto = item.cantidadReceta * item.valorUnitario;
                 costoTotalReceta += valorCosto;
+                sumaTotalValorCompra += item.valorCompra;
+                sumaTotalValorUnitario += item.valorUnitario;
+                sumaTotalCantReceta += item.cantidadReceta;
 
                 return `
                     <tr class="hover:bg-gray-800/40">
@@ -805,6 +816,19 @@
                     </tr>
                 `;
             }).join('') || `<tr><td colspan="7" class="py-4 px-4 text-center text-gray-500">No hay ingredientes agregados a la receta. Haga clic en "Agregar Ingrediente".</td></tr>`;
+
+            // Fila de totales al final de cada columna de la tabla de recetas
+            tfoot.innerHTML = `
+                <tr>
+                    <td class="py-3 px-4 text-white uppercase">Totales / Promedios:</td>
+                    <td class="py-3 px-4 text-right text-gray-300">${formatCurrency(sumaTotalValorCompra)}</td>
+                    <td class="py-3 px-4 text-right text-emerald-400">${formatCurrency(sumaTotalValorUnitario)}</td>
+                    <td class="py-3 px-4 text-center">-</td>
+                    <td class="py-3 px-4 text-center text-white">${sumaTotalCantReceta.toLocaleString('es-CO', {maximumFractionDigits: 2})}</td>
+                    <td class="py-3 px-4 text-right text-expense">${formatCurrency(costoTotalReceta)}</td>
+                    <td class="py-3 px-4 text-center">-</td>
+                </tr>
+            `;
 
             document.getElementById('recetaCostoTotal').innerText = formatCurrency(costoTotalReceta);
         }
