@@ -40,7 +40,6 @@
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
-    <!-- Se amplió el ancho máximo de max-w-6xl a max-w-7xl para alojar cómodamente más pestañas -->
     <div class="max-w-7xl mx-auto space-y-6">
         
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -106,6 +105,7 @@
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-ventas')">Gasto de Ventas</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-cantidades')">Cantidades</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-recetas')">Recetas</li>
             </ul>
         </div>
 
@@ -214,6 +214,13 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <div id="tab-recetas" class="tab-content hidden space-y-4">
+            <div class="bg-card p-6 rounded-2xl shadow-xl">
+                <h3 class="text-lg font-bold text-white tracking-wider uppercase mb-2">Módulo de Recetas</h3>
+                <p class="text-xs text-gray-400">Espacio preparado para la gestión y costeo de recetas.</p>
             </div>
         </div>
 
@@ -521,7 +528,6 @@
         }
 
         function renderizarTabCantidades(filterFn) {
-            // Filtrar exclusivamente los que tienen tipo "COSTO ORDINARIO"
             let baseEgresos = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && (selectedYear === "TODOS" || e.ANIO === selectedYear));
             let fCant = baseEgresos.filter(e => (selectedMonth === "TODOS" || e.MES_TXT === selectedMonth));
             let cDesc = document.getElementById('fil-desc-tab-cantidades')?.value.toLowerCase() || '';
@@ -553,13 +559,12 @@
                     headHtml += `<th class="py-3 px-3 text-center whitespace-nowrap">${m}</th>`;
                 });
                 headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Total veces en el año</th>
-                             <th class="py-3 px-4 text-right whitespace-nowrap">Promedio x mes</th>
-                             <th class="py-3 px-4 text-right whitespace-nowrap">Costo Prom. Unitario</th>`;
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Costo Prom. Unitario</th>`;
             } else {
                 headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Cant x Prod (Col. Q)</th>
                              <th class="py-3 px-4 text-center whitespace-nowrap">UNIDAD (Col. R)</th>
                              <th class="py-3 px-4 text-center whitespace-nowrap">Veces Comprado</th>
-                             <th class="py-3 px-4 text-right whitespace-nowrap">Costo Prom. Unitario</th>
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Costo Prom. Unitario</th>
                              <th class="py-3 px-4 text-right whitespace-nowrap">Total Acumulado</th>`;
             }
 
@@ -604,7 +609,6 @@
             let itemsCantidades = Object.values(agrupado).map(item => ({
                 ...item,
                 costoPromedioUnitario: item.conteoVUnit > 0 ? item.sumaVUnit / item.conteoVUnit : 0,
-                promedioPorMes: indicesActivos.length > 0 ? item.vecesGlobal / indicesActivos.length : 0,
                 TOTAL: item.totalGlobal
             }));
 
@@ -624,13 +628,12 @@
                         row += `<td class="py-3 px-3 text-center text-gray-400 whitespace-nowrap">${vecesMes > 0 ? vecesMes : '-'}</td>`;
                     });
                     row += `<td class="py-3 px-4 text-center font-bold text-white whitespace-nowrap">${item.vecesGlobal}</td>
-                            <td class="py-3 px-4 text-right text-gray-300 whitespace-nowrap">${item.promedioPorMes.toFixed(1)}</td>
-                            <td class="py-3 px-4 text-right whitespace-nowrap">${formatCurrency(item.costoPromedioUnitario)}</td>`;
+                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioUnitario)}</td>`;
                 } else {
                     row += `<td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.CANTIDAD || 0}</td>
                             <td class="py-3 px-4 text-center text-gray-400 whitespace-nowrap">${item.UNIDAD || ''}</td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">${item.vecesGlobal}</td>
-                            <td class="py-3 px-4 text-right whitespace-nowrap">${formatCurrency(item.costoPromedioUnitario)}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioUnitario)}</td>
                             <td class="py-3 px-4 text-right font-bold text-expense whitespace-nowrap">${formatCurrency(item.TOTAL)}</td>`;
                 }
 
@@ -638,7 +641,7 @@
                 return row;
             }).join('');
 
-            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 5) : 6;
+            let colSpanTotal = selectedMonth === "TODOS" ? (indicesActivos.length + 4) : 6;
             document.getElementById('body-tab-cantidades').innerHTML = bodyHtml || `<tr><td colspan="${colSpanTotal}" class="py-4 px-6 text-center text-gray-500">No se encontraron registros de costos ordinarios</td></tr>`;
         }
 
