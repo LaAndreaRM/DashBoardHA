@@ -194,7 +194,7 @@
         </div>
 
         <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
-            <div class="bg-card p-6 rounded-2xl shadow-sm w-full overflow-hidden">
+            <div class="bg-card p-6 rounded-2xl shadow-sm w-full">
                 <div class="pb-4 mb-4 flex justify-between items-center border-b" style="border-color: var(--border-color);">
                     <div>
                         <h3 class="text-lg font-bold tracking-wider uppercase">Estado de Resultados Contable</h3>
@@ -203,8 +203,9 @@
                     <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G Dinámico</span>
                 </div>
                 
-                <div class="table-scroll-container custom-scrollbar pb-2">
-                    <table id="tablePG" class="w-full text-xs text-left transition-all duration-350" style="table-layout: auto;">
+                <!-- Ajuste: Se removió la clase table-scroll-container para que se ajuste de forma fluida -->
+                <div class="w-full overflow-x-auto pb-2">
+                    <table id="tablePG" class="w-full text-xs text-left transition-all duration-300">
                         <thead id="headEstadoResultados" class="text-[11px] uppercase" style="background-color: var(--table-header);">
                         </thead>
                         <tbody id="bodyEstadoResultados" class="divide-y font-medium" style="border-color: var(--border-color);">
@@ -257,8 +258,9 @@
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="bg-card rounded-xl overflow-hidden shadow-sm">
-                <div class="table-scroll-container custom-scrollbar pb-2">
-                    <table id="tableCantidades" class="w-full text-xs text-left" style="table-layout: auto;">
+                <!-- Ajuste: Se removió la clase table-scroll-container para que se ajuste fluidamente -->
+                <div class="w-full overflow-x-auto pb-2">
+                    <table id="tableCantidades" class="w-full text-xs text-left">
                         <thead id="headCantidades" class="uppercase" style="background-color: var(--table-header); color: var(--text-muted);">
                         </thead>
                         <tr style="background-color: var(--table-header);">
@@ -298,7 +300,7 @@
                         <thead class="uppercase" style="background-color: var(--table-header); color: var(--text-muted);">
                             <tr>
                                 <th class="py-3 px-4">Ingrediente</th>
-                                <th class="py-3 px-4 text-right w-36">Valor Prom. Compra (Col. K)</th>
+                                <!-- Ajuste: Se removió la columna Valor Prom. Compra (Col. K) como pediste -->
                                 <th class="py-3 px-4 text-right w-36">Valor Prom. Unitario (Col. S)</th>
                                 <th class="py-3 px-4 text-center w-24">Unidad (Col. R)</th>
                                 <th class="py-3 px-4 text-center w-32">Cant Receta</th>
@@ -680,12 +682,12 @@
                     headHtml += `<th class="py-3 px-3 text-center whitespace-nowrap">${m}</th>`;
                 });
                 headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Total veces en el año</th>
-                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio de Compra</th>`;
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio de Compra</th>`; // Modificado el nombre de la columna
             } else {
                 headHtml += `<th class="py-3 px-4 text-center whitespace-nowrap">Cant x Prod (Col. Q)</th>
                              <th class="py-3 px-4 text-center whitespace-nowrap">UNIDAD (Col. R)</th>
                              <th class="py-3 px-4 text-center whitespace-nowrap">Veces Comprado</th>
-                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio de Compra</th>`;
+                             <th class="py-3 px-6 text-right whitespace-nowrap">Valor Promedio de Compra</th>`; // Modificado el nombre de la columna
             }
 
             headHtml += `</tr>`;
@@ -702,8 +704,8 @@
                         vecesPorMes: {},
                         totalGlobal: 0,
                         vecesGlobal: 0,
-                        sumaValorCompraK: 0,
-                        conteoValorCompraK: 0
+                        sumaValorCompraK: 0, // Acumulador para la columna K
+                        conteoCompraK: 0
                     };
                     if (selectedMonth === "TODOS") {
                         indicesActivos.forEach(idx => agrupado[key].vecesPorMes[idx] = 0);
@@ -720,7 +722,7 @@
                 
                 if (e.VALOR_PROM_COMPRA_K > 0) {
                     agrupado[key].sumaValorCompraK += e.VALOR_PROM_COMPRA_K;
-                    agrupado[key].conteoValorCompraK += 1;
+                    agrupado[key].conteoCompraK += 1;
                 }
 
                 if (selectedMonth === "TODOS" && agrupado[key].vecesPorMes[e.MES_NUM] !== undefined) {
@@ -730,7 +732,7 @@
 
             let itemsCantidades = Object.values(agrupado).map(item => ({
                 ...item,
-                costoPromedioCompraK: item.conteoValorCompraK > 0 ? (item.sumaValorCompraK / item.conteoValorCompraK) : 0,
+                costoPromedioCompraK: item.conteoCompraK > 0 ? (item.sumaValorCompraK / item.conteoCompraK) : 0, // Cálculo del promedio de la columna K
                 TOTAL: item.totalGlobal
             }));
 
@@ -750,12 +752,12 @@
                         row += `<td class="py-3 px-3 text-center opacity-70 whitespace-nowrap">${vecesMes > 0 ? vecesMes : '-'}</td>`;
                     });
                     row += `<td class="py-3 px-4 text-center font-bold whitespace-nowrap">${item.vecesGlobal}</td>
-                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioCompraK)}</td>`;
+                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioCompraK)}</td>`; // Muestra el valor promedio de la columna K
                 } else {
                     row += `<td class="py-3 px-4 text-center opacity-70 whitespace-nowrap">${item.CANTIDAD || 0}</td>
                             <td class="py-3 px-4 text-center opacity-70 whitespace-nowrap">${item.UNIDAD || ''}</td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">${item.vecesGlobal}</td>
-                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioCompraK)}</td>`;
+                            <td class="py-3 px-6 text-right whitespace-nowrap font-medium text-emerald-400">${formatCurrency(item.costoPromedioCompraK)}</td>`; // Muestra el valor promedio de la columna K
                 }
 
                 row += `</tr>`;
@@ -824,7 +826,6 @@
 
         function renderizarTablaRecetas() {
             let costoTotalReceta = 0;
-            let sumaTotalValorCompra = 0;
             let sumaTotalValorUnitario = 0;
             let sumaTotalCantReceta = 0;
 
@@ -835,7 +836,6 @@
             tbody.innerHTML = ingredientesReceta.map((item, index) => {
                 let valorCosto = item.cantidadReceta * item.valorUnitario;
                 costoTotalReceta += valorCosto;
-                sumaTotalValorCompra += item.valorCompra;
                 sumaTotalValorUnitario += item.valorUnitario;
                 sumaTotalCantReceta += item.cantidadReceta;
 
@@ -847,7 +847,7 @@
                                 <div id="dropdown-${index}" class="autocomplete-dropdown custom-scrollbar"></div>
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-right font-medium opacity-80">${formatCurrency(item.valorCompra)}</td>
+                        <!-- Eliminada la columna de valor de compra (Col. K) de la celda de renderizado -->
                         <td class="py-3 px-4 text-right font-medium text-emerald-400">${formatCurrency(item.valorUnitario)}</td>
                         <td class="py-3 px-4 text-center opacity-75">${item.unidad || '-'}</td>
                         <td class="py-3 px-4 text-center">
@@ -859,12 +859,12 @@
                         </td>
                     </tr>
                 `;
-            }).join('') || `<tr><td colspan="7" class="py-4 px-4 text-center opacity-60">No hay ingredientes agregados a la receta. Haga clic en "Agregar Ingrediente".</td></tr>`;
+            }).join('') || `<tr><td colspan="6" class="py-4 px-4 text-center opacity-60">No hay ingredientes agregados a la receta. Haga clic en "Agregar Ingrediente".</td></tr>`;
 
             tfoot.innerHTML = `
                 <tr>
                     <td class="py-3 px-4 uppercase">Totales / Promedios:</td>
-                    <td class="py-3 px-4 text-right opacity-80">${formatCurrency(sumaTotalValorCompra)}</td>
+                    <!-- Eliminado el total de la columna K del pie de página -->
                     <td class="py-3 px-4 text-right text-emerald-400">${formatCurrency(sumaTotalValorUnitario)}</td>
                     <td class="py-3 px-4 text-center">-</td>
                     <td class="py-3 px-4 text-center">${sumaTotalCantReceta.toLocaleString('es-CO', {maximumFractionDigits: 2})}</td>
