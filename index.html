@@ -203,7 +203,6 @@
                     <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G Dinámico</span>
                 </div>
                 
-                <!-- Ajuste: Contenedor fluido sin desbordamiento forzado para evitar barras innecesarias -->
                 <div class="w-full overflow-x-auto pb-2">
                     <table id="tablePG" class="w-full text-[11px] text-left transition-all duration-300">
                         <thead id="headEstadoResultados" class="text-[10px] uppercase" style="background-color: var(--table-header);">
@@ -258,7 +257,6 @@
                 <span id="sum-tab-cantidades" class="text-xl font-bold text-expense">$ 0</span>
             </div>
             <div class="bg-card rounded-xl overflow-hidden shadow-sm">
-                <!-- Ajuste: Contenedor fluido optimizado para ajustarse perfectamente al espacio -->
                 <div class="w-full overflow-x-auto pb-2">
                     <table id="tableCantidades" class="w-full text-[11px] text-left">
                         <thead id="headCantidades" class="uppercase text-[10px]" style="background-color: var(--table-header); color: var(--text-muted);">
@@ -806,6 +804,8 @@
             if (!dropdown) return;
 
             const productosDisponibles = [...new Set(rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO").map(e => e.DESCRIPCION))].sort();
+            
+            // CORRECCIÓN: Se utiliza .includes() en lugar de .startsWith() para buscar en cualquier parte del texto
             const filtrados = productosDisponibles.filter(p => p.toLowerCase().includes(textoInput.toLowerCase()));
 
             if (filtrados.length > 0 && textoInput.trim() !== '') {
