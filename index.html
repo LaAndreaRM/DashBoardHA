@@ -718,7 +718,6 @@
                 agrupado[key].totalGlobal += e.TOTAL;
                 agrupado[key].vecesGlobal += 1;
                 
-                // CORRECCIÓN DEL PROMEDIO UNITARIO: Tomar exactamente la columna S (VALOR_PROMEDIO_UNITARIO) de los registros de la fila
                 if (e.VALOR_PROMEDIO_UNITARIO > 0) {
                     agrupado[key].sumaUnitarios += e.VALOR_PROMEDIO_UNITARIO;
                     agrupado[key].conteoUnitarios += 1;
@@ -780,9 +779,13 @@
         function seleccionarIngredienteAutocomplete(index, nombreProducto) {
             ingredientesReceta[index].producto = nombreProducto;
             
+            // FILTRO ESTRICTO DE COSTOS ORDINARIOS PARA EL PRODUCTO SELECCIONADO
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
+            
             if (match.length > 0) {
                 let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
+                
+                // CORRECCIÓN CLAVE: Promediar rigurosamente los valores unitarios (Columna S) en lugar de tomar valores totales globales
                 let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
                 
                 ingredientesReceta[index].valorCompra = sumaValorCompra / match.length;
