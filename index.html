@@ -475,7 +475,7 @@
                         let idxCant = 16;   
                         let idxUnidad = 17; 
                         let idxS = 18;      
-                        let idxK = 10;      
+                        let idxK = 10;      <!-- Columna K apuntando correctamente al índice 10 -->
 
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
@@ -779,13 +779,10 @@
         function seleccionarIngredienteAutocomplete(index, nombreProducto) {
             ingredientesReceta[index].producto = nombreProducto;
             
-            // FILTRO ESTRICTO DE COSTOS ORDINARIOS PARA EL PRODUCTO SELECCIONADO
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
-            
             if (match.length > 0) {
-                let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR || 0), 0);
-                
-                // CORRECCIÓN CLAVE: Promediar rigurosamente los valores unitarios (Columna S) en lugar de tomar valores totales globales
+                // Aquí aplicamos la lectura correcta de la columna K (VALOR_PROM_COMPRA_K) y columna S (VALOR_PROMEDIO_UNITARIO)
+                let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR_PROM_COMPRA_K || 0), 0);
                 let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
                 
                 ingredientesReceta[index].valorCompra = sumaValorCompra / match.length;
