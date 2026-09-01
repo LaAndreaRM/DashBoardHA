@@ -1,9 +1,13 @@
+<!-- ========================================== -->
+<!-- 1. CONFIGURACIÓN INICIAL Y METADATOS       -->
+<!-- ========================================== -->
 <!DOCTYPE html>
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Financiero Avanzado</title>
+    <!-- Importación de fuentes tipográficas y librerías externas (Tailwind, FontAwesome, Chart.js, SheetJS) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -12,8 +16,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <!-- ========================================== -->
+    <!-- 2. ESTILOS CSS PERSONALIZADOS              -->
+    <!-- ========================================== -->
     <style>
-        /* Variables de colores para Modo Oscuro (por defecto mejorado) y Modo Claro */
+        /* Variables de colores para Modo Oscuro y Modo Claro */
         :root {
             --bg-body: #111827;
             --bg-card: #1F2937;
@@ -92,6 +99,9 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- ========================================== -->
+        <!-- 3. CABECERA PRINCIPAL Y FILTROS GLOBALES   -->
+        <!-- ========================================== -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">Panel Financiero</h1>
@@ -107,6 +117,7 @@
             </div>
         </div>
 
+        <!-- Filtros generales por Año y Mes -->
         <div class="flex flex-wrap items-center gap-6 bg-card p-4 rounded-xl shadow-sm">
             <div class="flex items-center gap-2">
                 <span class="text-xs font-bold opacity-75 uppercase">Año:</span>
@@ -122,6 +133,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- 4. TARJETAS DE INDICADORES CLAVE (KPIs)    -->
+        <!-- ========================================== -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-card p-5 rounded-2xl relative overflow-hidden border-l-4 border-emerald-500 shadow-sm">
                 <p class="text-xs font-bold opacity-75 uppercase">Total Ingresos</p>
@@ -149,6 +163,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- 5. BARRA DE NAVEGACIÓN ENTRE PESTAÑAS      -->
+        <!-- ========================================== -->
         <div class="border-b overflow-x-auto whitespace-nowrap custom-scrollbar" style="border-color: var(--border-color);">
             <ul class="flex text-sm font-medium text-center gap-5 pb-2">
                 <li class="cursor-pointer py-2 px-1 tab-link tab-active" onclick="switchTab(event, 'tab-resumen')">Resumen</li>
@@ -164,6 +181,11 @@
             </ul>
         </div>
 
+        <!-- ========================================== -->
+        <!-- 6. CONTENIDO DE PESTAÑAS                   -->
+        <!-- ========================================== -->
+
+        <!-- Pestaña: Resumen (Gráficos y Top Proveedores) -->
         <div id="tab-resumen" class="tab-content space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 bg-card p-6 rounded-2xl shadow-sm flex flex-col justify-between">
@@ -193,6 +215,7 @@
             </div>
         </div>
 
+        <!-- Pestaña: Estado de Resultados Contable -->
         <div id="tab-estado-resultados" class="tab-content hidden space-y-6">
             <div class="bg-card p-6 rounded-2xl shadow-sm w-full">
                 <div class="pb-4 mb-4 flex justify-between items-center border-b" style="border-color: var(--border-color);">
@@ -200,7 +223,7 @@
                         <h3 class="text-lg font-bold tracking-wider uppercase">Estado de Resultados Contable</h3>
                         <p class="text-xs opacity-70">Estructura dinámica expandible mensualmente</p>
                     </div>
-                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G Dinámico</span>
+                    <span class="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">P&G Dinámico</span>
                 </div>
                 
                 <div class="w-full overflow-x-auto pb-2">
@@ -214,6 +237,7 @@
             </div>
         </div>
 
+        <!-- Pestaña: Ingresos -->
         <div id="tab-ingresos" class="tab-content hidden space-y-4">
             <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex justify-between items-center">
                 <span class="text-sm font-bold uppercase tracking-wider text-emerald-400">Suma de Ingresos Filtrados:</span>
@@ -245,12 +269,14 @@
             </div>
         </div>
 
+        <!-- Pestañas dinámicas de Egresos (Costos y Gastos) -->
         <div id="tab-costo-ordinario" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-operativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-administrativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
+        <!-- Pestaña: Cantidades (Consolidado de Productos) -->
         <div id="tab-cantidades" class="tab-content hidden space-y-4">
             <div class="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex justify-between items-center">
                 <span class="text-sm font-bold uppercase tracking-wider text-purple-400">Consolidado General de Productos — Costo Ordinario</span>
@@ -272,6 +298,7 @@
             </div>
         </div>
 
+        <!-- Pestaña: Módulo de Recetas y Costeo -->
         <div id="tab-recetas" class="tab-content hidden space-y-4">
             <div class="bg-card p-6 rounded-2xl shadow-sm space-y-4">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b" style="border-color: var(--border-color);">
@@ -316,6 +343,9 @@
 
     </div>
 
+    <!-- ========================================== -->
+    <!-- 7. LÓGICA DE JAVASCRIPT Y CONTROL DE DATOS -->
+    <!-- ========================================== -->
     <script>
         let rawEgresos = [];
         let rawIngresos = [];
@@ -323,13 +353,7 @@
         let selectedMonth = "TODOS";
         let chartBar = null;
         let chartDoughnut = null;
-        
-        // Modificado para iniciar con 3 filas por defecto
-        let ingredientesReceta = [
-            { producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 },
-            { producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 },
-            { producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 }
-        ];
+        let ingredientesReceta = [];
 
         let currentSort = {
             'tab-ingresos': { col: 'FECHA', dir: 'desc' },
@@ -353,6 +377,7 @@
             'tab-gasto-personal': 'GASTO PERSONAL'
         };
 
+        /* Función para alternar entre el tema claro y oscuro */
         function toggleTheme() {
             const html = document.documentElement;
             const themeIcon = document.getElementById('themeIcon');
@@ -370,6 +395,7 @@
             }
         }
 
+        /* Generación dinámica de contenedores para las pestañas de egresos */
         Object.keys(mapaCategorias).forEach(id => {
             const container = document.getElementById(id);
             if (container) {
@@ -410,6 +436,7 @@
             }
         });
 
+        /* Listeners y eventos de filtrado y ordenamiento */
         document.getElementById('yearFilter').addEventListener('change', (e) => { selectedYear = e.target.value; updateDashboard(); });
         document.getElementById('monthFilter').addEventListener('change', (e) => { selectedMonth = e.target.value; updateDashboard(); });
         
@@ -445,10 +472,7 @@
             }
         });
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadExcelAutomatically();
-            renderizarTablaRecetas(); // Renderizar las filas iniciales al cargar la página
-        });
+        window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
 
         function parseExcelDate(cellValue) {
             if (!cellValue) return { y: 2026, m: 1, text: '-' };
@@ -460,6 +484,7 @@
             return { y, m, text: `${y}-${m.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}` };
         }
 
+        /* Conexión y lectura automática del archivo Excel remoto */
         function loadExcelAutomatically() {
             const fileId = "1BZD1iUqPXmMppwrepyqOsTw_lGhu75u3";
             const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
@@ -572,6 +597,7 @@
             });
         }
 
+        /* Actualización general de KPIs, gráficos y estados financieros */
         function updateDashboard() {
             updateTablesOnly();
             
@@ -915,6 +941,7 @@
             recalcularTotalesReceta();
         }
 
+        /* Renderizado de Gráficos (Chart.js) y estadísticas */
         function actualizarGraficosYCategorias(fIng, fEgr) {
             let labelsBar = [];
             let dataIngBar = [];
@@ -1013,6 +1040,7 @@
             }
         }
 
+        /* Cálculo y renderizado del Estado de Resultados Contable (P&G) */
         function actualizarEstadoResultados(fIng, fEgr) {
             const head = document.getElementById('headEstadoResultados');
             const body = document.getElementById('bodyEstadoResultados');
@@ -1209,6 +1237,7 @@
             body.innerHTML = html;
         }
 
+        /* Control de cambio de pestañas visibles en la interfaz */
         function switchTab(e, tabId) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
             document.querySelectorAll('.tab-link').forEach(tl => tl.classList.remove('tab-active'));
