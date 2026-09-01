@@ -505,7 +505,8 @@
                         let idxDesc = 19; 
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         
-                        let idxCant = 8;    // Columna I (A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8)
+                        let idxCant = 8;        // Columna I (para las demás pestañas)
+                        let idxCantQ = 16;      // Columna Q (exclusiva para la pestaña Cantidades)
                         let idxUnidad = 17; 
                         let idxS = 18;      
                         let idxK = 10;      
@@ -530,6 +531,7 @@
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
                                 CANTIDAD: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
+                                CANTIDAD_CANTIDADES: row[idxCantQ] !== undefined && row[idxCantQ] !== "" ? (parseFloat(row[idxCantQ]) || 0) : 0,
                                 CANTIDAD_RECETA_DEFAULT: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
                                 VALOR_PROMEDIO_UNITARIO: row[idxS] !== undefined && row[idxS] !== "" ? (parseFloat(row[idxS]) || 0) : (idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0),
@@ -709,7 +711,7 @@
                 <th class="py-2.5 px-2 sortable whitespace-nowrap" data-col="DESCRIPCION" data-tab="tab-cantidades">PRODUCTO</th>`;
             
             if (selectedMonth === "TODOS") {
-                headHtml += `<th class="py-2.5 px-2 text-center whitespace-nowrap">Cant (Col. I)</th>
+                headHtml += `<th class="py-2.5 px-2 text-center whitespace-nowrap">Cant (Col. Q)</th>
                              <th class="py-2.5 px-2 text-center whitespace-nowrap">UNIDAD</th>`;
                 mesesActivos.forEach(m => {
                     headHtml += `<th class="py-2.5 px-1 text-center whitespace-nowrap">${m}</th>`;
@@ -717,7 +719,7 @@
                 headHtml += `<th class="py-2.5 px-2 text-center whitespace-nowrap">Total Veces</th>
                              <th class="py-2.5 px-2 text-right whitespace-nowrap">Val. Prom. Compra</th>`;
             } else {
-                headHtml += `<th class="py-2.5 px-3 text-center whitespace-nowrap">Cant (Col. I)</th>
+                headHtml += `<th class="py-2.5 px-3 text-center whitespace-nowrap">Cant (Col. Q)</th>
                              <th class="py-2.5 px-3 text-center whitespace-nowrap">UNIDAD</th>
                              <th class="py-2.5 px-3 text-center whitespace-nowrap">Veces Comprado</th>
                              <th class="py-2.5 px-3 text-right whitespace-nowrap">Val. Prom. Compra</th>`;
@@ -733,7 +735,7 @@
                     agrupado[key] = {
                         DESCRIPCION: key,
                         UNIDAD: e.UNIDAD || '',
-                        CANTIDAD: e.CANTIDAD_RECETA_DEFAULT || 0,
+                        CANTIDAD: e.CANTIDAD_CANTIDADES || 0,
                         vecesPorMes: {},
                         totalGlobal: 0,
                         vecesGlobal: 0,
@@ -747,8 +749,8 @@
                 if (!agrupado[key].UNIDAD && e.UNIDAD) {
                     agrupado[key].UNIDAD = e.UNIDAD;
                 }
-                if (e.CANTIDAD_RECETA_DEFAULT > 0 && agrupado[key].CANTIDAD === 0) {
-                    agrupado[key].CANTIDAD = e.CANTIDAD_RECETA_DEFAULT;
+                if (e.CANTIDAD_CANTIDADES > 0 && agrupado[key].CANTIDAD === 0) {
+                    agrupado[key].CANTIDAD = e.CANTIDAD_CANTIDADES;
                 }
                 agrupado[key].totalGlobal += e.TOTAL;
                 agrupado[key].vecesGlobal += 1;
