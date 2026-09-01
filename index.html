@@ -804,8 +804,6 @@
             if (!dropdown) return;
 
             const productosDisponibles = [...new Set(rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO").map(e => e.DESCRIPCION))].sort();
-            
-            // CORRECCIÓN: Se utiliza .includes() en lugar de .startsWith() para buscar en cualquier parte del texto
             const filtrados = productosDisponibles.filter(p => p.toLowerCase().includes(textoInput.toLowerCase()));
 
             if (filtrados.length > 0 && textoInput.trim() !== '') {
@@ -819,24 +817,60 @@
         }
 
         function actualizarCantidadReceta(index, valor) {
-            ingredientesReceta[index].cantidadReceta = parseFloat(valor) || 0;
-            renderizarTablaRecetas();
+            // Se usa el evento 'input' y se captura el valor raw para permitir decimales y escritura fluida sin perder el foco
+            let valNum = parseFloat(valor);
+            ingredientesReceta[index].cantidadReceta = isNaN(valNum) ? valor : valNum;
+            
+            // Recalcular el costo total de la fila en tiempo real sin redibujar todo el DOM (evita pérdida de foco)
+            let item = ingredientesReceta[index];
+            let numParsed = typeof item.cantidadReceta === 'number' ? item.cantidadReceta : (parseFloat(item.cantidadReceta) || 0);
+            let valorCosto = numParsed * item.valorUnitario;
+            
+            const costoElem = document.getElementById(`costo-fila-${index}`);
+            if (costoElem) costoElem.innerText = formatCurrency(valorCosto);
+
+            recalcularTotalesReceta();
         }
 
-        function renderizarTablaRecetas() {
+        function recalcularTotalesReceta() {
             let costoTotalReceta = 0;
             let sumaTotalValorUnitario = 0;
             let sumaTotalCantReceta = 0;
 
+            ingredientesReceta.forEach(item => {
+                let cantNum = typeof item.cantidadReceta === 'number' ? item.cantidadReceta : (parseFloat(item.cantidadReceta) || 0);
+                let valorCosto = cantNum * item.valorUnitario;
+                costoTotalReceta += valorCosto;
+                sumaTotalValorUnitario += item.valorUnitario;
+                sumaTotalCantReceta += cantNum;
+            });
+
+            const footElem = document.getElementById('footTablaRecetas');
+            if (footElem) {
+                footElem.innerHTML = `
+                    <tr>
+                        <td class="py-3 px-4 uppercase">Totales / Promedios:</td>
+                        <td class="py-3 px-4 text-right text-emerald-400">${formatCurrency(sumaTotalValorUnitario)}</td>
+                        <td class="py-3 px-4 text-center">-</td>
+                        <td class="py-3 px-4 text-center">${sumaTotalCantReceta.toLocaleString('es-CO', {maximumFractionDigits: 2})}</td>
+                        <td class="py-3 px-4 text-right text-expense">${formatCurrency(costoTotalReceta)}</td>
+                        <td class="py-3 px-4 text-center">-</td>
+                    </tr>
+                `;
+            }
+
+            const recetaTotalElem = document.getElementById('recetaCostoTotal');
+            if (recetaTotalElem) recetaTotalElem.innerText = formatCurrency(costoTotalReceta);
+        }
+
+        function renderizarTablaRecetas() {
             const tbody = document.getElementById('bodyTablaRecetas');
             const tfoot = document.getElementById('footTablaRecetas');
             if (!tbody || !tfoot) return;
 
             tbody.innerHTML = ingredientesReceta.map((item, index) => {
-                let valorCosto = item.cantidadReceta * item.valorUnitario;
-                costoTotalReceta += valorCosto;
-                sumaTotalValorUnitario += item.valorUnitario;
-                sumaTotalCantReceta += item.cantidadReceta;
+                let cantNum = typeof item.cantidadReceta === 'number' ? item.cantidadReceta : (parseFloat(item.cantidadReceta) || 0);
+                let valorCosto = cantNum * item.valorUnitario;
 
                 return `
                     <tr style="border-color: var(--border-color);" class="hover:opacity-85">
@@ -849,9 +883,9 @@
                         <td class="py-3 px-4 text-right font-medium text-emerald-400">${formatCurrency(item.valorUnitario)}</td>
                         <td class="py-3 px-4 text-center opacity-75">${item.unidad || '-'}</td>
                         <td class="py-3 px-4 text-center">
-                            <input type="number" step="any" value="${item.cantidadReceta}" oninput="actualizarCantidadReceta(${index}, this.value)" class="bg-card border text-xs rounded-lg p-2 w-full text-center" style="border-color: var(--border-color);">
+                            <input type="text" inputmode="decimal" value="${item.cantidadReceta}" oninput="actualizarCantidadReceta(${index}, this.value)" class="bg-card border text-xs rounded-lg p-2 w-full text-center" style="border-color: var(--border-color);">
                         </td>
-                        <td class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(valorCosto)}</td>
+                        <td id="costo-fila-${index}" class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(valorCosto)}</td>
                         <td class="py-3 px-4 text-center">
                             <button onclick="eliminarIngredienteReceta(${index})" class="text-red-400 hover:text-red-300 p-1"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -859,18 +893,7 @@
                 `;
             }).join('') || `<tr><td colspan="6" class="py-4 px-4 text-center opacity-60">No hay ingredientes agregados a la receta. Haga clic en "Agregar Ingrediente".</td></tr>`;
 
-            tfoot.innerHTML = `
-                <tr>
-                    <td class="py-3 px-4 uppercase">Totales / Promedios:</td>
-                    <td class="py-3 px-4 text-right text-emerald-400">${formatCurrency(sumaTotalValorUnitario)}</td>
-                    <td class="py-3 px-4 text-center">-</td>
-                    <td class="py-3 px-4 text-center">${sumaTotalCantReceta.toLocaleString('es-CO', {maximumFractionDigits: 2})}</td>
-                    <td class="py-3 px-4 text-right text-expense">${formatCurrency(costoTotalReceta)}</td>
-                    <td class="py-3 px-4 text-center">-</td>
-                </tr>
-            `;
-
-            document.getElementById('recetaCostoTotal').innerText = formatCurrency(costoTotalReceta);
+            recalcularTotalesReceta();
         }
 
         function actualizarGraficosYCategorias(fIng, fEgr) {
