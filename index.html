@@ -71,7 +71,7 @@
             border: 1px solid var(--border-color);
             border-top: none;
             border-radius: 0 0 0.5rem 0.5rem;
-            max-height: 180px;
+            max-height: 240px;
             overflow-y: auto;
             z-index: 50;
             display: none;
@@ -817,11 +817,9 @@
         }
 
         function actualizarCantidadReceta(index, valor) {
-            // Se usa el evento 'input' y se captura el valor raw para permitir decimales y escritura fluida sin perder el foco
             let valNum = parseFloat(valor);
             ingredientesReceta[index].cantidadReceta = isNaN(valNum) ? valor : valNum;
             
-            // Recalcular el costo total de la fila en tiempo real sin redibujar todo el DOM (evita pérdida de foco)
             let item = ingredientesReceta[index];
             let numParsed = typeof item.cantidadReceta === 'number' ? item.cantidadReceta : (parseFloat(item.cantidadReceta) || 0);
             let valorCosto = numParsed * item.valorUnitario;
