@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Herencia Argentina - Panel Avanzado</title>
+    <title>Panel Financiero Avanzado</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
         
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight">Herencia Argentina</h1>
+                <h1 class="text-3xl font-bold tracking-tight">Panel Financiero</h1>
                 <p class="text-sm opacity-80">Dashboard financiero en vivo — Control Multi-anual</p>
             </div>
             <div class="flex items-center gap-3">
@@ -803,6 +803,7 @@
             const dropdown = document.getElementById(`dropdown-${index}`);
             if (!dropdown) return;
 
+            // Extraer de forma única todos los productos de Costo Ordinario sin límite
             const productosDisponibles = [...new Set(rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO").map(e => e.DESCRIPCION))].sort();
             const filtrados = productosDisponibles.filter(p => p.toLowerCase().includes(textoInput.toLowerCase()));
 
@@ -828,6 +829,20 @@
             if (costoElem) costoElem.innerText = formatCurrency(valorCosto);
 
             recalcularTotalesReceta();
+        }
+
+        function manejarEnterCantidad(event, index) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                // Si estamos en el último elemento, agregamos uno nuevo automáticamente al dar Enter
+                if (index === ingredientesReceta.length - 1) {
+                    agregarIngredienteReceta();
+                } else {
+                    // Opcional: enfocar el input del siguiente ingrediente si existe
+                    const siguienteInput = document.getElementById(`input-prod-${index + 1}`);
+                    if (siguienteInput) siguienteInput.focus();
+                }
+            }
         }
 
         function recalcularTotalesReceta() {
@@ -874,14 +889,14 @@
                     <tr style="border-color: var(--border-color);" class="hover:opacity-85">
                         <td class="py-3 px-4">
                             <div class="autocomplete-container">
-                                <input type="text" value="${item.producto}" placeholder="Escribe para buscar ingrediente..." oninput="filtrarAutocomplete(${index}, this.value)" onclick="filtrarAutocomplete(${index}, this.value)" class="bg-card border text-xs rounded-lg p-2 w-full" style="border-color: var(--border-color);">
+                                <input id="input-prod-${index}" type="text" value="${item.producto}" placeholder="Escribe para buscar ingrediente..." oninput="filtrarAutocomplete(${index}, this.value)" onclick="filtrarAutocomplete(${index}, this.value)" class="bg-card border text-xs rounded-lg p-2 w-full" style="border-color: var(--border-color);">
                                 <div id="dropdown-${index}" class="autocomplete-dropdown custom-scrollbar"></div>
                             </div>
                         </td>
                         <td class="py-3 px-4 text-right font-medium text-emerald-400">${formatCurrency(item.valorUnitario)}</td>
                         <td class="py-3 px-4 text-center opacity-75">${item.unidad || '-'}</td>
                         <td class="py-3 px-4 text-center">
-                            <input type="text" inputmode="decimal" value="${item.cantidadReceta}" oninput="actualizarCantidadReceta(${index}, this.value)" class="bg-card border text-xs rounded-lg p-2 w-full text-center" style="border-color: var(--border-color);">
+                            <input type="text" inputmode="decimal" value="${item.cantidadReceta}" oninput="actualizarCantidadReceta(${index}, this.value)" onkeydown="manejarEnterCantidad(event, ${index})" class="bg-card border text-xs rounded-lg p-2 w-full text-center" style="border-color: var(--border-color);">
                         </td>
                         <td id="costo-fila-${index}" class="py-3 px-4 text-right font-bold text-expense">${formatCurrency(valorCosto)}</td>
                         <td class="py-3 px-4 text-center">
