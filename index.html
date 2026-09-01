@@ -529,6 +529,7 @@
                                 DESCRIPCION: productoTexto, 
                                 TIPO: (row[idxTipo] || "OTROS").toString().trim().toUpperCase(), 
                                 PROVEEDOR: (row[idxProv] || "Sin Proveedor").toString().trim(), 
+                                CANTIDAD: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 CANTIDAD_RECETA_DEFAULT: row[idxCant] !== undefined && row[idxCant] !== "" ? (parseFloat(row[idxCant]) || 0) : 0,
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
                                 VALOR_PROMEDIO_UNITARIO: row[idxS] !== undefined && row[idxS] !== "" ? (parseFloat(row[idxS]) || 0) : (idxVUnit !== -1 ? (parseFloat(row[idxVUnit]) || 0) : 0),
