@@ -323,7 +323,13 @@
         let selectedMonth = "TODOS";
         let chartBar = null;
         let chartDoughnut = null;
-        let ingredientesReceta = [];
+        
+        // Modificado para iniciar con 3 filas por defecto
+        let ingredientesReceta = [
+            { producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 },
+            { producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 },
+            { producto: '', valorCompra: 0, valorUnitario: 0, unidad: '', cantidadReceta: 1 }
+        ];
 
         let currentSort = {
             'tab-ingresos': { col: 'FECHA', dir: 'desc' },
@@ -439,7 +445,10 @@
             }
         });
 
-        window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExcelAutomatically();
+            renderizarTablaRecetas(); // Renderizar las filas iniciales al cargar la página
+        });
 
         function parseExcelDate(cellValue) {
             if (!cellValue) return { y: 2026, m: 1, text: '-' };
@@ -803,7 +812,6 @@
             const dropdown = document.getElementById(`dropdown-${index}`);
             if (!dropdown) return;
 
-            // Extraer de forma única todos los productos de Costo Ordinario sin límite
             const productosDisponibles = [...new Set(rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO").map(e => e.DESCRIPCION))].sort();
             const filtrados = productosDisponibles.filter(p => p.toLowerCase().includes(textoInput.toLowerCase()));
 
@@ -834,11 +842,9 @@
         function manejarEnterCantidad(event, index) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                // Si estamos en el último elemento, agregamos uno nuevo automáticamente al dar Enter
                 if (index === ingredientesReceta.length - 1) {
                     agregarIngredienteReceta();
                 } else {
-                    // Opcional: enfocar el input del siguiente ingrediente si existe
                     const siguienteInput = document.getElementById(`input-prod-${index + 1}`);
                     if (siguienteInput) siguienteInput.focus();
                 }
