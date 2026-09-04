@@ -1,3 +1,4 @@
+HTML
 <!-- ========================================== -->
 <!-- 1. CONFIGURACIÓN INICIAL Y METADATOS       -->
 <!-- ========================================== -->
@@ -325,9 +326,9 @@
                         <thead class="uppercase" style="background-color: var(--table-header); color: var(--text-muted);">
                             <tr>
                                 <th class="py-3 px-4">Ingrediente</th>
-                                <th class="py-3 px-4 text-right w-36">Valor Prom. Unitario (Col. S)</th>
+                                <th class="py-3 px-4 text-right w-36">Valor Prom. Unitario (Col. K)</th>
                                 <th class="py-3 px-4 text-center w-24">Unidad (Col. R)</th>
-                                <th class="py-3 px-4 text-center w-32">Cant Receta</th>
+                                <th class="py-3 px-4 text-center w-32">Cant Receta (Col. I)</th>
                                 <th class="py-3 px-4 text-right w-36">Valor Costo</th>
                                 <th class="py-3 px-4 text-center w-16">Acción</th>
                             </tr>
@@ -505,11 +506,11 @@
                         let idxDesc = 19; 
                         let idxProv = headers.indexOf("PROVEEDOR") === -1 ? 13 : headers.indexOf("PROVEEDOR");
                         
-                        let idxCant = 8;        // Columna I (para las demás pestañas)
+                        let idxCant = 8;        // Columna I
                         let idxCantQ = 16;      // Columna Q (exclusiva para la pestaña Cantidades)
                         let idxUnidad = 17; 
                         let idxS = 18;      
-                        let idxK = 10;      
+                        let idxK = 10;      // Columna K
 
                         let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
 
@@ -819,15 +820,19 @@
             let match = rawEgresos.filter(e => e.TIPO === "COSTO ORDINARIO" && e.DESCRIPCION.toUpperCase() === nombreProducto.toUpperCase());
             if (match.length > 0) {
                 let sumaValorCompra = match.reduce((s, x) => s + (x.VALOR_PROM_COMPRA_K || 0), 0);
-                let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROMEDIO_UNITARIO || 0), 0);
+                let sumaVUnit = match.reduce((s, x) => s + (x.VALOR_PROM_COMPRA_K || 0), 0);
                 
                 ingredientesReceta[index].valorCompra = sumaValorCompra / match.length;
                 ingredientesReceta[index].valorUnitario = sumaVUnit / match.length;
                 ingredientesReceta[index].unidad = match[match.length - 1].UNIDAD || '';
+                
+                let sumaCantDefault = match.reduce((s, x) => s + (x.CANTIDAD || 0), 0);
+                ingredientesReceta[index].cantidadReceta = match.length > 0 ? (sumaCantDefault / match.length) : 1;
             } else {
                 ingredientesReceta[index].valorCompra = 0;
                 ingredientesReceta[index].valorUnitario = 0;
                 ingredientesReceta[index].unidad = '';
+                ingredientesReceta[index].cantidadReceta = 1;
             }
 
             const dropdown = document.getElementById(`dropdown-${index}`);
@@ -1257,3 +1262,4 @@
     </script>
 </body>
 </html>
+```[cite: 5]
