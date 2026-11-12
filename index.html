@@ -1,17 +1,4 @@
-<!-- ========================================== -->
-<!-- 1. CONFIGURACIÓN INICIAL Y METADATOS       -->
-<!-- ========================================== -->
-<!DOCTYPE html>
-<html lang="es" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Financiero Avanzado</title>
-    <!-- Importación de fuentes tipográficas y librerías externas (Tailwind, FontAwesome, Chart.js, SheetJS) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -175,6 +162,7 @@
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-operativo')">Gasto Operativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-administrativo')">Gasto Administrativo</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-ventas')">Gasto de Ventas</li>
+                <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-otros-gastos-operativos')">Otros Gastos Operativos</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-gasto-personal')">Gasto Personal</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-cantidades')">Cantidades</li>
                 <li class="cursor-pointer py-2 px-1 tab-link" onclick="switchTab(event, 'tab-recetas')">Recetas</li>
@@ -274,6 +262,7 @@
         <div id="tab-gasto-operativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-administrativo" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-ventas" class="tab-content hidden space-y-4 template-egreso-tab"></div>
+        <div id="tab-otros-gastos-operativos" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         <div id="tab-gasto-personal" class="tab-content hidden space-y-4 template-egreso-tab"></div>
         
         <!-- Pestaña: Cantidades (Consolidado de Productos) -->
@@ -361,6 +350,7 @@
             'tab-gasto-operativo': { col: 'FECHA', dir: 'desc' },
             'tab-gasto-administrativo': { col: 'FECHA', dir: 'desc' },
             'tab-gasto-ventas': { col: 'FECHA', dir: 'desc' },
+            'tab-otros-gastos-operativos': { col: 'FECHA', dir: 'desc' },
             'tab-gasto-personal': { col: 'FECHA', dir: 'desc' },
             'tab-cantidades': { col: 'DESCRIPCION', dir: 'asc' }
         };
@@ -374,6 +364,7 @@
             'tab-gasto-operativo': 'GASTO OPERATIVO',
             'tab-gasto-administrativo': 'GASTO ADMINISTRATIVO',
             'tab-gasto-ventas': 'GASTO DE VENTAS',
+            'tab-otros-gastos-operativos': 'OTROS GASTOS OPERATIVOS',
             'tab-gasto-personal': 'GASTO PERSONAL'
         };
 
@@ -1159,7 +1150,8 @@
             let gastosOperativos = fEgr.filter(e => e.TIPO === 'GASTO OPERATIVO');
             let gastosAdm = fEgr.filter(e => e.TIPO === 'GASTO ADMINISTRATIVO');
             let gastosVentas = fEgr.filter(e => e.TIPO === 'GASTO DE VENTAS');
-            let sumaGastosAdmVen = [...gastosOperativos, ...gastosAdm, ...gastosVentas];
+            let otrosGastosOp = fEgr.filter(e => e.TIPO === 'OTROS GASTOS OPERATIVOS');
+            let sumaGastosAdmVen = [...gastosOperativos, ...gastosAdm, ...gastosVentas, ...otrosGastosOp];
             let totalGastosAdmVenVal = sumaGastosAdmVen.reduce((s,e)=>s+e.TOTAL,0);
 
             html += `<tr><td class="py-2 px-2 font-bold whitespace-nowrap">Gastos:</td><td colspan="${mesesActivos.length + 1}" class="py-2 px-2"></td></tr>`;
@@ -1190,6 +1182,15 @@
                     return `<td class="py-2 px-1 text-right text-expense whitespace-nowrap">${formatCurrency(mGast)} <span class="text-[9px] opacity-60">(${mPct}%)</span></td>`;
                 }).join('') + 
                 `<th class="py-2 px-2 text-right text-expense whitespace-nowrap">${formatCurrency(gastosVentas.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[9px] opacity-60">(${totalIng > 0 ? ((gastosVentas.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
+
+            html += `<tr><td class="py-2 px-2 pl-4 opacity-75 whitespace-nowrap">Otros Gastos Operativos</td>` + 
+                indicesActivos.map(idx => {
+                    let mGast = otrosGastosOp.filter(e => e.MES_NUM === idx).reduce((s,e)=>s+e.TOTAL,0);
+                    let mTotIng = fIng.filter(i => i.MES_NUM === idx).reduce((s,i)=>s+i.VALOR,0);
+                    let mPct = mTotIng > 0 ? ((mGast / mTotIng) * 100).toFixed(1) : "0.0";
+                    return `<td class="py-2 px-1 text-right text-expense whitespace-nowrap">${formatCurrency(mGast)} <span class="text-[9px] opacity-60">(${mPct}%)</span></td>`;
+                }).join('') + 
+                `<th class="py-2 px-2 text-right text-expense whitespace-nowrap">${formatCurrency(otrosGastosOp.reduce((s,e)=>s+e.TOTAL,0))} <span class="text-[9px] opacity-60">(${totalIng > 0 ? ((otrosGastosOp.reduce((s,e)=>s+e.TOTAL,0)/totalIng)*100).toFixed(1) : 0}%)</span></th></tr>`;
 
             html += `<tr style="background-color: var(--table-header);"><td class="py-2 px-2 font-bold whitespace-nowrap">Total Gastos</td>` + 
                 indicesActivos.map(idx => {
