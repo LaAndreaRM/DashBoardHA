@@ -1,4 +1,17 @@
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<!-- ========================================== -->
+<!-- 1. CONFIGURACIÓN INICIAL Y METADATOS       -->
+<!-- ========================================== -->
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Financiero Avanzado</title>
+    <!-- Importación de fuentes tipográficas y librerías externas (Tailwind, FontAwesome, Chart.js, SheetJS) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -470,9 +483,16 @@
             let dObj = typeof cellValue === 'number' ? XLSX.SSF.parse_date_code(cellValue) : new Date(cellValue);
             let y = dObj.y || (dObj.getFullYear ? dObj.getFullYear() : 2026);
             let m = dObj.m || (dObj.getMonth ? dObj.getMonth() + 1 : 1);
-            if (isNaN(y)) { y = 2026; m = 1; }
             let day = dObj.d || (dObj.getDate ? dObj.getDate() : 1);
-            return { y, m, text: `${y}-${m.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}` };
+            
+            // Corrección segura para evitar valores NaN si la celda viene incompleta o vacía
+            if (isNaN(y) || isNaN(m)) { 
+                y = 2026; 
+                m = 1; 
+                day = 1; 
+            }
+            
+            return { y, m, text: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
         }
 
         /* Conexión y lectura automática del archivo Excel remoto */
