@@ -479,14 +479,14 @@
         window.addEventListener('DOMContentLoaded', loadExcelAutomatically);
 
         function parseExcelDate(cellValue) {
-            if (!cellValue) return null;
+            if (cellValue === undefined || cellValue === null || cellValue === "") return null;
             let dObj = typeof cellValue === 'number' ? XLSX.SSF.parse_date_code(cellValue) : new Date(cellValue);
             let y = dObj.y || (dObj.getFullYear ? dObj.getFullYear() : NaN);
             let m = dObj.m || (dObj.getMonth ? dObj.getMonth() + 1 : NaN);
             let day = dObj.d || (dObj.getDate ? dObj.getDate() : NaN);
             
-            if (isNaN(y) || isNaN(m) || isNaN(day)) {
-                return null; // Retorna null si la fecha no es válida para descartarla de inmediato
+            if (isNaN(y) || isNaN(m) || isNaN(day) || y < 2000 || y > 2100 || m < 1 || m > 12) {
+                return null; // Descarta estrictamente cualquier fecha fantasma o inválida
             }
             
             return { y, m, text: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
@@ -519,17 +519,21 @@
                         let idxS = 18;      
                         let idxK = 10;      // Columna K (para valor unitario)
 
-                        let idxVUnit = headers.indexOf("V UNITARIO") === -1 ? headers.indexOf("VALOR UNITARIO") : headers.indexOf("V UNITARIO");
-
                         rawEgresos = rawRows.slice(1).map(row => {
+                            // FILTRO ESTRICTO: Si no hay fecha o viene vacía, se descarta por completo la fila
+                            if (!row || row[idxFecha] === undefined || row[idxFecha] === "") return null;
+                            
                             let parsedDate = parseExcelDate(row[idxFecha]);
-                            if (!parsedDate) return null; // FILTRO ESTRICTO: Descarta cualquier fila sin fecha válida o NaN
+                            if (!parsedDate) return null; // Descarta si la fecha no es un formato válido
 
                             let mesAbrevFila = mesesAbrev[parsedDate.m - 1];
                             let idxMontoReal = headers.indexOf(mesAbrevFila) !== -1 ? headers.indexOf(mesAbrevFila) : (headers.indexOf("TOTAL") === -1 ? 12 : headers.indexOf("TOTAL"));
-                            if (row[idxMontoReal] === "" || row[idxMontoReal] === undefined) return null;
+                            let valorMonto = parseFloat(row[idxMontoReal]) || 0;
                             
                             let productoTexto = (row[idxDesc] || "").toString().trim();
+                            
+                            // Si la fila no tiene descripción ni monto, es una fila vacía del Excel y la ignoramos
+                            if (productoTexto === "" && valorMonto === 0) return null;
                             if (productoTexto === "") productoTexto = "SIN DESCRIPCION";
 
                             return { 
@@ -546,8 +550,8 @@
                                 UNIDAD: row[idxUnidad] !== undefined ? (row[idxUnidad] || "").toString().trim() : "",
                                 VALOR_PROMEDIO_UNITARIO: row[idxK] !== undefined && row[idxK] !== "" ? (parseFloat(row[idxK]) || 0) : 0,
                                 VALOR_PROM_COMPRA_K: row[idxK] !== undefined && row[idxK] !== "" ? (parseFloat(row[idxK]) || 0) : 0,
-                                VALOR: parseFloat(row[idxMontoReal]) || 0, 
-                                TOTAL: parseFloat(row[idxMontoReal]) || 0 
+                                VALOR: valorMonto, 
+                                TOTAL: valorMonto 
                             };
                         }).filter(item => item !== null);
                     }
@@ -565,9 +569,13 @@
                         let idxDescIn = headersIn.indexOf("DESCRIPCIÓN") !== -1 ? headersIn.indexOf("DESCRIPCIÓN") : (headersIn.indexOf("DESCRIPCION") !== -1 ? headersIn.indexOf("DESCRIPCION") : 5);
 
                         rawIngresos = rawRowsIn.slice(1).map(row => {
-                            if (!row || row[idxValor] === "") return null;
+                            if (!row || row[idxFecha] === undefined || row[idxFecha] === "") return null;
                             let parsedDate = parseExcelDate(row[idxFecha]);
                             if (!parsedDate) return null;
+
+                            let valorIng = parseFloat(row[idxValor]) || 0;
+                            let descIng = (row[idxDescIn] || "").toString().trim();
+                            if (descIng === "" && valorIng === 0) return null;
 
                             return { 
                                 ANIO: parsedDate.y.toString(), 
@@ -576,8 +584,8 @@
                                 FECHA: parsedDate.text, 
                                 TIPO: (row[idxTipo] || "Venta Ordinaria").toString(), 
                                 CANTIDAD: row[idxCantIn] !== undefined && row[idxCantIn] !== "" ? (parseFloat(row[idxCantIn]) || 0) : 0,
-                                DESCRIPCION: row[idxDescIn] !== undefined ? (row[idxDescIn] || "").toString() : "",
-                                VALOR: parseFloat(row[idxValor]) || 0 
+                                DESCRIPCION: descIng, 
+                                VALOR: valorIng 
                             };
                         }).filter(item => item !== null);
                     }
